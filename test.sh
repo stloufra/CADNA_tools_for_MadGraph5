@@ -138,7 +138,7 @@ compile_and_run () {
 
 
 #check for the input is equal to "float" or "double"
-if  [ "$1" != "float" ] && [ "$1" != "double" ]
+if  [ "$1" != "float" ] && [ "$1" != "double" ] && [ "$1" != "mixed" ]
 then
     #Change to double_st
     sed -i 's/float_st/double_st/g' $config_file
@@ -164,8 +164,14 @@ then
     sed -i 's/float_st/double_st/g' $config_file
     compile_and_run "double" $2 $3
 
-fi
+elif [ "$1" == "mixed" ]
+then
+    #Change fptype to double_st and fptype2 (colour computation) to float_st
+    sed -i 's/typedef float_st fptype/typedef double_st fptype/g' $config_file   # double for everything except:
+    sed -i 's/typedef double_st fptype2/typedef float_st fptype2/g' $config_file # floats for colour calculations
+    compile_and_run "mixed" $2
 
+fi
 
 
 #clean after yourself
