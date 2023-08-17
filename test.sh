@@ -3,6 +3,8 @@ export AVX=none
 export RNDGEN=hasNoCurand
 export CUDA_HOME=""
 
+CURRENT_DIR=${0%/*}
+
 
 #Parameters: -O3 -O0, float_st double_st, 
 #Outputs:
@@ -46,7 +48,7 @@ compile_and_run () {
             echo  "make time" 
             
             #randomize the seed
-            # ~/CERN/Cadnize.sh exact_momenta random_seed CPPProcess
+            # $CURRENT_DIR/Cadnize.sh exact_momenta random_seed CPPProcess
 
             
 
@@ -58,7 +60,7 @@ compile_and_run () {
                 echo  "run time" >> $save_time
                 echo  "run time" 
             # Run
-                { time ./madevent_cpp < ~/CERN/input_app.txt > "f"$save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
+                { time ./madevent_cpp < $CURRENT_DIR/input_app.txt > "f"$save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
             else
             # Compile
                 { time  make -j12  OPTFLAGS=" -O3" CUDA_HOME="" AVX=none RNDGEN=hasNoCurand; } 2>> $save_time
@@ -75,11 +77,11 @@ compile_and_run () {
         # Create a histogram of the run output
         if [ "$3" == "fortran" ]
         then
-            python3 ~/CERN/histogram.py "f"$save_run_output"_"$1"-O3_"$random_number".out"
-            python3 ~/CERN/histogram_functions_in_CPPProcess.py "f"$save_run_output"_"$1"-O3_"$random_number".out"
+            python3 $CURRENT_DIR/histogram.py "f"$save_run_output"_"$1"-O3_"$random_number".out"
+            python3 $CURRENT_DIR/histogram_functions_in_CPPProcess.py "f"$save_run_output"_"$1"-O3_"$random_number".out"
         else
-            python3 ~/CERN/histogram.py $save_run_output"_"$1"-O3_"$random_number".out"
-            python3 ~/CERN/histogram_functions_in_CPPProcess.py $save_run_output"_"$1"-O3_"$random_number".out"
+            python3 $CURRENT_DIR/histogram.py $save_run_output"_"$1"-O3_"$random_number".out"
+            python3 $CURRENT_DIR/histogram_functions_in_CPPProcess.py $save_run_output"_"$1"-O3_"$random_number".out"
         fi
 
         return
@@ -103,7 +105,7 @@ compile_and_run () {
         echo  "run time" 
         { time ./check.exe 1 8 1 -p -v > $save_run_output"_"$1"-O0.out" ; } 2>> $save_time
         # Create a histogram of the run output
-        python3 ~/CERN/histogram.py $save_run_output"_"$1"-O0.out"
+        python3 $CURRENT_DIR/histogram.py $save_run_output"_"$1"-O0.out"
 
         return
     fi
@@ -127,10 +129,10 @@ compile_and_run () {
         echo   >> $save_time
         echo  "run gdb" >> $save_time
         echo  "run gdb"
-        { time gdb -args check.exe<~/CERN/gdb_c.in>"gdb_"$1".out" 1 8 1 ; } 2>> $save_time
+        { time gdb -args check.exe<$CURRENT_DIR/gdb_c.in>"gdb_"$1".out" 1 8 1 ; } 2>> $save_time
 
         echo "Running Code_tracer.py"
-        python3 ~/CERN/Code_tracer.py gdb_$1.out > gdb_stats_$1.out
+        python3 $CURRENT_DIR/Code_tracer.py gdb_$1.out > gdb_stats_$1.out
         echo "Done"
     fi
     
