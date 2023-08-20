@@ -322,7 +322,6 @@ if len(sys.argv) < 3 or (len(sys.argv) > 2 and sys.argv[2] == "both"):
     
     
 
-
     #scatter plot of momenta precision vs momentum
     if len(momentaPrecision)>0:
         fig, ax = plt.subplots()

@@ -19,17 +19,26 @@ fi
                 # Change to ../makefile
 #in the line "LIBFLAGS = -L$(LIBDIR) -l$(MG5AMC_COMMONLIB)" append -lcadnaOpenmpCdebug
 #if there is no -lcadnaOpenmpCdebug in the file
-if grep -Fq cadnaOpenmpCdebug ../makefile
+#check if ../makefile exists:
+if [ -f "../makefile" ]
 then
-    echo "cadnaOpenmpCdebug is already in ../makefile"
-else
-    echo "putting -lcadnaOpenmpCdebug in ../makefile"
-    sed -i 's/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L$(LIBDIR) -ldhelas -ldsample -lmodel -lgeneric -lpdf -lcernlib $(llhapdf) -lbias/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L$(LIBDIR) -ldhelas -ldsample -lmodel -lgeneric -lpdf -lcernlib $(llhapdf) -lbias -lcadnaOpenmpCdebug/g' ../makefile
+    if grep -Fq cadnaOpenmpCdebug ../makefile
+    then
+        echo "cadnaOpenmpCdebug is already in ../makefile"
+    else
+        echo "putting -lcadnaOpenmpCdebug in ../makefile"
+        sed -i 's/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L$(LIBDIR) -ldhelas -ldsample -lmodel -lgeneric -lpdf -lcernlib $(llhapdf) -lbias/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L$(LIBDIR) -ldhelas -ldsample -lmodel -lgeneric -lpdf -lcernlib $(llhapdf) -lbias -lcadnaOpenmpCdebug/g' ../makefile
+    fi
 fi
-#move every $(LIBFLAGS)  and $(LINKLIBS) to the end of the line
+                # move every $(LIBFLAGS)  and $(LINKLIBS) to the end of the line in ../cudacpp.mk and ../makefile
+echo
 echo "          cadnize_libflags.py"
 python3 $CURRENT_DIR/cadnize_libflags.py ../cudacpp.mk
-python3 $CURRENT_DIR/cadnize_libflags.py ../makefile
+#check if ../makefile exists:
+if [ -f "../makefile" ]
+then
+    python3 $CURRENT_DIR/cadnize_libflags.py ../makefile
+fi
 
 
                 #changes in mgOnGpuConfig.h
@@ -52,32 +61,31 @@ fi
 sed -i 's/typedef double fptyp/typedef double_st fptyp/g' ../../src/mgOnGpuConfig.h
 
 
-                #Changes in check_sa.cc
+                #Changes in check_sa.cc and bridge
+echo
 echo "          cadnize_check_sa.py"
 python3 $CURRENT_DIR/cadnize_check_sa.py check_sa.cc
 python3 $CURRENT_DIR/cadnize_bridge.py ../Bridge.h
 
                 #repair the std::fun() error, comment some functions and add some castings to (double)
+echo
 echo "          cadnize_std_replace.py"
-python3  $CURRENT_DIR/cadnize_std_replace.py ../../src/mgOnGpuFptypes.h
-python3  $CURRENT_DIR/cadnize_std_replace.py ../../src/HelAmps_sm.h
-python3  $CURRENT_DIR/cadnize_std_replace.py ../CrossSectionKernels.cc
-python3  $CURRENT_DIR/cadnize_std_replace.py fsampler.cc
-python3  $CURRENT_DIR/cadnize_std_replace.py MadgraphTest.h
-python3  $CURRENT_DIR/cadnize_std_replace.py testxxx.cc
-python3  $CURRENT_DIR/cadnize_std_replace.py runTest.cc
+files=(../../src/mgOnGpuFptypes.h ../../src/HelAmps_sm.h ../CrossSectionKernels.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
+for file in "${files[@]}"
+do
+    python3  $CURRENT_DIR/cadnize_std_replace.py $file
+done
 
 
                 #repair the constexpr fptype and volatile fptype errors
+echo
 echo "          cadnize_constexpr_replace.py"
-python3 $CURRENT_DIR/cadnize_constexpr_replace.py check_sa.cc
-python3 $CURRENT_DIR/cadnize_constexpr_replace.py ../../src/HelAmps_sm.h
-python3 $CURRENT_DIR/cadnize_constexpr_replace.py CPPProcess.cc
-python3 $CURRENT_DIR/cadnize_constexpr_replace.py fsampler.cc
-python3 $CURRENT_DIR/cadnize_constexpr_replace.py MadgraphTest.h
-python3 $CURRENT_DIR/cadnize_constexpr_replace.py testxxx.cc
-python3 $CURRENT_DIR/cadnize_constexpr_replace.py runTest.cc
-python3 $CURRENT_DIR/cadnize_constexpr_replace.py fsampler.cc
+#  loop over list of files
+files=(check_sa.cc ../../src/HelAmps_sm.h CPPProcess.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
+for file in "${files[@]}"
+do
+    python3 $CURRENT_DIR/cadnize_constexpr_replace.py $file
+done
 
 
                 #paste "\n" after every operator after every "=" in HelAmps_sm.h - make optional
