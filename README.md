@@ -26,7 +26,7 @@ run_stats_*.out file:
    - gdb -args check.exe<gdb_c.in>gdb_stats_*.out 1 8 1
    - less gdb_stats_*.out ;#(in vs code)
 
-  You can exchange check.exe with any Cadnized code.
+  You can exchange check.exe 1 8 1 with any Cadnized code.
   
 
 
