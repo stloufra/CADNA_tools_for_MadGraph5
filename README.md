@@ -21,9 +21,11 @@ run_stats_*.out file:
  - shows what operator caused the problem and how many times is was invoked.
  - after displaying in terminal of vs code (less gdb_stats_*.out) ctrl + click on filename:line goes to the exact location of instability.
 
+#Code Tracer
   ## Manually generate stats file from gdb output
   To generate gdb_stats_*.out run:
-   - gdb -args check.exe<gdb_c.in>gdb_stats_*.out 1 8 1
+   - gdb -args check.exe<gdb_c.in>gdb_run_output_*.out 1 8 1
+   - Code_tracer.py gdb_run_output_*.out
    - less gdb_stats_*.out ;#(in vs code)
 
   You can exchange check.exe 1 8 1 with any Cadnized code.
