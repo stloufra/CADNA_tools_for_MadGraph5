@@ -23,8 +23,9 @@ run_stats_*.out file:
 
   ## Manually generate stats file from gdb output
   To generate gdb_stats_*.out run:
-    gdb -args check.exe<gdb_c.in>gdb_stats_*.out 1 8 1
-    less gdb_stats_*.out ;#(in vs code)
+   - gdb -args check.exe<gdb_c.in>gdb_stats_*.out 1 8 1
+   - less gdb_stats_*.out ;#(in vs code)
+
   You can exchange check.exe with any Cadnized code.
   
 
