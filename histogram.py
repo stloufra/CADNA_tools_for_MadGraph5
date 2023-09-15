@@ -115,12 +115,11 @@ while True:
             momentums=[]
             momentumPrecision=[]
             while not "---" in lines[i+j]:
-                
                 momentums.append(parse_momentum(lines[i+j]))
-                momentumPrecision.append(parse_momentum_precision(lines[i+j+1]))
-                j+=2
-            momentum.append(momentums)
-            momentaPrecision.append(momentumPrecision)
+                if len(lines)>6:
+                    momentumPrecision.append(parse_momentum_precision(lines[i+j+1]))
+                    j+=1
+                j+=1
                 
             
         if "Matrix element = " in l and "Matrix element number of sig dig = " in lines[i+1]:
