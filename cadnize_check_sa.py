@@ -37,11 +37,11 @@ for l in lines:
             # print("Added int avg_matrixElementPrecision_n = 0; after cadna_init(-1);")
     
     #putting cadna_end(); before return in main
-    if "std::cout << std::string( SEP79, '*' ) << std::endl;" in l:
-        if not "cadna_end();" in lines[i+2] :
-            lines.insert(i+2, "cadna_end();\n")
-            print("Added cadna_end(); before return in main")
+    if "return 0;" in l:
+        if not "cadna_end();" in lines[i-1] :
             changes += 1
+            lines.insert(i-1, "cadna_end();\n")
+            # print("Added cadna_end(); before return 0;")
     
     #comment out:
     if "std::cout << \".\";" in l:
