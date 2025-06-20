@@ -9,7 +9,7 @@ There are 2 main scripts to run from within process directory (/SubProcess/P*/):
 Cadnize.sh arguments:
  - exact_momenta -> assumes Rambo momenta have maximum precision
  - CPPProcess -> prints out digits of precision of funtions in CPPProcess. Required for histogram_functions_in_CPPProcess.py
- - random/original_seed -> changes the seed of RAMBO to random or reverts to original. Setting to random only changes the start seed - if you compile and run the program twice the output will be the same.
+ - random/original_seed -> changes the seed of RAMBO to random or reverts to original. Setting to random only changes the start seed - if you compile once and run the program twice the output will be the same.
 
 test.sh arguments:
 - float/double/mixed -> changes the precision. Mixed means colour algebra in float and rest in double.
