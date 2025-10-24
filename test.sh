@@ -55,7 +55,7 @@ compile_and_run () {
             if [ "$3" == "fortran" ]
                 then
             # Compile
-                { time  make -j12 OPTFLAGS=" -O3" CUDA_HOME="" AVX=none RNDGEN=hasNoCurand; } 2>> $save_time
+                { time  make -j12 OPTFLAGS=" -O3" CUDA_HOME="" AVX=none RNDGEN=hasNoCurand; } 2>> $save_time #append the error of make
                 echo   >> $save_time
                 echo  "run time" >> $save_time
                 echo  "run time" 
@@ -92,7 +92,7 @@ compile_and_run () {
         #optimalization -O0
         echo   >> $save_time
         echo  "OPTFLAGS = -O0 -g" >> $save_time
-        echo  "OPTFLAGS = -O0 -g" 
+        echo  "OPTFLAGS = -O0 -g"
 
         make distclean
         echo   >> $save_time    

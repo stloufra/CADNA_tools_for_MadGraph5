@@ -24,7 +24,7 @@ for l in lines:
             changes += 1 
             
     if  "isnormal" in l:
-        if lines[i][:2] != "//":
+        if lines[i][:2] != "//" and not "using" in l:
             lines[i] = "//"+l
             l=lines[i]
             changes += 1 
@@ -77,8 +77,8 @@ for l in lines:
         changes += 1 
     i=i+1
 
-print(f"Changes in: {fileName} ", changes)
-        
+
+print(f"Changes in: {fileName:<30}\t{changes}")
 
 #insert using std::function after the last include
 i=0

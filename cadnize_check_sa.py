@@ -38,9 +38,9 @@ for l in lines:
     
     #putting cadna_end(); before return in main
     if "return 0;" in l:
-        if not "cadna_end();" in lines[i-1] :
+        if not "cadna_end();" in lines[i-1] and not "cadna_end();" in lines[i-2]  :
             changes += 1
-            lines.insert(i-1, "cadna_end();\n")
+            lines.insert(i, "  cadna_end();\n")
             # print("Added cadna_end(); before return 0;")
     
     #comment out:
@@ -73,8 +73,8 @@ for l in lines:
             addeQ = True
             print("\n\nAdded momentum precision cout\n\n")
     i=i+1
-        
-print("Changes in: "+fileName+"\t\t"+str(changes))
+
+print(f"Changes in: {fileName:<30}\t{changes}")
 from tempfile import mkstemp
 from shutil import move, copymode
 from os import fdopen, remove
