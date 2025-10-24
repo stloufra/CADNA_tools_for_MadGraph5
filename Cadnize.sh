@@ -33,8 +33,59 @@ then
     fi
 fi
 
-          #add missing definition for operators on custom complex types
 
+          #add missing definition for operators on custom complex types
+if [ -f "../../src/mgOnGpuCxtypes.h" ]
+then
+    if grep -Fq "CADNA operator overload" ../../src/mgOnGpuCxtypes.h
+    then
+        echo "CADNA operator overload is already in ../../src/mgOnGpuCxtypes.h"
+    else
+        echo "putting CADNA operator overload in ../../src/mgOnGpuCxtypes.h"
+
+       sed -i '292i\
+  \n//CADNA operator overload\
+  template<typename T>\
+    constexpr bool is_special_fp_v =\
+    std::is_same_v<T, double_st> || std::is_same_v<T, float_st>;\
+\
+  template<typename FP, typename FP2,\
+         std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>\
+  inline __host__ __device__ constexpr cxsmpl<FP>\
+  operator+( const cxsmpl<FP>& a, const cxsmpl<FP2>& b )\
+  {\
+    return cxsmpl<FP>( a.real() + b.real(), a.imag() + b.imag() );\
+  }\
+\
+  template<typename FP, typename FP2,\
+          std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>\
+   inline __host__ __device__ constexpr cxsmpl<FP>\
+   operator-( const cxsmpl<FP>& a, const cxsmpl<FP2>& b )\
+  {\
+    return cxsmpl<FP>( a.real() - b.real(), a.imag() - b.imag() );\
+  }\
+\
+  template<typename FP, typename FP2,\
+          std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>\
+   inline __host__ __device__ constexpr cxsmpl<FP>\
+   operator*( const cxsmpl<FP>& a, const cxsmpl<FP2>& b )\
+  {\
+    return cxsmpl<FP>( a.real() * b.real() - a.imag() * b.imag(), a.imag() * b.real() + a.real() * b.imag() );\
+  }\
+\
+  template<typename FP, typename FP2,\
+            std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>\
+     inline __host__ __device__ constexpr cxsmpl<FP>\
+     operator/( const cxsmpl<FP>& a, const cxsmpl<FP2>& b )\
+  {\
+    FP bnorm = b.real() * b.real() + b.imag() * b.imag();\
+    return cxsmpl<FP>( ( a.real() * b.real() + a.imag() * b.imag() ) / bnorm,\
+                       ( a.imag() * b.real() - a.real() * b.imag() ) / bnorm );\
+  }' ../../src/mgOnGpuCxtypes.h
+    fi
+else
+  echo "../../src/mgOnGpuCxtypes.h does not exist"
+fi
 
            #changes in mgOnGpuConfig.h
 #add cadna.h at 100th line if there is no cadna.h
