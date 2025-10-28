@@ -54,7 +54,7 @@ compile_and_run () {
             if [ "$3" == "fortran" ]
                 then
             # Compile
-                { time  make -j12 OPTFLAGS=" -O3" CUDA_HOME="" AVX=none hasCurand=0 USEOPENMP=1; } 2>> $save_time #append the error of make
+                { time  make -j12 OPTFLAGS=" -O3" CUDA_HOME="" AVX=none HASCURAND=hasNoCurand USEOPENMP=1; } 2>> $save_time #append the error of make
                 echo   >> $save_time
                 echo  "run time" >> $save_time
                 echo  "run time" 
@@ -62,7 +62,7 @@ compile_and_run () {
                 { time ./madevent_cpp < $CURRENT_DIR/input_app.txt > "f"$save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
             else
             # Compile
-                { time  make -j12  OPTFLAGS=" -O3" CUDA_HOME="" AVX=none hasCurand=0 USEOPENMP=1 ; } 2>> $save_time
+                { time  make -j12  OPTFLAGS=" -O3" CUDA_HOME="" AVX=none HASCURAND=hasNoCurand USEOPENMP=1 ; } 2>> $save_time
                 echo   >> $save_time
                 echo  "run time" >> $save_time
                 echo  "run time" 
@@ -96,7 +96,7 @@ compile_and_run () {
         echo   >> $save_time    
         echo  "make time" >> $save_time
         echo  "make time" 
-        { time  make -j12 check_cpp.exe OPTFLAGS=" -O0 -g" CUDA_HOME="" AVX=none hasCurand=0 USEOPENMP=1; } 2>> $save_time
+        { time  make -j12 check_cpp.exe OPTFLAGS=" -O0 -g" CUDA_HOME="" AVX=none HASCURAND=hasNoCurand USEOPENMP=1; } 2>> $save_time
         echo   >> $save_time
 
         echo  "run time" >> $save_time
@@ -119,7 +119,7 @@ compile_and_run () {
         echo   >> $save_time    
         echo  "make time" >> $save_time
         echo  "make time" 
-        { time  make -j12 OPTFLAGS=" -O0 -g" AVX=none hasCurand=0 USEOPENMP=1 CUDA_HOME=""; } 2>> $save_time
+        { time  make -j12 OPTFLAGS=" -O0 -g" AVX=none HASCURAND=hasNoCurand USEOPENMP=1 CUDA_HOME=""; } 2>> $save_time
         echo   >> $save_time
 
         echo "Creating gdb_"$1".out file"
