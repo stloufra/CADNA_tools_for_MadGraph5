@@ -13,9 +13,8 @@ then
     echo "cadnaOpenmpCdebug is already in ../cudacpp.mk"
 else
     echo "putting -lcadnaOpenmpCdebug in ../cudacpp.mk"
-    sed -i 's/LIBFLAGS = -L$(LIBDIR) -l$(MG5AMC_COMMONLIB)/LIBFLAGS = -L$(LIBDIR) -l$(MG5AMC_COMMONLIB) -lcadnaOpenmpCdebug/g' ../cudacpp.mk
+    sed -i 's/-L$(LIBDIR) -l$(MG5AMC_COMMONLIB)/-L$(LIBDIR) -l$(MG5AMC_COMMONLIB) -lcadnaOpenmpCdebug -fopenmp/g' ../cudacpp.mk
 fi
-
                 # Change to ../makefile
 #in the line "LIBFLAGS = -L$(LIBDIR) -l$(MG5AMC_COMMONLIB)" append -lcadnaOpenmpCdebug
 #if there is no -lcadnaOpenmpCdebug in the file
