@@ -58,7 +58,7 @@ for l in lines:
         changes += 1
         
         
-    if "std::" in l and ("scientific" in l) == False:
+    if "std::" in l and ("scientific" in l) == False and ("std::endl" not in l) :
         #find the first occurence of std::
         s = l.find("std::") # this returns the index of the first character of the string
         #find the function name - string beetween std:: and (
