@@ -1,0 +1,25 @@
+#from within of the srcC
+
+../configure CXX=g++ --prefix=/usr/local/ --enable-fma CXXFLAGS="-fPIC -ftls-model=global-dynamic"
+
+../make install
+
+mkdir -p /tmp/cadna_build
+cd /tmp/cadna_build
+
+ar x /usr/local/lib/libcadnaOpenmpCdebug.a
+
+g++ -shared -fPIC -fopenmp -o libcadnaOpenmpCdebug.so \
+    libcadnaOpenmpCdebug_a-cadna_complex.o \
+    libcadnaOpenmpCdebug_a-cadna_convert.o \
+    libcadnaOpenmpCdebug_a-cadna_intr.o \
+    libcadnaOpenmpCdebug_a-cadna_math.o \
+    libcadnaOpenmpCdebug_a-cadna_type.o
+
+sudo cp libcadnaOpenmpCdebug.so /usr/local/lib/
+
+sudo ldconfig
+
+cd -
+rm -rf /tmp/cadna_build
+
