@@ -149,7 +149,7 @@ fi
                 #Changes in check_sa.cc and bridge
 echo
 echo "          cadnize_check_sa.py"
-python3 $CURRENT_DIR/cadnize_check_sa.py check_sa.cc
+python3 $CURRENT_DIR/cadnize_check_sa.py check_sa.cc 0
 
                 #Changes in check_sa.cc and bridge
 echo
