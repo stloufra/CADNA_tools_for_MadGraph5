@@ -1,7 +1,36 @@
 #!/bin/bash
 CURRENT_DIR=${0%/*}
 # echo $CURRENT_DIR
-
+# Display help message
+if [[ " $* " =~ " --help" ]] || [[ " $* " =~ " -h" ]]; then
+    echo "Usage: $(basename $0) [OPTIONS]"
+    echo
+    echo "This script configures and modifies source files for CADNA integration."
+    echo
+    echo "Options:"
+    echo "  exact_momenta      Make output of phase space picker exact numbers"
+    echo "                     Applies cadnize_exact_momenta.py to rambo.h"
+    echo
+    echo "  load_momenta       Load exact momenta from file (experimental)"
+    echo "                     Note: Does not work for now"
+    echo
+    echo "  CPPProcess         Add cout statements for amp_fp after function calls"
+    echo "                     Applies cadnize_cppprocess_cout_amp_fp to CPPProcess.cc"
+    echo
+    echo "  random_seed        Set random seed mode"
+    echo "                     Modifies check_sa.cc to use random seed"
+    echo
+    echo "  original_seed      Set original seed mode"
+    echo "                     Modifies check_sa.cc to use original seed"
+    echo
+    echo "  --help, -h         Display this help message and exit"
+    echo
+    echo "Examples:"
+    echo "  $(basename $0) exact_momenta random_seed"
+    echo "  $(basename $0) CPPProcess original_seed"
+    echo
+    exit 0
+fi
 #check if CPPProcess.cc exists
 
 
