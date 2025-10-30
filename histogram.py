@@ -6,7 +6,7 @@ import srcpy.momentumPloting as mpl
 
 if len(sys.argv) > 2 and (sys.argv[2] != "plotly" and sys.argv[2] != "both"):
     exit(
-        "Usage: python histogram.py <filename of ./check.exe -p -v output> <plotly or both or nothing(for matplotlib)>")
+        "Usage: python histogram.py <filename of ./check.exe -p -v output> <precision> <optimization> <plotly or both or nothing(for matplotlib)>")
 
 # open file gdb.out or one provided in argument
 if len(sys.argv) > 1:
@@ -33,6 +33,10 @@ cwd = os.getcwd()
 process = cwd.split("/")[-1]
 process = process.split("_")[-2] + "_" + process.split("_")[-1]
 print(process)
+
+#get the random number seed from the file name
+seed = sys.argv[1].split("_")[-1].split(".")[0]
+process += "_seed_" + seed
 
 # foward declaration
 # "Matrix element = "
