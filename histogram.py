@@ -81,8 +81,11 @@ momentum_fl = momentum.flatten()
 momentaPrecision_fl = momentaPrecision.flatten()
 
 if ((len(matrixElementPrecision_fl) != len(matrixElementPrecision)) or (len(matrix_element) != len(matrix_element_fl))):
-    exit("Number of matrix elements and number of matrix element precisions is not the same. file causing trouble: " +
-         sys.argv[1])
+    exit(
+        "Number of matrix elements and number of matrix element precisions is not the same after flating. file causing "
+        + "trouble: " + sys.argv[1])
+if((len(momentum[0])*4*len(matrixElementPrecision)) != len(momentum_fl)):
+    exit("There is not right amount of momenta given number of matrix elements. file causing trouble: " + sys.argv[1])
 
 print("Number of all momenta:                       " + str(len(momentaPrecision_fl)))
 print("Number of all momenta prec:                  " + str(len(momentum_fl)))
