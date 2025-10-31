@@ -5,21 +5,28 @@
 
 #file from argument:
 import sys
+import random
 if len(sys.argv) > 1:
     fileName = sys.argv[1]
 else:
     exit("No file name given")
     
 if len(sys.argv) > 2:
-    randomQ = sys.argv[2]
-    if randomQ == "True" or randomQ == "true" or randomQ == "1" or randomQ == "t" or randomQ == "T" or randomQ == "random":
+    if isinstance(sys.argv[2], int):
         randomQ = True
-    elif randomQ == "False" or randomQ == "false" or randomQ == "0" or randomQ == "f" or randomQ == "F" or randomQ == "original":
-        randomQ = False
+        rand_num = sys.argv[2]
+    if isinstance(rand_num, str):
+        randomQ = sys.argv[2]
+        if randomQ == "True" or randomQ == "true" or randomQ == "1" or randomQ == "t" or randomQ == "T" or randomQ == "random":
+            randomQ = True
+            rand_num = random.randint(0, 1_000_000)
+        elif randomQ == "False" or randomQ == "false" or randomQ == "0" or randomQ == "f" or randomQ == "F" or randomQ == "original":
+            randomQ = False
+        else:
+            exit("Second argument must be True or False or int")
 else:
-    exit("No argumnet given for random seed")
+    exit("No sensible argument given for random seed")
     
-#move every "$(LIBFLAGS)" to the end of the line in the file test.mak
 f = open(fileName, "r")
 
 #read lines
@@ -28,9 +35,8 @@ f.close()
 changes = 0
 
 i=0
-import random
 #get rand int
-rand_num = random.randint(0, 1_000_000)
+
 for l in lines:
     if "const unsigned long long seed = " in l:
         if randomQ == True:
