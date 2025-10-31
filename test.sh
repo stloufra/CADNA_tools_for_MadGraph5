@@ -10,10 +10,10 @@ CURRENT_DIR=${0%/*}
 # time of compilation and execution
 # number of errors
 # Error info in file gdb_stats.out
-
+iterations=10000
 config_file=../../src/mgOnGpuConfig.h
 save_run_output=gdb_run_output
-save_time=gdb_time.out
+save_time=gdb_time_"$iterations"_"$1"-O3_"$random_number".out
 
 #clean files
 rm -f $save_time
@@ -67,7 +67,7 @@ compile_and_run () {
                 echo  "run time" >> $save_time
                 echo  "run time" 
             # Run
-                { time ./check_cpp.exe 1000000 1 1 -p -v > $save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
+                { time ./check_cpp.exe $iterations 1 1 -p -v > $save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
             fi
 
         done
