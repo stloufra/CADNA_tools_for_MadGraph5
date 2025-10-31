@@ -33,8 +33,8 @@ for l in lines:
 
     if "typedef" in l and ("fptype" in l or "fptype2" in l):
         if not "_st" in l:
-            l = l.replace("float", "float_st")
-            l = l.replace("double", "float_st")
+            lines[i] = l.replace("float", "float_st")
+            lines[i] = l.replace("double", "float_st")
             changes += 1
         
     i=i+1
