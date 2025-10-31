@@ -1,8 +1,0 @@
-set pagination off
-break instability
-run
-while 1
-where
-cont
-end
-quit
