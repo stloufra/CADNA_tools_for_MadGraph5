@@ -138,23 +138,23 @@ sed -i 's/typedef double fptyp/typedef double_st fptyp/g' ../../src/mgOnGpuConfi
                 # move every $(LIBFLAGS)  and $(LINKLIBS) to the end of the line in ../cudacpp.mk and ../makefile
 echo
 echo "          cadnize_libflags.py"
-python3 $CURRENT_DIR/cadnize_libflags.py ../cudacpp.mk
+python3 $CURRENT_DIR/src_py/cadnize_libflags.py ../cudacpp.mk
 #check if ../makefile exists:
 if [ -f "../makefile" ]
 then
-    python3 $CURRENT_DIR/cadnize_libflags.py ../makefile_original.mk
+    python3 $CURRENT_DIR/src_py/cadnize_libflags.py ../makefile_original.mk
 fi
 
 
                 #Changes in check_sa.cc and bridge
 echo
 echo "          cadnize_check_sa.py"
-python3 $CURRENT_DIR/cadnize_check_sa.py check_sa.cc 0
+python3 $CURRENT_DIR/src_py/cadnize_check_sa.py check_sa.cc 0
 
                 #Changes in check_sa.cc and bridge
 echo
 echo "          cadnize_bridge.py"
-python3 $CURRENT_DIR/cadnize_bridge.py ../Bridge.h
+python3 $CURRENT_DIR/src_py/cadnize_bridge.py ../Bridge.h
 #TODO check if the bridge in the supprocess individual directory needs to be checked as well
 
 
@@ -165,17 +165,17 @@ echo "          cadnize_constexpr_replace.py"
 files=(check_sa.cc ../../src/HelAmps_sm.h CPPProcess.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc color_sum.cc testmisc.cc)
 for file in "${files[@]}"
 do
-    python3 $CURRENT_DIR/cadnize_constexpr_replace.py $file
+    python3 $CURRENT_DIR/src_py/cadnize_constexpr_replace.py $file
 done
                 #paste "\n" after every operator after every "=" in HelAmps_sm.h - make optional
-python3 $CURRENT_DIR/cadnize_expand_equations.py ../../src/HelAmps_sm.h
+python3 $CURRENT_DIR/src_py/cadnize_expand_equations.py ../../src/HelAmps_sm.h
 
 echo
 echo "          cadnize_std_replace.py"
 files=(../../src/mgOnGpuFptypes.h ../../src/HelAmps_sm.h ../CrossSectionKernels.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
 for file in "${files[@]}"
 do
-    python3  $CURRENT_DIR/cadnize_std_replace.py $file
+    python3  $CURRENT_DIR/src_py/cadnize_std_replace.py $file
 done
 
 
@@ -185,15 +185,15 @@ done
 if [[ " $* " =~ " exact_momenta" ]]; then
     echo
     echo "          cadnize_exact_momenta.py"
-    python3 $CURRENT_DIR/cadnize_exact_momenta.py ../../src/rambo.h
+    python3 $CURRENT_DIR/src_py/cadnize_exact_momenta.py ../../src/rambo.h
 fi
 
 #does not work for now (dont know the contents of the read_momenta.h)
 if [[ " $* " =~ " load_momenta" ]]; then
     echo
     echo "          cadnize_exact_momenta.py + cadnize_exact_momenta_to_load_momenta.py"
-    python3 $CURRENT_DIR/cadnize_exact_momenta.py ../../src/rambo.h
-    python3 $CURRENT_DIR/cadnize_exact_momenta_to_load_momenta.py ../../src/rambo.h $CURRENT_DIR/read_momenta.h
+    python3 $CURRENT_DIR/src_py/cadnize_exact_momenta.py ../../src/rambo.h
+    python3 $CURRENT_DIR/src_py/cadnize_exact_momenta_to_load_momenta.py ../../src/rambo.h $CURRENT_DIR/read_momenta.h
 fi
 
 
@@ -201,20 +201,20 @@ fi
 if [[ " $* " =~ " CPPProcess" ]]; then
     echo
     echo "         cadnize_cppprocess_cout_amp_fp"
-    python3 $CURRENT_DIR/cadnize_CPPProcess_cout_amp_fp.py CPPProcess.cc
+    python3 $CURRENT_DIR/src_py/cadnize_CPPProcess_cout_amp_fp.py CPPProcess.cc
 fi
 
                 #set the seed random or original
 if [[ " $* " =~ " random_seed" ]]; then
     echo
     echo "         cadnize_seed_change.py random"
-    python3 $CURRENT_DIR/cadnize_seed_change.py check_sa.cc random
+    python3 $CURRENT_DIR/src_py/cadnize_seed_change.py check_sa.cc random
 fi
 
                 #set the seed random or original
 if [[ " $* " =~ " original_seed" ]]; then
     echo
     echo "         cadnize_seed_change.py original"
-    python3 $CURRENT_DIR/cadnize_seed_change.py check_sa.cc original
+    python3 $CURRENT_DIR/src_py/cadnize_seed_change.py check_sa.cc original
 fi
 

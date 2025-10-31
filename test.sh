@@ -30,7 +30,7 @@ compile_and_run () {
     #if $3 is O3
     if [ "$2" == "O3" ]
     then
-        for i in $(seq 1 1);
+        for i in $(seq "$3" "$3");
         do
             #optimalization -O3
             echo   >> $save_time
@@ -48,7 +48,7 @@ compile_and_run () {
             
             #randomize the seed
             # $CURRENT_DIR/Cadnize.sh exact_momenta random_seed CPPProcess
-
+            python3 $CURRENT_DIR/srcpy/cadnize_seed_change.py check_sa.cc random_number
             
 
             if [ "$3" == "fortran" ]
@@ -67,7 +67,7 @@ compile_and_run () {
                 echo  "run time" >> $save_time
                 echo  "run time" 
             # Run
-                { time ./check_cpp.exe 1000 8 1 -p -v > $save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
+                { time ./check_cpp.exe 1000000 1 1 -p -v > $save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
             fi
 
         done
