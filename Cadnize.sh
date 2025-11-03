@@ -71,7 +71,7 @@ then
     else
         echo "putting CADNA operator overload in ../../src/mgOnGpuCxtypes.h"
         echo "skipping this step for now"
-#       python3 $CURRENT_DIR/srcpy/cadnize_mgOnGpuCxtypes.py ../../src/mgOnGpuCxtypes.h
+       python3 $CURRENT_DIR/srcpy/cadnize_mgOnGpuCxtypes.py ../../src/mgOnGpuCxtypes.h
     fi
 else
   echo "../../src/mgOnGpuCxtypes.h does not exist"

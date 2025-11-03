@@ -8,43 +8,83 @@ else:
 f = open(fileName, "r")
 
 operatorString = """
-//CADNA operator overload
-  template<typename T>
-    constexpr bool is_special_fp_v =
-    std::is_same_v<T, double_st> || std::is_same_v<T, float_st>;
-
-  template<typename FP, typename FP2,
-         std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
-  inline __host__ __device__ constexpr cxsmpl<FP>
-  operator+( const cxsmpl<FP>& a, const cxsmpl<FP2>& b )
-  {
-    return cxsmpl<FP>( a.real() + b.real(), a.imag() + b.imag() );
-  }
-
-  template<typename FP, typename FP2,
-          std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
-  inline __host__ __device__ constexpr cxsmpl<FP>
-  operator-( const cxsmpl<FP>& a, const cxsmpl<FP2>& b )
-  {
-    return cxsmpl<FP>( a.real() - b.real(), a.imag() - b.imag() );
-  }
-
-  template<typename FP, typename FP2,
-          std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
-  inline __host__ __device__ constexpr cxsmpl<FP>
-  operator*( const cxsmpl<FP>& a, const cxsmpl<FP2>& b )
-  {
-    return cxsmpl<FP>( a.real() * b.real() - a.imag() * b.imag(), a.imag() * b.real() + a.real() * b.imag() );
-  }
-
-  template<typename FP, typename FP2,
+  //CADNA operator overload
+  template <typename T>
+  constexpr bool is_special_fp_v =
+      std::is_same_v<T, double_st> || std::is_same_v<T, float_st>;
+  
+  template <typename FP, typename FP2,
             std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
-  inline __host__ __device__ constexpr cxsmpl<FP>
-  operator/( const cxsmpl<FP>& a, const cxsmpl<FP2>& b )
+  inline constexpr auto
+  operator+(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
   {
-    FP bnorm = b.real() * b.real() + b.imag() * b.imag();
-    return cxsmpl<FP>( ( a.real() * b.real() + a.imag() * b.imag() ) / bnorm,
-                       ( a.imag() * b.real() - a.real() * b.imag() ) / bnorm );
+      if constexpr (is_special_fp_v<FP>)
+      {
+          cxsmpl<FP> b_temp = b;
+          return cxsmpl<FP>(a.real() + b_temp.real(), a.imag() + b_temp.imag());
+      }
+      else
+      {
+          cxsmpl<FP2> a_temp = a;
+          return cxsmpl<FP2>(a_temp.real() + b.real(), a_temp.imag() + b.imag());
+      }
+  }
+  
+  template <typename FP, typename FP2,
+            std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+  inline constexpr auto
+  operator-(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
+  {
+      if constexpr (is_special_fp_v<FP>)
+      {
+          cxsmpl<FP> b_temp = b;
+          return cxsmpl<FP>(a.real() - b_temp.real(), a.imag() - b_temp.imag());
+      }
+      else
+      {
+          cxsmpl<FP2> a_temp = a;
+          return cxsmpl<FP2>(a_temp.real() - b.real(), a_temp.imag() - b.imag());
+      }
+  }
+  
+  template <typename FP, typename FP2,
+            std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+  inline constexpr auto
+  operator*(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
+  {
+      if constexpr (is_special_fp_v<FP>)
+      {
+          cxsmpl<FP> b_temp = b;
+          return cxsmpl<FP>(a.real() * b_temp.real() - a.imag() * b_temp.imag(),
+                            a.imag() * b_temp.real() + a.real() * b_temp.imag());
+      }
+      else
+      {
+          cxsmpl<FP2> a_temp = a;
+          return cxsmpl<FP2>(a_temp.real() * b.real() - a_temp.imag() * b.imag(),
+                             a_temp.imag() * b.real() + a_temp.real() * b.imag());
+      }
+  }
+  
+  template <typename FP, typename FP2,
+            std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+  inline constexpr auto
+  operator/(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
+  {
+      if constexpr (is_special_fp_v<FP>)
+      {
+          cxsmpl<FP> b_temp = b;
+          FP bnorm = b_temp.real() * b_temp.real() + b_temp.imag() * b_temp.imag();
+          return cxsmpl<FP>((a.real() * b_temp.real() + a.imag() * b_temp.imag()) / bnorm,
+                            (a.imag() * b_temp.real() - a.real() * b_temp.imag()) / bnorm);
+      }
+      else
+      {
+          cxsmpl<FP2> a_temp = a;
+          FP2 bnorm = b.real() * b.real() + b.imag() * b.imag();
+          return cxsmpl<FP2>((a_temp.real() * b.real() + a_temp.imag() * b.imag()) / bnorm,
+                             (a_temp.imag() * b.real() - a_temp.real() * b.imag()) / bnorm);
+      }
   }
 """
 
