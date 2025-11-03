@@ -125,8 +125,7 @@ for file in "${files[@]}"
 do
     python3 $CURRENT_DIR/srcpy/cadnize_constexpr_replace.py $file
 done
-                #paste "\n" after every operator after every "=" in HelAmps_sm.h - make optional
-python3 $CURRENT_DIR/srcpy/cadnize_expand_equations.py ../../src/HelAmps_sm.h
+
 
 echo
 echo "          cadnize_std_replace.py"
@@ -136,6 +135,8 @@ do
     python3  $CURRENT_DIR/srcpy/cadnize_std_replace.py $file
 done
 
+                #paste "\n" after every operator after every "=" in HelAmps_sm.h - make optional
+python3 $CURRENT_DIR/srcpy/cadnize_expand_equations.py ../../src/HelAmps_sm.h
 
 #care for the additional options
 
