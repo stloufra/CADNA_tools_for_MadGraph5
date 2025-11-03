@@ -5,12 +5,12 @@ if len(sys.argv) > 1:
 else:
     exit("No file name given")
 if len(sys.argv) > 2:
-    if sys.argv[1] == 0:
+    if sys.argv[2] == "0":
         print("Cadna mode 0 cadna wont check for instabilities.")
-        cadnaMode = sys.argv[2]
-    elif sys.argv[1] == -1:
+        cadnaMode = int(sys.argv[2])
+    elif sys.argv[2] == "-1":
         print("Cadna mode 1 cadna will check for all instabilities.")
-        cadnaMode = sys.argv[2]
+        cadnaMode = int(sys.argv[2])
     else:
         print("Unknown cadna mode given assuming full analysis")
         cadnaMode = -1

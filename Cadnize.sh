@@ -85,7 +85,7 @@ then
     python3 $CURRENT_DIR/srcpy/cadnize_mgOnGpuConfig.py ../../src/mgOnGpuConfig.h
 fi
 
-           #changes in HelAmps.h - include cadna.h, #undef SIMD, typdefs to _st
+           #changes in HelAmps.h - double to fptype to prevent implicit conversion
 echo
 echo "          cadnize_HelAmps.py"
 if [ -f "../../src/HelAmps_sm.h" ]
