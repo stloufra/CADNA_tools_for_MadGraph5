@@ -70,8 +70,8 @@ then
         echo "CADNA operator overload is already in ../../src/mgOnGpuCxtypes.h"
     else
         echo "putting CADNA operator overload in ../../src/mgOnGpuCxtypes.h"
-
-       python3 $CURRENT_DIR/srcpy/cadnize_mgOnGpuCxtypes.py ../../src/mgOnGpuCxtypes.h
+        echo "skipping this step for now"
+#       python3 $CURRENT_DIR/srcpy/cadnize_mgOnGpuCxtypes.py ../../src/mgOnGpuCxtypes.h
     fi
 else
   echo "../../src/mgOnGpuCxtypes.h does not exist"
@@ -85,7 +85,13 @@ then
     python3 $CURRENT_DIR/srcpy/cadnize_mgOnGpuConfig.py ../../src/mgOnGpuConfig.h
 fi
 
-
+           #changes in HelAmps.h - include cadna.h, #undef SIMD, typdefs to _st
+echo
+echo "          cadnize_HelAmps.py"
+if [ -f "../../src/HelAmps_sm.h" ]
+then
+    python3 $CURRENT_DIR/srcpy/cadnize_HelAmps.py ../../src/HelAmps_sm.h
+fi
 
                 # move every $(LIBFLAGS)  and $(LINKLIBS) to the end of the line in ../cudacpp.mk and ../makefile
 echo
