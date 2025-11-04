@@ -24,10 +24,16 @@ for l in lines:
             changes += 1 
             
     if  "isnormal" in l:
-        if lines[i][:2] != "//":
+        if lines[i][:2] != "//" and not "using" in l:
             lines[i] = "//"+l
             l=lines[i]
             changes += 1 
+
+    if  "isfinite" in l:
+        if lines[i][:2] != "//" and not "using" in l:
+            lines[i] = "//"+l
+            l=lines[i]
+            changes += 1
             
     if "fp_show_class( const fptype& fp )" in l:
         #comment 9 more lines
@@ -58,7 +64,7 @@ for l in lines:
         changes += 1
         
         
-    if "std::" in l and ("scientific" in l) == False:
+    if "std::" in l and ("scientific" in l) == False :
         #find the first occurence of std::
         s = l.find("std::") # this returns the index of the first character of the string
         #find the function name - string beetween std:: and (
@@ -73,12 +79,13 @@ for l in lines:
         
         # print("Changing the line:\n",l)
         l = l.replace("std::", "")
+        l = l.replace("endl", "'\\n'")
         lines[i] = l
         changes += 1 
     i=i+1
 
-print(f"Changes in: {fileName} ", changes)
-        
+
+print(f"Changes in: {fileName:<30}\t{changes}")
 
 #insert using std::function after the last include
 i=0

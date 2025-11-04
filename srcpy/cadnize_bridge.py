@@ -31,8 +31,8 @@ for l in lines:
             changes += 1
             print('Added print_momenta_string after flagAbnormalMEs( m_hstMEs.data(), m_nevt ); in file '+fileName)
     i=i+1
-        
-print("Changes in: "+fileName+"\t\t"+str(changes))
+
+print(f"Changes in: {fileName:<30}\t{changes}")
 from tempfile import mkstemp
 from shutil import move, copymode
 from os import fdopen, remove

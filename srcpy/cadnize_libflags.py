@@ -16,26 +16,27 @@ i=0
 for l in lines:
     if "$(LIBFLAGS)" in l:
         # print("Changing the line:\n",l)
-        l = l.replace(" $(LIBFLAGS)", "")
-        l = l.replace("\n", "")
-        l = l + " $(LIBFLAGS)\n"
-        changes += 1
+        if not "$(LIBFLAGS)" in l[-len("$(LIBFLAGS)")-1:-1]:
+            l = l.replace(" $(LIBFLAGS)", "")
+            l = l.replace("\n", "")
+            l = l + " $(LIBFLAGS)\n"
+            changes += 1
         
         lines[i] = l
     
     if "$(LINKLIBS)" in l and ("; fi" in l ) == False:
         # print("Changing the line:\n",l)
-        l = l.replace(" $(LINKLIBS)", "")
-        l = l.replace("\n", "")
-        l = l + " $(LINKLIBS)\n"
-        changes += 1
+        if not "$(LINKLIBS)" in l[-len("$(LINKLIBS)")-1:-1]:
+            l = l.replace(" $(LINKLIBS)", "")
+            l = l.replace("\n", "")
+            l = l + " $(LINKLIBS)\n"
+            changes += 1
         
         lines[i] = l
     
     
     i=i+1
-        
-print("Changes in: "+fileName+"\t\t"+str(changes))
+print(f"Changes in: {fileName:<30}\t{changes}")
 from tempfile import mkstemp
 from shutil import move, copymode
 from os import fdopen, remove

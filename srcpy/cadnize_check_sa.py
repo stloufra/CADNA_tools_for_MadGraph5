@@ -4,6 +4,20 @@ if len(sys.argv) > 1:
     fileName = sys.argv[1]
 else:
     exit("No file name given")
+if len(sys.argv) > 2:
+    if sys.argv[2] == "0":
+        print("Cadna mode 0 cadna wont check for instabilities.")
+        cadnaMode = int(sys.argv[2])
+    elif sys.argv[2] == "-1":
+        print("Cadna mode 1 cadna will check for all instabilities.")
+        cadnaMode = int(sys.argv[2])
+    else:
+        print("Unknown cadna mode given assuming full analysis")
+        cadnaMode = -1
+else:
+    print("No cadnaMode given assuming full analysis")
+    cadnaMode = -1
+
 #move every "$(LIBFLAGS)" to the end of the line in the file test.mak
 f = open(fileName, "r")
 
@@ -25,9 +39,9 @@ for l in lines:
             changes += 1
     #putting cadna_init(-1); in main
     if "main( int argc, char** argv )" in l:
-        if not "cadna_init(-1);" in lines[i+2] :
+        if not "cadna_init" in lines[i+2] :
             changes += 1
-            lines.insert(i+2, "cadna_init(-1);\n")
+            lines.insert(i+2, f"cadna_init({cadnaMode});\n")
             # print("Added cadna_init(-1); after main( int argc, char** argv )")
             changes += 1
             lines.insert(i+3, "double avg_matrixElementPrecision = 0;\n")
@@ -38,9 +52,9 @@ for l in lines:
     
     #putting cadna_end(); before return in main
     if "return 0;" in l:
-        if not "cadna_end();" in lines[i-1] :
+        if not "cadna_end();" in lines[i-1] and not "cadna_end();" in lines[i-2]  :
             changes += 1
-            lines.insert(i-1, "cadna_end();\n")
+            lines.insert(i, "  cadna_end();\n")
             # print("Added cadna_end(); before return 0;")
     
     #comment out:
@@ -73,8 +87,8 @@ for l in lines:
             addeQ = True
             print("\n\nAdded momentum precision cout\n\n")
     i=i+1
-        
-print("Changes in: "+fileName+"\t\t"+str(changes))
+
+print(f"Changes in: {fileName:<30}\t{changes}")
 from tempfile import mkstemp
 from shutil import move, copymode
 from os import fdopen, remove

@@ -1,0 +1,6 @@
+pp_train.out
+**/copyToMGloc.sh
+histograms/*
+.idea/*
+.venv/*
+**/__pycache__/*

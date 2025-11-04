@@ -1,6 +1,5 @@
 #!/bin/bash
 export AVX=none
-export RNDGEN=hasNoCurand
 export CUDA_HOME=""
 
 CURRENT_DIR=${0%/*}
@@ -11,10 +10,10 @@ CURRENT_DIR=${0%/*}
 # time of compilation and execution
 # number of errors
 # Error info in file gdb_stats.out
-
+iterations=10000
 config_file=../../src/mgOnGpuConfig.h
 save_run_output=gdb_run_output
-save_time=gdb_time.out
+save_time=gdb_time_"$iterations"_"$1"-O3_"$random_number".out
 
 #clean files
 rm -f $save_time
@@ -31,7 +30,7 @@ compile_and_run () {
     #if $3 is O3
     if [ "$2" == "O3" ]
     then
-        for i in $(seq 1 1);
+        for i in $(seq "$3" "$3");
         do
             #optimalization -O3
             echo   >> $save_time
@@ -49,13 +48,13 @@ compile_and_run () {
             
             #randomize the seed
             # $CURRENT_DIR/Cadnize.sh exact_momenta random_seed CPPProcess
-
+            python3 $CURRENT_DIR/srcpy/cadnize_seed_change.py check_sa.cc random_number
             
 
             if [ "$3" == "fortran" ]
                 then
             # Compile
-                { time  make -j12 OPTFLAGS=" -O3" CUDA_HOME="" AVX=none RNDGEN=hasNoCurand; } 2>> $save_time
+                { time  make -j12 OPTFLAGS=" -O3" CUDA_HOME="" AVX=none HASCURAND=hasNoCurand USEOPENMP=1; } 2>> $save_time #append the error of make
                 echo   >> $save_time
                 echo  "run time" >> $save_time
                 echo  "run time" 
@@ -63,13 +62,12 @@ compile_and_run () {
                 { time ./madevent_cpp < $CURRENT_DIR/input_app.txt > "f"$save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
             else
             # Compile
-                { time  make -j12  OPTFLAGS=" -O3" CUDA_HOME="" AVX=none RNDGEN=hasNoCurand; } 2>> $save_time
-                # { time  make -j12 check.exe OPTFLAGS=" -O3" CUDA_HOME="" AVX=none RNDGEN=hasNoCurand; } 2>> $save_time
+                { time  make -j12  OPTFLAGS=" -O3" CUDA_HOME="" AVX=none HASCURAND=hasNoCurand USEOPENMP=1 ; } 2>> $save_time
                 echo   >> $save_time
                 echo  "run time" >> $save_time
                 echo  "run time" 
             # Run
-                { time ./check.exe 1000 8 1 -p -v > $save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
+                { time ./check_cpp.exe $iterations 1 1 -p -v > $save_run_output"_"$1"-O3_"$random_number".out" ; } 2>> $save_time
             fi
 
         done
@@ -92,13 +90,13 @@ compile_and_run () {
         #optimalization -O0
         echo   >> $save_time
         echo  "OPTFLAGS = -O0 -g" >> $save_time
-        echo  "OPTFLAGS = -O0 -g" 
+        echo  "OPTFLAGS = -O0 -g"
 
         make distclean
         echo   >> $save_time    
         echo  "make time" >> $save_time
         echo  "make time" 
-        { time  make -j12 check.exe OPTFLAGS=" -O0 -g" CUDA_HOME="" AVX=none RNDGEN=hasNoCurand; } 2>> $save_time
+        { time  make -j12 check_cpp.exe OPTFLAGS=" -O0 -g" CUDA_HOME="" AVX=none HASCURAND=hasNoCurand USEOPENMP=1; } 2>> $save_time
         echo   >> $save_time
 
         echo  "run time" >> $save_time
@@ -121,8 +119,7 @@ compile_and_run () {
         echo   >> $save_time    
         echo  "make time" >> $save_time
         echo  "make time" 
-        { time  make -j12 OPTFLAGS=" -O0 -g" AVX=none RNDGEN=hasNoCurand CUDA_HOME=""; } 2>> $save_time
-        # { time  make -j12 check.exe OPTFLAGS=" -O0 -g" AVX=none RNDGEN=hasNoCurand CUDA_HOME=""; } 2>> $save_time # if make allows making only check.exe it speeds up the compilation
+        { time  make -j12 OPTFLAGS=" -O0 -g" AVX=none HASCURAND=hasNoCurand USEOPENMP=1 CUDA_HOME=""; } 2>> $save_time
         echo   >> $save_time
 
         echo "Creating gdb_"$1".out file"

@@ -1,7 +1,36 @@
 #!/bin/bash
 CURRENT_DIR=${0%/*}
-# echo $CURRENT_DIR
-
+ echo $CURRENT_DIR
+# Display help message
+if [[ " $* " =~ " --help" ]] || [[ " $* " =~ " -h" ]]; then
+    echo "Usage: $(basename $0) [OPTIONS]"
+    echo
+    echo "This script configures and modifies source files for CADNA integration."
+    echo
+    echo "Options:"
+    echo "  exact_momenta      Make output of phase space picker exact numbers"
+    echo "                     Applies cadnize_exact_momenta.py to rambo.h"
+    echo
+    echo "  load_momenta       Load exact momenta from file (experimental)"
+    echo "                     Note: Does not work for now"
+    echo
+    echo "  CPPProcess         Add cout statements for amp_fp after function calls"
+    echo "                     Applies cadnize_cppprocess_cout_amp_fp to CPPProcess.cc"
+    echo
+    echo "  random_seed        Set random seed mode"
+    echo "                     Modifies check_sa.cc to use random seed"
+    echo
+    echo "  original_seed      Set original seed mode"
+    echo "                     Modifies check_sa.cc to use original seed"
+    echo
+    echo "  --help, -h         Display this help message and exit"
+    echo
+    echo "Examples:"
+    echo "  $(basename $0) exact_momenta random_seed"
+    echo "  $(basename $0) CPPProcess original_seed"
+    echo
+    exit 0
+fi
 #check if CPPProcess.cc exists
 
 
@@ -13,113 +42,138 @@ then
     echo "cadnaOpenmpCdebug is already in ../cudacpp.mk"
 else
     echo "putting -lcadnaOpenmpCdebug in ../cudacpp.mk"
-    sed -i 's/LIBFLAGS = -L$(LIBDIR) -l$(MG5AMC_COMMONLIB)/LIBFLAGS = -L$(LIBDIR) -l$(MG5AMC_COMMONLIB) -lcadnaOpenmpCdebug/g' ../cudacpp.mk
+    sed -i 's/-L$(LIBDIR) -l$(MG5AMC_COMMONLIB)/-L$(LIBDIR) -l$(MG5AMC_COMMONLIB) -lcadnaOpenmpCdebug -fopenmp/g' ../cudacpp.mk
 fi
-
                 # Change to ../makefile
 #in the line "LIBFLAGS = -L$(LIBDIR) -l$(MG5AMC_COMMONLIB)" append -lcadnaOpenmpCdebug
 #if there is no -lcadnaOpenmpCdebug in the file
 #check if ../makefile exists:
-if [ -f "../makefile" ]
+#sed -i 's/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L$(LIBDIR) -ldhelas -ldsample -lmodel -lgeneric -lpdf -lcernlib $(llhapdf) -lbias/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L$(LIBDIR) -ldhelas -ldsample -lmodel -lgeneric -lpdf -lcernlib $(llhapdf) -lbias -lcadnaOpenmpCdebug/g' ../makefile_original.mk
+if [ -f "../makefile_original.mk" ]
 then
-    if grep -Fq cadnaOpenmpCdebug ../makefile
+    if grep -Fq cadnaOpenmpCdebug ../makefile_original.mk
     then
-        echo "cadnaOpenmpCdebug is already in ../makefile"
+        echo "cadnaOpenmpCdebug is already in ../makefile_original.mk"
     else
-        echo "putting -lcadnaOpenmpCdebug in ../makefile"
-        sed -i 's/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L$(LIBDIR) -ldhelas -ldsample -lmodel -lgeneric -lpdf -lcernlib $(llhapdf) -lbias/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L$(LIBDIR) -ldhelas -ldsample -lmodel -lgeneric -lpdf -lcernlib $(llhapdf) -lbias -lcadnaOpenmpCdebug/g' ../makefile
+        echo "putting -lcadnaOpenmpCdebug in ../makefile_original.mk"
+
+        sed -i 's/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L\.\.\/\.\.\/lib\/ -ldhelas -ldsample -lmodel -lgeneric -lpdf -lgammaUPC -lcernlib $(llhapdf) -lbias/LINKLIBS = $(LINK_MADLOOP_LIB) $(LINK_LOOP_LIBS) -L..\/..\/lib\/ -ldhelas -ldsample -lmodel -lgeneric -lpdf -lgammaUPC -lcernlib $(llhapdf) -lbias -lcadnaOpenmpCdebug/g' ../makefile_original.mk
     fi
 fi
+
+
+          #add missing definition for operators on custom complex types
+if [ -f "../../src/mgOnGpuCxtypes.h" ]
+then
+    if grep -Fq "CADNA operator overload" ../../src/mgOnGpuCxtypes.h
+    then
+        echo "CADNA operator overload is already in ../../src/mgOnGpuCxtypes.h"
+    else
+        echo "putting CADNA operator overload in ../../src/mgOnGpuCxtypes.h"
+        echo "skipping this step for now"
+       python3 $CURRENT_DIR/srcpy/cadnize_mgOnGpuCxtypes.py ../../src/mgOnGpuCxtypes.h
+    fi
+else
+  echo "../../src/mgOnGpuCxtypes.h does not exist"
+fi
+
+           #changes in mgOnGpuConfig.h - #include cadna.h, #undef SIMD, typdefs to _st
+echo
+echo "          cadnize_mgOnGpuConfig.py"
+if [ -f "../../src/mgOnGpuConfig.h" ]
+then
+    python3 $CURRENT_DIR/srcpy/cadnize_mgOnGpuConfig.py ../../src/mgOnGpuConfig.h
+fi
+
+           #changes in HelAmps.h - double to fptype to prevent implicit conversion
+echo
+echo "          cadnize_HelAmps.py"
+if [ -f "../../src/HelAmps_sm.h" ]
+then
+    python3 $CURRENT_DIR/srcpy/cadnize_HelAmps.py ../../src/HelAmps_sm.h
+fi
+
                 # move every $(LIBFLAGS)  and $(LINKLIBS) to the end of the line in ../cudacpp.mk and ../makefile
 echo
 echo "          cadnize_libflags.py"
-python3 $CURRENT_DIR/cadnize_libflags.py ../cudacpp.mk
+python3 $CURRENT_DIR/srcpy/cadnize_libflags.py ../cudacpp.mk
 #check if ../makefile exists:
-if [ -f "../makefile" ]
+if [ -f "../makefile_original.mk" ]
 then
-    python3 $CURRENT_DIR/cadnize_libflags.py ../makefile
+    python3 $CURRENT_DIR/srcpy/cadnize_libflags.py ../makefile_original.mk
 fi
-
-
-                #changes in mgOnGpuConfig.h
-#add cadna.h at 100th line if there is no cadna.h
-#if there is no -lcadnaOpenmpCdebug in the file
-if grep -Fq cadna.h ../../src/mgOnGpuConfig.h
-then
-    echo "cadna.h is already in mgOnGpuConfig.h"
-else
-    sed -i '100i #include <cadna.h>' ../../src/mgOnGpuConfig.h
-fi
-#if there is no #undef MGONGPU_CPPSIMD in the file
-if grep -Fq 'undef MGONGPU_CPPSIMD //for CADNA' ../../src/mgOnGpuConfig.h
-then
-    echo "#undef MGONGPU_CPPSIMD is already in mgOnGpuConfig.h"
-else
-    sed -i '177i #undef MGONGPU_CPPSIMD //for CADNA' ../../src/mgOnGpuConfig.h
-fi
-#change "typedef double fptyp to typedef double_st fptyp" in mgOnGpuConfig.h
-sed -i 's/typedef double fptyp/typedef double_st fptyp/g' ../../src/mgOnGpuConfig.h
 
 
                 #Changes in check_sa.cc and bridge
 echo
 echo "          cadnize_check_sa.py"
-python3 $CURRENT_DIR/cadnize_check_sa.py check_sa.cc
-python3 $CURRENT_DIR/cadnize_bridge.py ../Bridge.h
+python3 $CURRENT_DIR/srcpy/cadnize_check_sa.py check_sa.cc 0
 
-                #repair the std::fun() error, comment some functions and add some castings to (double)
+                #Changes in check_sa.cc and bridge
 echo
-echo "          cadnize_std_replace.py"
-files=(../../src/mgOnGpuFptypes.h ../../src/HelAmps_sm.h ../CrossSectionKernels.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
-for file in "${files[@]}"
-do
-    python3  $CURRENT_DIR/cadnize_std_replace.py $file
-done
+echo "          cadnize_bridge.py"
+python3 $CURRENT_DIR/srcpy/cadnize_bridge.py ../Bridge.h
+#TODO check if the bridge in the supprocess individual directory needs to be checked as well
 
 
                 #repair the constexpr fptype and volatile fptype errors
 echo
 echo "          cadnize_constexpr_replace.py"
 #  loop over list of files
-files=(check_sa.cc ../../src/HelAmps_sm.h CPPProcess.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
+files=(check_sa.cc ../../src/HelAmps_sm.h CPPProcess.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc color_sum.cc testmisc.cc)
 for file in "${files[@]}"
 do
-    python3 $CURRENT_DIR/cadnize_constexpr_replace.py $file
+    python3 $CURRENT_DIR/srcpy/cadnize_constexpr_replace.py $file
 done
 
 
+echo
+echo "          cadnize_std_replace.py"
+files=(../../src/mgOnGpuFptypes.h ../../src/HelAmps_sm.h ../CrossSectionKernels.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
+for file in "${files[@]}"
+do
+    python3  $CURRENT_DIR/srcpy/cadnize_std_replace.py $file
+done
+
                 #paste "\n" after every operator after every "=" in HelAmps_sm.h - make optional
-python3 $CURRENT_DIR/cadnize_expand_equations.py ../../src/HelAmps_sm.h
+python3 $CURRENT_DIR/srcpy/cadnize_expand_equations.py ../../src/HelAmps_sm.h
 
-
- #change this
-                #Make output of phase space picker exact numbers
-if [ "$1" == "exact_momenta" ] ||  [ "$2" == "exact_momenta" ] ||  [ "$3" == "exact_momenta" ] ||  [ "$4" == "exact_momenta" ] || [ "$5" == "exact_momenta" ] ||  [ "$6" == "exact_momenta" ] ||  [ "$7" == "exact_momenta" ] ||  [ "$8" == "exact_momenta" ] ||  [ "$9" == "exact_momenta" ] ||  [ "${10}" == "exact_momenta" ] ||  [ "${11}" == "exact_momenta" ] ||  [ "${12}" == "exact_momenta" ] ||  [ "${13}" == "exact_momenta" ] ||  [ "${14}" == "exact_momenta" ] ||  [ "${15}" == "exact_momenta" ] ||  [ "${16}" == "exact_momenta" ] ||  [ "${17}" == "exact_momenta" ] ||  [ "${18}" == "exact_momenta" ] ||  [ "${19}" == "exact_momenta" ] ||  [ "${20}" == "exact_momenta" ] ||  [ "${21}" == "exact_momenta" ] ||  [ "${22}" == "exact_momenta" ] ||  [ "${23}" == "exact_momenta" ] ||  [ "${24}" == "exact_momenta" ] ||  [ "${25}" == "exact_momenta" ] ||  [ "${26}" == "exact_momenta" ] ||  [ "${27}" == "exact_momenta" ] ||  [ "${28}" == "exact_momenta" ] ||  [ "${29}" == "exact_momenta" ] ||  [ "${30}" == "exact_momenta" ] ||  [ "${31}" == "exact_momenta" ] ||  [ "${32}" == "exact_momenta" ] ||  [ "${33}" == "exact_momenta" ] ||  [ "${34}" == "exact_momenta" ] ||  [ "${35}" == "exact_momenta" ] ||  [ "${36}" == "exact_momenta" ] ||  [ "${37}" == "exact_momenta" ] ||  [ "${38}" == "exact_momenta" ] ||  [ "${39}" == "exact_momenta" ] 
-then
-    python3 $CURRENT_DIR/cadnize_exact_momenta.py ../../src/rambo.h
-fi
+#care for the additional options
 
                 #Make output of phase space picker exact numbers
-if [ "$1" == "load_momenta" ] ||  [ "$2" == "load_momenta" ] ||  [ "$3" == "load_momenta" ] || [ "$4" == "load_momenta" ] || [ "$5" == "load_momenta" ] ||  [ "$6" == "load_momenta" ] ||  [ "$7" == "load_momenta" ] ||  [ "$8" == "load_momenta" ] ||  [ "$9" == "load_momenta" ] ||  [ "${10}" == "load_momenta" ] ||  [ "${11}" == "load_momenta" ] ||  [ "${12}" == "load_momenta" ] ||  [ "${13}" == "load_momenta" ] ||  [ "${14}" == "load_momenta" ] ||  [ "${15}" == "load_momenta" ] ||  [ "${16}" == "load_momenta" ] ||  [ "${17}" == "load_momenta" ] ||  [ "${18}" == "load_momenta" ] ||  [ "${19}" == "load_momenta" ] ||  [ "${20}" == "load_momenta" ] ||  [ "${21}" == "load_momenta" ] ||  [ "${22}" == "load_momenta" ] ||  [ "${23}" == "load_momenta" ] ||  [ "${24}" == "load_momenta" ] ||  [ "${25}" == "load_momenta" ] ||  [ "${26}" == "load_momenta" ] ||  [ "${27}" == "load_momenta" ] ||  [ "${28}" == "load_momenta" ] ||  [ "${29}" == "load_momenta" ] ||  [ "${30}" == "load_momenta" ] ||  [ "${31}" == "load_momenta" ] ||  [ "${32}" == "load_momenta" ] ||  [ "${33}" == "load_momenta" ] ||  [ "${34}" == "load_momenta" ] ||  [ "${35}" == "load_momenta" ] ||  [ "${36}" == "load_momenta" ] ||  [ "${37}" == "load_momenta" ] ||  [ "${38}" == "load_momenta" ] || [ "$1" == "read_momenta" ] ||  [ "$2" == "read_momenta" ] || [ "$3" == "read_momenta" ] || [ "$4" == "read_momenta" ] || [ "$5" == "read_momenta" ] ||  [ "$6" == "read_momenta" ] ||  [ "$7" == "read_momenta" ] ||  [ "$8" == "read_momenta" ] ||  [ "$9" == "read_momenta" ] ||  [ "${10}" == "read_momenta" ] ||  [ "${11}" == "read_momenta" ] ||  [ "${12}" == "read_momenta" ] ||  [ "${13}" == "read_momenta" ] ||  [ "${14}" == "read_momenta" ] ||  [ "${15}" == "read_momenta" ] ||  [ "${16}" == "read_momenta" ] ||  [ "${17}" == "read_momenta" ] ||  [ "${18}" == "read_momenta" ] ||  [ "${19}" == "read_momenta" ] ||  [ "${20}" == "read_momenta" ] ||  [ "${21}" == "read_momenta" ] ||  [ "${22}" == "read_momenta" ] ||  [ "${23}" == "read_momenta" ] ||  [ "${24}" == "read_momenta" ] ||  [ "${25}" == "read_momenta" ] ||  [ "${26}" == "read_momenta" ] ||  [ "${27}" == "read_momenta" ] ||  [ "${28}" == "read_momenta" ] ||  [ "${29}" == "read_momenta" ] ||  [ "${30}" == "read_momenta" ] ||  [ "${31}" == "read_momenta" ] ||  [ "${32}" == "read_momenta" ] ||  [ "${33}" == "read_momenta" ] ||  [ "${34}" == "read_momenta" ] ||  [ "${35}" == "read_momenta" ] ||  [ "${36}" == "read_momenta" ] ||  [ "${37}" == "read_momenta" ] ||  [ "${38}" == "read_momenta" ] 
-then
-    python3 $CURRENT_DIR/cadnize_exact_momenta.py ../../src/rambo.h
-    python3 $CURRENT_DIR/cadnize_exact_momenta_to_load_momenta.py ../../src/rambo.h $CURRENT_DIR/read_momenta.h
+if [[ " $* " =~ " exact_momenta" ]]; then
+    echo
+    echo "          cadnize_exact_momenta.py"
+    python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta.py ../../src/rambo.h
 fi
+
+#does not work for now (dont know the contents of the read_momenta.h)
+if [[ " $* " =~ " load_momenta" ]]; then
+    echo
+    echo "          cadnize_exact_momenta.py + cadnize_exact_momenta_to_load_momenta.py"
+    python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta.py ../../src/rambo.h
+    python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta_to_load_momenta.py ../../src/rambo.h $CURRENT_DIR/read_momenta.h
+fi
+
 
                 #cout every amp_fp after a function call
-if [ "$1" == "CPPProcess" ] ||  [ "$2" == "CPPProcess" ] ||  [ "$3" == "CPPProcess" ] || [ "$4" == "CPPProcess" ] || [ "$5" == "CPPProcess" ] ||  [ "$6" == "CPPProcess" ] ||  [ "$7" == "CPPProcess" ] ||  [ "$8" == "CPPProcess" ] ||  [ "$9" == "CPPProcess" ] ||  [ "${10}" == "CPPProcess" ] ||  [ "${11}" == "CPPProcess" ] ||  [ "${12}" == "CPPProcess" ] ||  [ "${13}" == "CPPProcess" ] ||  [ "${14}" == "CPPProcess" ] ||  [ "${15}" == "CPPProcess" ] ||  [ "${16}" == "CPPProcess" ] ||  [ "${17}" == "CPPProcess" ] ||  [ "${18}" == "CPPProcess" ] ||  [ "${19}" == "CPPProcess" ] ||  [ "${20}" == "CPPProcess" ] ||  [ "${21}" == "CPPProcess" ] ||  [ "${22}" == "CPPProcess" ] ||  [ "${23}" == "CPPProcess" ] ||  [ "${24}" == "CPPProcess" ] ||  [ "${25}" == "CPPProcess" ] ||  [ "${26}" == "CPPProcess" ] ||  [ "${27}" == "CPPProcess" ] ||  [ "${28}" == "CPPProcess" ] ||  [ "${29}" == "CPPProcess" ] ||  [ "${30}" == "CPPProcess" ] ||  [ "${31}" == "CPPProcess" ] ||  [ "${32}" == "CPPProcess" ] ||  [ "${33}" == "CPPProcess" ] ||  [ "${34}" == "CPPProcess" ] ||  [ "${35}" == "CPPProcess" ] ||  [ "${36}" == "CPPProcess" ] ||  [ "${37}" == "CPPProcess" ] ||  [ "${38}" == "CPPProcess" ] ||  [ "${39}" == "CPPProcess" ] 
-then
-    python3 $CURRENT_DIR/cadnize_CPPProcess_cout_amp_fp.py CPPProcess.cc
+if [[ " $* " =~ " CPPProcess" ]]; then
+    echo
+    echo "         cadnize_cppprocess_cout_amp_fp"
+    python3 $CURRENT_DIR/srcpy/cadnize_CPPProcess_cout_amp_fp.py CPPProcess.cc
 fi
 
                 #set the seed random or original
-if [ "$1" == "random_seed" ] ||  [ "$2" == "random_seed" ] ||  [ "$3" == "random_seed" ] || [ "$4" == "random_seed" ] || [ "$5" == "random_seed" ] ||  [ "$6" == "random_seed" ] ||  [ "$7" == "random_seed" ] ||  [ "$8" == "random_seed" ] ||  [ "$9" == "random_seed" ] ||  [ "${10}" == "random_seed" ] ||  [ "${11}" == "random_seed" ] ||  [ "${12}" == "random_seed" ] ||  [ "${13}" == "random_seed" ] ||  [ "${14}" == "random_seed" ] ||  [ "${15}" == "random_seed" ] ||  [ "${16}" == "random_seed" ] ||  [ "${17}" == "random_seed" ] ||  [ "${18}" == "random_seed" ] ||  [ "${19}" == "random_seed" ] ||  [ "${20}" == "random_seed" ] ||  [ "${21}" == "random_seed" ] ||  [ "${22}" == "random_seed" ] ||  [ "${23}" == "random_seed" ] ||  [ "${24}" == "random_seed" ] ||  [ "${25}" == "random_seed" ] ||  [ "${26}" == "random_seed" ] ||  [ "${27}" == "random_seed" ] ||  [ "${28}" == "random_seed" ] ||  [ "${29}" == "random_seed" ] ||  [ "${30}" == "random_seed" ] ||  [ "${31}" == "random_seed" ] ||  [ "${32}" == "random_seed" ] ||  [ "${33}" == "random_seed" ] ||  [ "${34}" == "random_seed" ] ||  [ "${35}" == "random_seed" ] ||  [ "${36}" == "random_seed" ] ||  [ "${37}" == "random_seed" ] ||  [ "${38}" == "random_seed" ] ||  [ "${39}" == "random_seed" ] 
-then
-    python3 $CURRENT_DIR/cadnize_seed_change.py check_sa.cc random
+if [[ " $* " =~ " random_seed" ]]; then
+    echo
+    echo "         cadnize_seed_change.py random"
+    python3 $CURRENT_DIR/srcpy/cadnize_seed_change.py check_sa.cc random
 fi
 
                 #set the seed random or original
-if [ "$1" == "original_seed" ] ||  [ "$2" == "original_seed" ] ||  [ "$3" == "original_seed" ] || [ "$4" == "original_seed" ] || [ "$5" == "original_seed" ] ||  [ "$6" == "original_seed" ] ||  [ "$7" == "original_seed" ] ||  [ "$8" == "original_seed" ] ||  [ "$9" == "original_seed" ] ||  [ "${10}" == "original_seed" ] ||  [ "${11}" == "original_seed" ] ||  [ "${12}" == "original_seed" ] ||  [ "${13}" == "original_seed" ] ||  [ "${14}" == "original_seed" ] ||  [ "${15}" == "original_seed" ] ||  [ "${16}" == "original_seed" ] ||  [ "${17}" == "original_seed" ] ||  [ "${18}" == "original_seed" ] ||  [ "${19}" == "original_seed" ] ||  [ "${20}" == "original_seed" ] ||  [ "${21}" == "original_seed" ] ||  [ "${22}" == "original_seed" ] ||  [ "${23}" == "original_seed" ] ||  [ "${24}" == "original_seed" ] ||  [ "${25}" == "original_seed" ] ||  [ "${26}" == "original_seed" ] ||  [ "${27}" == "original_seed" ] ||  [ "${28}" == "original_seed" ] ||  [ "${29}" == "original_seed" ] ||  [ "${30}" == "original_seed" ] ||  [ "${31}" == "original_seed" ] ||  [ "${32}" == "original_seed" ] ||  [ "${33}" == "original_seed" ] ||  [ "${34}" == "original_seed" ] ||  [ "${35}" == "original_seed" ] ||  [ "${36}" == "original_seed" ] ||  [ "${37}" == "original_seed" ] ||  [ "${38}" == "original_seed" ] ||  [ "${39}" == "original_seed" ] 
-then
-    python3 $CURRENT_DIR/cadnize_seed_change.py check_sa.cc original
+if [[ " $* " =~ " original_seed" ]]; then
+    echo
+    echo "         cadnize_seed_change.py original"
+    python3 $CURRENT_DIR/srcpy/cadnize_seed_change.py check_sa.cc original
 fi
+

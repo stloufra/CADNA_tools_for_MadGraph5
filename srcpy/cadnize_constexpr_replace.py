@@ -20,6 +20,12 @@ for l in lines:
         changes += 1
         # print("To:\n",l)
         lines[i] = l
+    if "constexpr fptype_sv " in l or "constexpr fptype2_sv " in l:
+        # print("Changing the line:\n",l)
+        l = l.replace("constexpr", "const")
+        changes += 1
+        # print("To:\n",l)
+        lines[i] = l
     if "TriangularNormalizedColorMatrix" in l and "const" in l:
         # print("Changing the line:\n",l)
         changes += 1
@@ -31,7 +37,7 @@ for l in lines:
         l = l.replace("static const ", "")
         changes += 1
         lines[i] = l
-    if "volatile fptype " in l:
+    if "volatile fptype " in l: #TODO: is this sane?
         # print("Changing the line:\n",l)
         l = l.replace("volatile", "const")
         changes += 1
@@ -42,8 +48,8 @@ for l in lines:
         changes += 1
         lines[i] = l
     i=i+1
-        
-print("Changes in: "+fileName+"\t\t"+str(changes))
+
+print(f"Changes in: {fileName:<30}\t{changes}")
 from tempfile import mkstemp
 from shutil import move, copymode
 from os import fdopen, remove
