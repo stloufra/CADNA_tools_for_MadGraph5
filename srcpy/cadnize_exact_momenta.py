@@ -14,7 +14,7 @@ changes = 0
 
 
 #Set the precision of momenta String to insert:
-momentaString ='    //Set the precision of momenta to be exact\n    for(int i = 0; i < 4;i++){\n        for (int j = 0; j < npar; j++){\n            int precision = M_ACCESS::kernelAccessIp4Ipar( momenta, i, j ).nb_significant_digit();\n            // std::cout<<"i: "<<i<<" j: "<<j<<" Momenta precision: "<< precision;\n            M_ACCESS::kernelAccessIp4Ipar( momenta, i, j ) = fptype(double(M_ACCESS::kernelAccessIp4Ipar( momenta, i, j ).getx()));\n//            M_ACCESS::kernelAccessIp4Ipar( momenta, i, j ) = simParamsList[0].momenta[j].p[i];\n            // std::cout<<" Momentum: "<<M_ACCESS::kernelAccessIp4Ipar( momenta, i, j )<<"\\n";\n        }\n    }\n'
+momentaString ='    //Set the precision of momenta to be exact\n    for(int i = 0; i < 4;i++){\n        for (int j = 0; j < npar; j++){\n            int precision = M_ACCESS::kernelAccessIp4Ipar( momenta, i, j ).nb_significant_digit();\n            // std::cout<<"i: "<<i<<" j: "<<j<<" Momenta precision: "<< precision;\n            M_ACCESS::kernelAccessIp4Ipar( momenta, i, j ) = static_cast<fptype>(static_cast<double>(M_ACCESS::kernelAccessIp4Ipar( momenta, i, j ).getx()));\n//            M_ACCESS::kernelAccessIp4Ipar( momenta, i, j ) = simParamsList[0].momenta[j].p[i];\n            // std::cout<<" Momentum: "<<M_ACCESS::kernelAccessIp4Ipar( momenta, i, j )<<"\\n";\n        }\n    }\n'
 
 i=0
 inFunctQ = False
