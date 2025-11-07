@@ -28,10 +28,11 @@ struct Sim_params {
     }
 };
 
-std::vector<Sim_params> readSim_paramsFromFile(const std::string& filename) {
+std::vector<Sim_params> readSim_paramsFromFile(const std::string& filename, const int precision = 3) {
     std::vector<Sim_params> simParamsList;
     Sim_params currentParams;
     bool readingMomenta = false;
+    bool expectPrecisionLine = false;
 
     std::ifstream inputFile(filename);
 
@@ -49,35 +50,47 @@ std::vector<Sim_params> readSim_paramsFromFile(const std::string& filename) {
                 currentParams.momenta.clear();
             }
             readingMomenta = true;
+            expectPrecisionLine = false;
             continue;
         }
 
         if (readingMomenta) {
+            // Skip precision lines (lines with only numbers after momentum lines)
+            if (expectPrecisionLine) {
+                expectPrecisionLine = false;
+                continue;
+            }
+            
             if (line.find("Matrix element =") != std::string::npos) {
-                if (std::sscanf(line.c_str(), "Matrix element = %lf", &currentParams.matrixElement) != 1) {
+                // Handle @.0 case for invalid matrix elements
+                size_t atPos = line.find('@');
+                if (atPos != std::string::npos) {
+                    currentParams.matrixElement = 0.0;
+                } else if (std::sscanf(line.c_str(), " Matrix element = %lf", &currentParams.matrixElement) != 1) {
                     std::cerr << "Error: Unable to parse matrix element value from line '" << line << "'" << std::endl;
                 }
             } else if (line.find("Matrix element number of sig dig =") != std::string::npos) {
-                if (std::sscanf(line.c_str(), "Matrix element number of sig dig =%d", &currentParams.matrixElementPrecision) != 1) {
+                if (std::sscanf(line.c_str(), " Matrix element number of sig dig = %d", &currentParams.matrixElementPrecision) != 1) {
                     std::cerr << "Error: Unable to parse matrix element precision from line '" << line << "'" << std::endl;
                 }
                 readingMomenta = false;
-                
+            
             } else if (!line.empty() && line[0] != '-' && line[0] != 'M') {
                 int index;
                 double p[4];
                 if (std::sscanf(line.c_str(), "%d %lf %lf %lf %lf", &index, &p[0], &p[1], &p[2], &p[3]) == 5) {
                     FourMomentum momentum = {p[0], p[1], p[2], p[3]};
                     currentParams.momenta.push_back(momentum);
-                } else {
-                    std::cerr << "Error: Unable to parse line '" << line << "'" << std::endl;
+                    expectPrecisionLine = true; // Next line will be precision values
                 }
+                // Don't print error if we can't parse, might be precision line or separator
             }
         }
     }
 
     if (!currentParams.momenta.empty()) {
-        if (currentParams.matrixElementPrecision < 3) // add only the ones with poor precision
+        // add only the ones with poor precision default value is 3
+        if (currentParams.matrixElementPrecision < precision)
             simParamsList.push_back(currentParams);
     }
 
@@ -85,19 +98,19 @@ std::vector<Sim_params> readSim_paramsFromFile(const std::string& filename) {
     return simParamsList;
 }
 
-// int main() {
-//     const std::string filename = "input_momenta.txt";
-//     std::vector<Sim_params> simParamsList = readSim_paramsFromFile(filename);
+ //int main(int arg, char** argv) {
+ //    const std::string filename = argv[1];
+ //    std::vector<Sim_params> simParamsList = readSim_paramsFromFile(filename);
 
-//     // Display the extracted simulation parameters
-//     for (size_t i = 0; i < simParamsList.size(); ++i) {
-//         Sim_params& simParams = simParamsList[i];
-//         std::cout << "Set " << i + 1 << ":" << std::endl;
-//         simParams.printMomenta();
-//         std::cout << "Matrix element: " << simParams.matrixElement << " GeV^-2" << std::endl;
-//         std::cout << "Matrix element precision: " << simParams.matrixElementPrecision << " sig dig" << std::endl;
-//         std::cout << std::endl;
-//     }
+ //    // Display the extracted simulation parameters
+ //    for (size_t i = 0; i < simParamsList.size(); ++i) {
+ //        Sim_params& simParams = simParamsList[i];
+ //        std::cout << "Set " << i + 1 << ":" << std::endl;
+ //        simParams.printMomenta();
+ //        std::cout << "Matrix element: " << simParams.matrixElement << " GeV^-2" << std::endl;
+ //        std::cout << "Matrix element precision: " << simParams.matrixElementPrecision << " sig dig" << std::endl;
+ //        std::cout << std::endl;
+ //    }
 
-//     return 0;
-// }
+ //    return 0;
+ //}
