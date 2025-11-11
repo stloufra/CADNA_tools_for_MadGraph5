@@ -23,3 +23,11 @@ sudo ldconfig
 cd -
 rm -rf /tmp/cadna_build
 
+#on mac
+./configure --prefix=/usr/local/  CC=cc CXX=c++ \
+  OPENMP_CFLAGS="-I/opt/homebrew/opt/libomp/include -Xclang -fopenmp" \
+  OPENMP_CXXFLAGS="-I/opt/homebrew/opt/libomp/include -Xclang -fopenmp" \
+  OPENMP_LDFLAGS="-L/opt/homebrew/opt/libomp/lib -lomp" \
+  --enable-fma --enable-half-native
+
+
