@@ -185,11 +185,12 @@ fi
 #does not work for now (dont know the contents of the read_momenta.h)
 if [[ " $* " =~ " load_momenta" ]]; then
     echo
-    echo "          cadnize_exact_momenta.py + cadnize_exact_momenta_to_load_momenta.py"
+    echo "         cadnize_load_momenta.py"
     #python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta.py ../../src/rambo.h
-    python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta_main.py  ./check_sa.cc
+    #python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta_main.py  ./check_sa.cc
     #python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta_to_load_momenta.py ../../src/rambo.h $CURRENT_DIR/read_momenta.h
-    python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta_to_load_momenta.py ../../src/rambo.h $CURRENT_DIR/read_momenta.h
+    #python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta_to_load_momenta.py ../../src/rambo.h $CURRENT_DIR/read_momenta.h
+    python3 $CURRENT_DIR/srcpy/cadnize_load_momenta_main.py ./check_sa.cc
 fi
 
 
