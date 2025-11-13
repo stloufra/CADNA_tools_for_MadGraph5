@@ -4,3 +4,4 @@ histograms/*
 .idea/*
 .venv/*
 **/__pycache__/*
+gdb*

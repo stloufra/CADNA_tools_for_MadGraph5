@@ -9,8 +9,12 @@ def plotScat_COLvsMEP(process, precision, optimisation, colinearities, matrix_el
     plt.xlabel("Colinearity")
     plt.ylabel("Digits of precision")
     #keep outliers
-    y_perturbation = np.random.uniform(-0.4, 0.4, colinearities.size)
-    plt.scatter(colinearities, matrixElementPrecision_fl+y_perturbation,s=0.01)
+    y_perturbation = np.random.uniform(-0.4, 0.4, matrixElementPrecision_fl.size)
+    max_col = []
+    for i in colinearities:
+        max_col.append(np.max(np.abs(i)))
+
+    plt.scatter(max_col, matrixElementPrecision_fl+y_perturbation,s=0.1)
     dir = "histograms/colinearities_energys_"+process
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -22,12 +26,13 @@ def plotScat_COLvsMEP(process, precision, optimisation, colinearities, matrix_el
     plt.xlabel("Colinearity")
     plt.ylabel("Log10 of matrix element")
     #keep outliers
-    plt.scatter(colinearities, np.log10(matrix_element_fl), s=0.01)
+    plt.scatter(max_col, np.log10(matrix_element_fl), s=0.1)
     dir = "histograms/colinearities_energys_"+process
     if not os.path.exists(dir):
         os.makedirs(dir)
     plt.savefig(dir+"/scatter_colinearities_ME_"+process+"_"+precision+"_"+optimisation[1:]+".png" )
     plt.close()
+
 def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par, withoutFirstTwo = True):
     #Energys vs matrix element precision
     fig, ax = plt.subplots(figsize=(10, 6))
