@@ -95,7 +95,7 @@ def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecis
                 if("@" in l[pos:endpos]):
                     matrixElementPrecisionZeros+=1
                     if len(matrixElement)>0:
-                        matrixElement.append(matrixElement[-1]) #append previous value
+                        matrixElement.append(1) #append previous value
                     else:
                         matrixElement.append(1) #append 1 if no previous value
                 else:
@@ -108,11 +108,11 @@ def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecis
 
         if not line:
             break
+    return matrixElementPrecisionZeros
 
 
 #return colinearity for the 3vec momenta
 def colinearity(m1, m2):
-    # print(m1)
     m1 = m1[1:]
     m2 = m2[1:]
     #normalize

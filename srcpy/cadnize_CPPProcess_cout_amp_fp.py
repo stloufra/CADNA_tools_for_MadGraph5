@@ -13,13 +13,17 @@ changes = 0
 
 i=0
 first_amp_fp = len(lines)
+diagram_number = "1"
 for l in lines:
     if 'amp_fp' in l and ('=' in l) == False and ('std::cout' in l) == False and ('//' in l) == False and ('fptype*' in l) == False:
         if i < first_amp_fp:
             first_amp_fp = i
         #find the function name - everything before the <
         function_name = l.split('<')[0]
-        
+
+        if "Amplitude(s)" in lines[i-1]:
+            diagram_number = lines[i-1].split('number')[1].strip()
+
         function_arguments = []
         #find the function arguments - everything between the ()
         function_arguments = l.split('(')[1].split(')')[0].split(',')   
@@ -34,7 +38,7 @@ for l in lines:
         print(function_name)
         if ('std::cout' in lines[i+1]) == False:
             # print("Inserting cout")
-            lines.insert(i+1, '\t\t\tstd::cout<<__LINE__<<" f_name: '+function_name+' precision real: "<<amp_fp[0].nb_significant_digit()<<" precision imag: "<<amp_fp[1].nb_significant_digit();\n')
+            lines.insert(i+1, '\t\t\tstd::cout<<__LINE__<<"Diag. '+ diagram_number + '"<<" f_name: '+function_name+' precision real: "<<amp_fp[0].nb_significant_digit()<<" precision imag: "<<amp_fp[1].nb_significant_digit();\n')
             lines.insert(i+2, '\t\t\tstd::cout<<" amp_sv real: "<<amp_fp[0]<<" amp_sv imag: "<<amp_fp[1]<<std::endl;\n')
             lines.insert(i+3, build_line) # carefull
             changes += 1
