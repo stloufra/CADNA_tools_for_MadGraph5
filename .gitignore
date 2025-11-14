@@ -4,4 +4,6 @@ histograms/*
 .idea/*
 .venv/*
 **/__pycache__/*
-gdb*
+gdb_*
+read_momenta.cpp
+
