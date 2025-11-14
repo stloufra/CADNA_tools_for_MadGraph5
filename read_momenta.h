@@ -1,13 +1,9 @@
+#pragma once
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
-#include <filesystem>
-
-// #ifndef pftype
-//  #define fptype double
-// #endif
-
-//Global parameter which momenta are we
+#include <string>
 
 struct FourMomentum {
     double p[4];
@@ -16,88 +12,133 @@ struct FourMomentum {
 struct Sim_params {
     std::vector<FourMomentum> momenta;
     double matrixElement;
-    int matrixElementPrecision = 0;
+    int matrixElementPrecision = -1;
+    int event_num = 0;
 
-    void printMomenta() {
+    void printMomenta() const {
         std::cout << "Number of 4-momenta: " << momenta.size() << std::endl;
         for (size_t i = 0; i < momenta.size(); ++i) {
             const FourMomentum& momentum = momenta[i];
-            std::cout << "4-Momentum " << i + 1 << ": (" << momentum.p[0] << ", "
-                      << momentum.p[1] << ", " << momentum.p[2] << ", " << momentum.p[3] << ")" << std::endl;
+            std::cout << "4-Momentum " << i + 1 << ": ("
+                      << std::setprecision(14)
+                      << std::scientific
+                      << momentum.p[0] << ", "
+                      << momentum.p[1] << ", "
+                      << momentum.p[2] << ", "
+                      << momentum.p[3] << ")" << std::endl;
         }
     }
 };
 
-std::vector<Sim_params> readSim_paramsFromFile(const std::string& filename) {
-    std::vector<Sim_params> simParamsList;
-    Sim_params currentParams;
-    bool readingMomenta = false;
-
-    std::ifstream inputFile(filename);
-
-    if (!inputFile) {
-        std::cerr << "Error: Could not open the file '" << filename << "'" << std::endl;
-        return simParamsList; // Empty vector indicating an error occurred
+inline std::vector<Sim_params>
+readSim_paramsFromFile(const std::string &filename, const int precision_tresh = 3)
+{
+    std::vector<Sim_params> allEvents;
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << filename << std::endl;
+        return allEvents;
     }
 
     std::string line;
-    while (std::getline(inputFile, line)) {
-        if (line.find("Momenta:") != std::string::npos) {
-            if (!currentParams.momenta.empty()) {
-                if (currentParams.matrixElementPrecision < 3) // add only the ones with poor precision
-                    simParamsList.push_back(currentParams);
-                currentParams.momenta.clear();
+    Sim_params currentEvent;
+    bool inMomentaSection = true;
+
+    while (std::getline(file, line)) {
+        if (line.find("Momenta: for event") != std::string::npos) {
+            if (!inMomentaSection && (currentEvent.matrixElementPrecision != -1 || !currentEvent.momenta.empty())) {
+                if (currentEvent.matrixElementPrecision < precision_tresh)
+                    allEvents.push_back(currentEvent);
+                currentEvent = Sim_params();
             }
-            readingMomenta = true;
+            inMomentaSection = false;
+
+            size_t pos = line.find("event");
+            if (pos != std::string::npos) {
+                currentEvent.event_num = std::stoi(line.substr(pos + 5));
+            }
             continue;
         }
 
-        if (readingMomenta) {
-            if (line.find("Matrix element =") != std::string::npos) {
-                if (std::sscanf(line.c_str(), "Matrix element = %lf", &currentParams.matrixElement) != 1) {
-                    std::cerr << "Error: Unable to parse matrix element value from line '" << line << "'" << std::endl;
+        if (line.find("Matrix element =") != std::string::npos) {
+            size_t pos = line.find('=');
+            if (pos != std::string::npos)
+                currentEvent.matrixElement = std::stod(line.substr(pos + 1));
+            continue;
+        }
+
+        if (line.find("Matrix element number of sig dig =") != std::string::npos) {
+            size_t pos = line.find('=');
+            if (pos != std::string::npos)
+                currentEvent.matrixElementPrecision = std::stoi(line.substr(pos + 1));
+            continue;
+        }
+    }
+
+    // Push last event if valid
+    if (currentEvent.matrixElementPrecision < precision_tresh)
+        allEvents.push_back(currentEvent);
+
+    file.clear();
+    file.seekg(0, std::ios::beg);
+
+    int event_num = 0;
+    int particle = 0;
+    bool rightMomenta = false;
+
+    while (std::getline(file, line)) {
+        if (line.find("Momenta: for event") != std::string::npos) {
+            break;
+        }
+
+        if (line.find("Momenta casting for event") != std::string::npos) {
+            rightMomenta = false;
+            size_t pos = line.find("event");
+            if (pos != std::string::npos) {
+                pos += 5; // skip "event"
+                while (pos < line.size() && !std::isdigit(line[pos])) pos++;
+                if (pos < line.size()) {
+                    currentEvent.event_num = std::stoi(line.substr(pos));
                 }
-            } else if (line.find("Matrix element number of sig dig =") != std::string::npos) {
-                if (std::sscanf(line.c_str(), "Matrix element number of sig dig =%d", &currentParams.matrixElementPrecision) != 1) {
-                    std::cerr << "Error: Unable to parse matrix element precision from line '" << line << "'" << std::endl;
+                if(currentEvent.event_num == allEvents[event_num].event_num) {
+                    rightMomenta = true;
                 }
-                readingMomenta = false;
-                
-            } else if (!line.empty() && line[0] != '-' && line[0] != 'M') {
-                int index;
-                double p[4];
-                if (std::sscanf(line.c_str(), "%d %lf %lf %lf %lf", &index, &p[0], &p[1], &p[2], &p[3]) == 5) {
-                    FourMomentum momentum = {p[0], p[1], p[2], p[3]};
-                    currentParams.momenta.push_back(momentum);
-                } else {
-                    std::cerr << "Error: Unable to parse line '" << line << "'" << std::endl;
-                }
+            }
+            particle = 0;
+            if (rightMomenta) event_num++;
+            continue;
+        }
+
+        if (rightMomenta) {
+
+            if (!line.empty() && (std::isdigit(line[3]) || std::isdigit(line[4]))) {
+                //std::cout << "Event number: " << currentEvent.event_num << std::endl;
+                std::istringstream iss(line);
+                int idx;
+                FourMomentum m;
+                if (iss >> idx >> m.p[0] >> m.p[1] >> m.p[2] >> m.p[3])
+                    allEvents[event_num - 1].momenta.push_back(m);
             }
         }
     }
 
-    if (!currentParams.momenta.empty()) {
-        if (currentParams.matrixElementPrecision < 3) // add only the ones with poor precision
-            simParamsList.push_back(currentParams);
-    }
-
-    inputFile.close();
-    return simParamsList;
+    return allEvents;
 }
 
-// int main() {
-//     const std::string filename = "input_momenta.txt";
-//     std::vector<Sim_params> simParamsList = readSim_paramsFromFile(filename);
+ //int main(int arg, char** argv) {
+ //    const std::string filename = argv[1];
+ //    std::vector<Sim_params> simParamsList = readSim_paramsFromFile(filename);
 
-//     // Display the extracted simulation parameters
-//     for (size_t i = 0; i < simParamsList.size(); ++i) {
-//         Sim_params& simParams = simParamsList[i];
-//         std::cout << "Set " << i + 1 << ":" << std::endl;
-//         simParams.printMomenta();
-//         std::cout << "Matrix element: " << simParams.matrixElement << " GeV^-2" << std::endl;
-//         std::cout << "Matrix element precision: " << simParams.matrixElementPrecision << " sig dig" << std::endl;
-//         std::cout << std::endl;
-//     }
+ //    // Display the extracted simulation parameters
+ //    for (size_t i = 0; i < simParamsList.size(); ++i) {
+ //        std::cout << "Event number: " << simParams.event_num << std::endl;
+ //        Sim_params& simParams = simParamsList[i];
+ //        std::cout << "Set " << i + 1 << ":" << std::endl;
+ //        simParams.printMomenta();
+ //        std::cout << "Matrix element: " << simParams.matrixElement << " GeV^-2" << std::endl;
+ //        std::cout << "Matrix element precision: " << simParams.matrixElementPrecision << " sig dig" << std::endl;
+ //        std::cout << std::endl;
+ //    }
 
-//     return 0;
-// }
+ //    return 0;
+ //}

@@ -29,7 +29,7 @@ process = process.split("_")[-2]+"_"+process.split("_")[-1]
 
 #check if there are pickle files in cwd
 usingPickledData = False
-import glob
+'''import glob
 import pickle
 cwd = os.getcwd()
 files = glob.glob(cwd+"/*.pickle")
@@ -67,7 +67,7 @@ if len(files) > 0:
             momentum = pickle.load(f)
             f.close()
             # print("Found momentum in pickle file: "+file)
-   
+    
     #read info file
     filename = cwd+"/[A]_info_"+process+"_"+precision+"_"+optimisation[1:]+".txt"
     #read number of zero matrix elements and momenta
@@ -80,7 +80,7 @@ if len(files) > 0:
             momentaPrecisionZeros = int(line.split(":")[1])
     
     
-if usingPickledData == False:
+    if usingPickledData == False:
     # find all files in directory that start with "gdb_run" has <precision> and <optimisation> in name and end with ".out"
     # and process them
     cwd = os.getcwd()
@@ -91,10 +91,10 @@ if usingPickledData == False:
             files_to_process.append(file)
     print("Will Process:")
     for f in files_to_process:
-        print(f, "Size (GB):",os.path.getsize(f)/1_000_000_000)
+        print(f, "Size (GB):",os.path.getsize(f)/1_000_000_000)'''
 
 
-
+if True:
     event_number = 0
     events_processed = 0
     #get all the numbers after "Matrix element = "
@@ -107,11 +107,11 @@ if usingPickledData == False:
     momentaPrecision = []
     momentaPrecisionZeros = 0
 
-    # amp_sv_mag is a dictionary with key = function name and value = [[line number, real part, imaginary part, precision real, precision imaginary],...]
+    # amp_sv_mag is a dictionary with key = function name and value = [[line number, real part, imaginary part, precision real, precision imaginary, input_precision, diagram_number],...]
     # this dictionary is for one event. It is stored in a dictionary of dictionaries called list_amp_sv_mag with key = event number and value = amp_sv_mag
     # String "Event number:" is used to find the number of event
 
-    list_amp_sv_mag = {} # list_amp_sv_mag[event_number][function_name][line_number/real/imag/precision_real/precision_imag/input_precision]
+    list_amp_sv_mag = {} # list_amp_sv_mag[event_number][function_name][line_number/real/imag/precision_real/precision_imag/input_precision, input_precision, diagram_number]
 
 
     def string_to_float(str):
@@ -135,8 +135,7 @@ if usingPickledData == False:
     events_processed = len(list_amp_sv_mag)
         
 
-
-    # files_to_process = [sys.argv[1]]  #process only one file
+    files_to_process = [sys.argv[1]]  #process only one file
     for file in files_to_process:
         
         if os.path.getsize(file)/1_000_000_000 > 8:
@@ -181,8 +180,13 @@ if usingPickledData == False:
             # <line number> f_name:       <func_name> precision real: <precision of real part> precision imag: <precision of imaginary part> amp_sv real:  <real part> amp_sv imag:  <imaginary part>
             if "amp_sv" in l:
                 #get the line number
-                endpos = l.find("f_name:")
+                endpos = l.find("Diag.")
                 line_number = int(l[:endpos])
+
+                pos = endpos + len("Diag.")
+
+                endpos = l.find("f_name:")
+                diag_number = int(l[pos:endpos])
                 
                 #get the function name
                 pos = endpos+len("f_name:")
@@ -212,7 +216,7 @@ if usingPickledData == False:
                 if not func_name in list_amp_sv_mag[event_number]:
                     list_amp_sv_mag[event_number][func_name] = []
                 input_precision = []
-                list_amp_sv_mag[event_number][func_name].append([line_number, real, imag, precision_real, precision_imag, input_precision])
+                list_amp_sv_mag[event_number][func_name].append([line_number, real, imag, precision_real, precision_imag, input_precision, diag_number])
                 last_func_name = func_name
             
             #if last_func_name is not empty and the line has three ":" in it

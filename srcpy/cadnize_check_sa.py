@@ -63,6 +63,12 @@ for l in lines:
             lines[i] = "//"+l
             print("Commented out std::cout << \".\";")
             changes += 1
+
+    if 'std::cout << "Momenta:" << std::endl;' in l:
+        if not 'std::cout << "Momenta: for event " << ievt << std::endl;' in l:
+            lines.pop(i)
+            lines.insert(i, '\t\tstd::cout << "Momenta: for event" << ievt << std::endl;\n')
+            changes += 1
             
     if 'std::cout << " Matrix element = " << MemoryAccessMatrixElements::ieventAccessConst( hstMatrixElements.data(), ievt )' in l:
         if not "Matrix element number of sig dig =" in lines[i+2] :

@@ -4,9 +4,8 @@ import numpy as np
 import srcpy.momnetumParser as mpr
 import srcpy.momentumPloting as mpl
 
-if len(sys.argv) > 2 and (sys.argv[2] != "plotly" and sys.argv[2] != "both"):
-    exit(
-        "Usage: python histogram.py <filename of ./check.exe -p -v output> <precision> <optimization> <plotly or both or nothing(for matplotlib)>")
+if len(sys.argv) > 4 and (sys.argv[4] != "plotly" and sys.argv[4] != "both"):
+    exit("Usage: python histogram.py <filename of ./check.exe -p -v output> <precision> <optimization> <plotly or both or nothing(for matplotlib)>")
 
 # open file gdb.out or one provided in argument
 if len(sys.argv) > 1:
@@ -15,18 +14,22 @@ else:
     exit("Usage: python histogram.py <filename of ./check.exe -p -v output>")
 
 precision = "unknown"
-if "float" in sys.argv[1]:
-    precision = "float"
-elif "double" in sys.argv[1]:
-    precision = "double"
+if len(sys.argv) > 2:
+    if "float" in sys.argv[2]:
+        precision = "float"
+    elif "double" in sys.argv[2]:
+        precision = "double"
 
 optimisation = "unknown"
-if "O0" in sys.argv[1]:
-    optimisation = "-O0"
-elif "O3" in sys.argv[1]:
-    optimisation = "-O3"
-if "fgdb" in sys.argv[1]:
-    optimisation += "_fortran"
+if len(sys.argv) > 3:
+    if "O0" in sys.argv[3]:
+        optimisation = "-O0"
+    elif "O3" in sys.argv[3]:
+        optimisation = "-O3"
+    elif "fgdb" in sys.argv[3]:
+        optimisation += "_fortran"
+    elif "load" in sys.argv[3]:
+        optimisation += "_load_momenta"
 
 # get current directory:
 cwd = os.getcwd()
@@ -57,6 +60,8 @@ matrix_element = np.array(matrix_element)
 matrixElementPrecision = np.array(matrixElementPrecision)
 momentum = np.array(momentum)
 momentaPrecision = np.array(momentaPrecision)
+
+nb_events = len(momentum)
 nb_par = len(momentum[0])
 if (len(matrixElementPrecision) != len(matrix_element)):
     exit("Number of matrix elements and number of matrix element precisions is not the same. file causing trouble: " +
@@ -73,8 +78,15 @@ if len(momentum) > 0:
 else:
     exit("No momenta found")
 
-for i in range(len(momentum)):
-    colinearities.append(mpr.colinearity(momentum[i][0], momentum[i][-1]))
+for ev in range(nb_events):
+    col=[]
+    for i in range(nb_par):
+        for j in range(i + 1, nb_par):
+            if i == 0 and j == 1:
+                continue  # skip (0, 1) - always colinear
+            col.append(mpr.colinearity(momentum[ev][i], momentum[ev][j]))
+    colinearities.append(col)
+
 colinearities = np.array(colinearities)
 
 energys = momentum[:, :, 0]
@@ -99,8 +111,13 @@ print("Number of all momenta prec:                  " + str(len(momentum_fl)))
 if len(sys.argv) < 3 or (len(sys.argv) > 2 and sys.argv[2] == "both"):
 
     if len(colinearities) > 0:
-        mpl.plotScat_COLvsMEP(process, precision, optimisation, colinearities, matrix_element_fl,
+        mpl.plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matrix_element_fl,
                               matrixElementPrecision_fl)
+    if len(energys) > 0:
+        mpl.plotScat_EratiossMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl,
+                                 nb_par)
+
+        mpl.plot_combined(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl)
 
         mpl.plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par)
 

@@ -113,7 +113,6 @@ def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecis
 
 #return colinearity for the 3vec momenta
 def colinearity(m1, m2):
-    # print(m1)
     m1 = m1[1:]
     m2 = m2[1:]
     #normalize
