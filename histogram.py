@@ -111,8 +111,13 @@ print("Number of all momenta prec:                  " + str(len(momentum_fl)))
 if len(sys.argv) < 3 or (len(sys.argv) > 2 and sys.argv[2] == "both"):
 
     if len(colinearities) > 0:
-        mpl.plotScat_COLvsMEP(process, precision, optimisation, colinearities, matrix_element_fl,
+        mpl.plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matrix_element_fl,
                               matrixElementPrecision_fl)
+    if len(energys) > 0:
+        mpl.plotScat_EratiossMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl,
+                                 nb_par)
+
+        mpl.plot_combined(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl)
 
         mpl.plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par)
 

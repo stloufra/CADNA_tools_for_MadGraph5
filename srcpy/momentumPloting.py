@@ -2,8 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plotScat_COLvsMEP(process, precision, optimisation, colinearities, matrix_element_fl, matrixElementPrecision_fl):
-    #plot scatter plot of colinearities vs matrix element precision
+def plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matrix_element_fl, matrixElementPrecision_fl):
+    #plot scatter plot of colinearities vs matrix element precision to observe the colinearity limit
     fig, ax = plt.subplots()
     plt.title("Colinearities vs matrix element precision for: "+process+" "+precision+" "+optimisation)
     plt.xlabel("Colinearity")
@@ -14,6 +14,11 @@ def plotScat_COLvsMEP(process, precision, optimisation, colinearities, matrix_el
     for i in colinearities:
         max_col.append(np.max(np.abs(i)))
 
+    '''top3_indices = np.argsort(max_col)[:3]
+    print(f"The least 3 colinearities are:")
+    for idx in top3_indices:
+        print(f"  Event {idx}: colinearity = {max_col[idx]}")'''
+
     plt.scatter(max_col, matrixElementPrecision_fl+y_perturbation,s=0.1)
     dir = "histograms/colinearities_energys_"+process
     if not os.path.exists(dir):
@@ -22,8 +27,8 @@ def plotScat_COLvsMEP(process, precision, optimisation, colinearities, matrix_el
     plt.close()
     #Colinearities vs matrix element
     fig, ax = plt.subplots()
-    plt.title("Colinearities vs matrix element precision for: "+process+" "+precision+" "+optimisation)
-    plt.xlabel("Colinearity")
+    plt.title("Max colinearities vs matrix element precision for: "+process+" "+precision+" "+optimisation)
+    plt.xlabel("Max. abs. colinearity")
     plt.ylabel("Log10 of matrix element")
     #keep outliers
     plt.scatter(max_col, np.log10(matrix_element_fl), s=0.1)
@@ -32,6 +37,38 @@ def plotScat_COLvsMEP(process, precision, optimisation, colinearities, matrix_el
         os.makedirs(dir)
     plt.savefig(dir+"/scatter_colinearities_ME_"+process+"_"+precision+"_"+optimisation[1:]+".png" )
     plt.close()
+
+
+def plotScat_EratiossMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par):
+
+    plt.title("Max Energy ratio vs matrix element precision for: "+process+" "+precision+" "+optimisation)
+    plt.xlabel("Energy ratio")
+    plt.ylabel("Digits of precision")
+
+    max = np.max(energys, axis=1)
+    min = np.min(energys, axis=1)
+
+    ratio = max/min
+
+    '''top3_indices = np.argsort(ratio)[-3:][::-1]
+    print(f"The top 3 energy ratios are:")
+    for idx in top3_indices:
+        print(f"  Event {idx}: ratio = {ratio[idx]}")'''
+
+    # Plot each particle with different color
+    y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementPrecision_fl))
+
+    plt.scatter(ratio,
+                matrixElementPrecision_fl + y_perturbation,
+                s=1,
+                alpha=0.6)
+
+    dir = "histograms"
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    plt.savefig(dir+"/scatter_energys_ratios_MEP_"+process+"_"+precision+"_"+optimisation[1:]+".png", dpi=150)
+    plt.close()
+
 
 def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par, withoutFirstTwo = True):
     #Energys vs matrix element precision
@@ -66,12 +103,97 @@ def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, ma
                    alpha=0.6)
 
     plt.legend(markerscale=5)  # Make legend markers larger
-    dir = "histograms"
+    dir = "histograms/colinearities_energys_"+process
     if not os.path.exists(dir):
         os.makedirs(dir)
     plt.savefig(dir+"/scatter_energys_MEP_"+process+"_"+precision+"_"+optimisation[1:]+".png", dpi=150)
     plt.close()
 
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+def plot_combined(process, precision, optimisation,
+                  energys, colinearities, matrixElementPrecision_fl):
+
+    max_col = np.array([np.max(np.abs(c)) for c in colinearities])
+    max_E = np.max(energys, axis=1)
+    min_E = np.min(energys, axis=1)
+    ratio = max_E / min_E
+
+    precision_arr = np.array(matrixElementPrecision_fl)
+
+    # Categories
+    cat1 = max_col > 0.995
+    cat2 = ratio > 50
+    cat3 = (~cat1 & ~cat2) & (precision_arr < 3)
+    cat4 = ~(cat1 | cat2 | cat3)
+
+    colors = np.empty(len(max_col), dtype=object)
+    colors[cat1] = "red"
+    colors[cat2] = "blue"
+    colors[cat3] = "green"
+    colors[cat4] = "grey"
+
+    # --- Legend statistics ---
+    N = len(max_col)
+
+    def stat(mask):
+        count = np.sum(mask)
+        pct = 100 * count / N
+        return f"{count} ({pct:.1f}%)"
+
+    labels = [
+        f"Max. abs. collinearity > 0.995  — {stat(cat1)}",
+        f"Max. energy ratio > 50     — {stat(cat2)}",
+        f"Precision < 3 (others) — {stat(cat3)}",
+        f"Remaining points       — {stat(cat4)}"
+    ]
+
+    # --- Apply jitter in precision for readability ---
+    y_perturbation = np.random.uniform(-0.4, 0.4, N)
+
+    # --- Plotting ---
+    plt.figure(figsize=(9, 6))
+    plt.title(f"Precision vs Maximal absolute pairwise collinearity\n{process} {precision} {optimisation}")
+    plt.xlabel("Max. abs. collinearity")
+    plt.ylabel("Digits of precision")
+
+    plt.scatter(max_col, precision_arr + y_perturbation,
+                s=4, c=colors, alpha=0.7)
+
+    plt.grid(True, alpha=0.3)
+
+    # Legend handles
+    from matplotlib.lines import Line2D
+    handles = [
+        Line2D([0], [0], marker='o', color='w', label=labels[0],
+               markerfacecolor='red', markersize=6),
+        Line2D([0], [0], marker='o', color='w', label=labels[1],
+               markerfacecolor='blue', markersize=6),
+        Line2D([0], [0], marker='o', color='w', label=labels[2],
+               markerfacecolor='green', markersize=6),
+        Line2D([0], [0], marker='o', color='w', label=labels[3],
+               markerfacecolor='grey', markersize=6)
+    ]
+    plt.tight_layout(rect=[0, 0.07, 1, 1])
+
+    plt.legend(handles=handles,
+               fontsize=9,
+               loc="upper center",
+               bbox_to_anchor=(0.5, -0.1),
+               ncol=2)
+
+    # --- Save ---
+    outdir = f"histograms/combined_{process}"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    plt.savefig(
+        outdir + f"/scatter_combined_{process}_{precision}_{optimisation[1:]}.png",
+        dpi=200
+    )
+    plt.close()
 
 def plotScat_MEvsMEP(process, precision, optimisation, matrixElementPrecision_fl, matrixElementPrecisionZeros, matrix_element_fl):
     # scatter plot of matrix element precision vs matrix element
