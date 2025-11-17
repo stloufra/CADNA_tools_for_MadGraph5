@@ -32,6 +32,7 @@ add_executable(CPPProcess_standalone main.cpp
         src/CPPProcess.h
         src/typeTraits.h
         src/Complex.h
-        src/MemoryBuffers.h)
+        src/MemoryBuffers.h
+        src/accesses/includeAcesses.h)
 target_link_libraries(CPPProcess_standalone PRIVATE cadnaC)
 
