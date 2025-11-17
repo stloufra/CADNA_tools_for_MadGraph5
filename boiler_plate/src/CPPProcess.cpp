@@ -1,7 +1,8 @@
 //
 // Created by Frantisek Stloukal on 14.11.2025.
 //
-
+#ifndef CPPPROCESS_STANDALONE_CPPPROCESS_CPP
+#define CPPPROCESS_STANDALONE_CPPPROCESS_CPP
 #include "CPPProcess.h"
 
 constexpr int nw6 = CPPProcess::nw6;
@@ -98,81 +99,83 @@ void computeDependentCouplings(const fptype* allgs, // input: Gs[nevt]
     }
 }
 
-void /* clang-format off */
-  sigmaKin( const fptype* allmomenta,           // input: momenta[nevt*npar*4]
-            const fptype* allcouplings,         // input: couplings[nevt*ndcoup*2]
-            const fptype* allrndhel,            // input: random numbers[nevt] for helicity selection
-            fptype* allMEs,                     // output: allMEs[nevt], |M|^2 final_avg_over_helicities
-            int* allselhel,                     // output: helicity selection[nevt]
-            const int nevt                      // input: #events (for cuda: nevt == ndim == gpublocks*gputhreads)
-            ) /* clang-format on */
-{
-    // Denominators: spins, colors and identical particles
-    constexpr int helcolDenominators[1] = {512}; // assume nprocesses == 1 (#272 and #343)
+//void /* clang-format off */
+//  sigmaKin( const fptype* allmomenta,           // input: momenta[nevt*npar*4]
+//            const fptype* allcouplings,         // input: couplings[nevt*ndcoup*2]
+//            const fptype* allrndhel,            // input: random numbers[nevt] for helicity selection
+//            fptype* allMEs,                     // output: allMEs[nevt], |M|^2 final_avg_over_helicities
+//            int* allselhel,                     // output: helicity selection[nevt]
+//            const int nevt                      // input: #events (for cuda: nevt == ndim == gpublocks*gputhreads)
+//            ) /* clang-format on */
+//{
+//    // Denominators: spins, colors and identical particles
+//    constexpr int helcolDenominators[1] = {512}; // assume nprocesses == 1 (#272 and #343)
+//
+//    using E_ACCESS = HostAccessMatrixElements; // non-trivial access: buffer includes all events
+//
+//    // Start sigmaKin_lines
+//
+//    // === PART 0 - INITIALISATION (before calculate_jamps) ===
+//    // Reset the "matrix elements" - running sums of |M|^2 over helicities for the given event
+//
+//    // *** PART 0b - C++ ***
+//    const int npagV = nevt / neppV;
+//    for (int ipagV = 0; ipagV < npagV; ++ipagV)
+//    {
+//        const int ievt0 = ipagV * neppV;
+//        fptype* MEs = E_ACCESS::ieventAccessRecord(allMEs, ievt0);
+//        fptype_sv& MEs_sv = E_ACCESS::kernelAccess(MEs);
+//        MEs_sv = fptype_sv{0};
+//
+//        const int npagV2 = npagV; // loop on one SIMD page (neppV events) at a time
+//
+//        for (int ipagV2 = 0; ipagV2 < npagV2; ++ipagV2)
+//        {
+//            const int ievt00 = ipagV2 * neppV; // loop on one SIMD page (neppV events) at a time
+//
+//            // Running sum of partial amplitudes squared for event by event color selection (#402)
+//            // (jamp2[nParity][ncolor][neppV] for the SIMD vector - or the two SIMD vectors - of events processed in calculate_jamps)
+//            fptype_sv jamp2_sv[nParity * ncolor] = {};
+//            fptype_sv MEs_ighel[ncomb] = {};
+//            // sum of MEs for all good helicities up to ighel (for the first - and/or only - neppV page)
+//
+//            for (int ighel = 0; ighel < cNGoodHel; ighel++)
+//            {
+//                const int ihel = cGoodHel[ighel];
+//                cxtype_sv jamp_sv[nParity * ncolor] = {};
+//                // fixed nasty bug (omitting 'nParity' caused memory corruptions after calling calculate_jamps)
+//
+//                calculate_jamps(ihel, allmomenta, allcouplings, jamp_sv, ievt00);
+//                color_sum_cpu(allMEs, jamp_sv, ievt00);
+//                MEs_ighel[ighel] = E_ACCESS::kernelAccess(E_ACCESS::ieventAccessRecord(allMEs, ievt00));
+//            }
+//            // Event-by-event random choice of helicity #403
+//            for (int ieppV = 0; ieppV < neppV; ++ieppV)
+//            {
+//                const int ievt = ievt00 + ieppV;
+//                //printf( "sigmaKin: ievt=%4d rndhel=%f\n", ievt, allrndhel[ievt] );
+//                for (int ighel = 0; ighel < cNGoodHel; ighel++)
+//                {
+//                    const bool okhel = allrndhel[ievt] < (MEs_ighel[ighel] / MEs_ighel[cNGoodHel - 1]);
+//                    if (okhel)
+//                    {
+//                        const int ihelF = cGoodHel[ighel] + 1; // NB Fortran [1,ncomb], cudacpp [0,ncomb-1]
+//                        allselhel[ievt] = ihelF;
+//                        //printf( "sigmaKin: ievt=%4d ihel=%4d\n", ievt, ihelF );
+//                        break;
+//                    }
+//                }
+//
+//                for (int ipagV = 0; ipagV < npagV; ++ipagV)
+//                {
+//                    const int ievt0 = ipagV * neppV;
+//                    fptype* MEs = E_ACCESS::ieventAccessRecord(allMEs, ievt0);
+//                    fptype_sv& MEs_sv = E_ACCESS::kernelAccess(MEs);
+//                    MEs_sv /= helcolDenominators[0];
+//                }
+//            }
+//        }
+//    }
+//}
 
-    using E_ACCESS = HostAccessMatrixElements; // non-trivial access: buffer includes all events
-
-    // Start sigmaKin_lines
-
-    // === PART 0 - INITIALISATION (before calculate_jamps) ===
-    // Reset the "matrix elements" - running sums of |M|^2 over helicities for the given event
-
-    // *** PART 0b - C++ ***
-    const int npagV = nevt / neppV;
-    for (int ipagV = 0; ipagV < npagV; ++ipagV)
-    {
-        const int ievt0 = ipagV * neppV;
-        fptype* MEs = E_ACCESS::ieventAccessRecord(allMEs, ievt0);
-        fptype_sv& MEs_sv = E_ACCESS::kernelAccess(MEs);
-        MEs_sv = fptype_sv{0};
-
-        const int npagV2 = npagV; // loop on one SIMD page (neppV events) at a time
-
-        for (int ipagV2 = 0; ipagV2 < npagV2; ++ipagV2)
-        {
-            const int ievt00 = ipagV2 * neppV; // loop on one SIMD page (neppV events) at a time
-
-            // Running sum of partial amplitudes squared for event by event color selection (#402)
-            // (jamp2[nParity][ncolor][neppV] for the SIMD vector - or the two SIMD vectors - of events processed in calculate_jamps)
-            fptype_sv jamp2_sv[nParity * ncolor] = {};
-            fptype_sv MEs_ighel[ncomb] = {};
-            // sum of MEs for all good helicities up to ighel (for the first - and/or only - neppV page)
-
-            for (int ighel = 0; ighel < cNGoodHel; ighel++)
-            {
-                const int ihel = cGoodHel[ighel];
-                cxtype_sv jamp_sv[nParity * ncolor] = {};
-                // fixed nasty bug (omitting 'nParity' caused memory corruptions after calling calculate_jamps)
-
-                calculate_jamps(ihel, allmomenta, allcouplings, jamp_sv, ievt00);
-                color_sum_cpu(allMEs, jamp_sv, ievt00);
-                MEs_ighel[ighel] = E_ACCESS::kernelAccess(E_ACCESS::ieventAccessRecord(allMEs, ievt00));
-            }
-            // Event-by-event random choice of helicity #403
-            for (int ieppV = 0; ieppV < neppV; ++ieppV)
-            {
-                const int ievt = ievt00 + ieppV;
-                //printf( "sigmaKin: ievt=%4d rndhel=%f\n", ievt, allrndhel[ievt] );
-                for (int ighel = 0; ighel < cNGoodHel; ighel++)
-                {
-                    const bool okhel = allrndhel[ievt] < (MEs_ighel[ighel] / MEs_ighel[cNGoodHel - 1]);
-                    if (okhel)
-                    {
-                        const int ihelF = cGoodHel[ighel] + 1; // NB Fortran [1,ncomb], cudacpp [0,ncomb-1]
-                        allselhel[ievt] = ihelF;
-                        //printf( "sigmaKin: ievt=%4d ihel=%4d\n", ievt, ihelF );
-                        break;
-                    }
-                }
-
-                for (int ipagV = 0; ipagV < npagV; ++ipagV)
-                {
-                    const int ievt0 = ipagV * neppV;
-                    fptype* MEs = E_ACCESS::ieventAccessRecord(allMEs, ievt0);
-                    fptype_sv& MEs_sv = E_ACCESS::kernelAccess(MEs);
-                    MEs_sv /= helcolDenominators[0];
-                }
-            }
-        }
-    }
-}
+#endif

@@ -6,9 +6,9 @@
 #ifndef MemoryAccessWavefunctions_H
 #define MemoryAccessWavefunctions_H 1
 
-#include "mgOnGpuConfig.h"
+#include "../typeTraits.h"
 
-#include "mgOnGpuCxtypes.h"
+#include "../Complex.h"
 
 #include "MemoryAccessHelpers.h"
 
@@ -54,7 +54,7 @@ namespace mg5amcCpu
 
     // Locate an event record (output) in a memory buffer (input) from the given event number (input)
     // [Signature (non-const) ===> fptype* ieventAccessRecord( fptype* buffer, const int ievt ) <===]
-    static __host__ __device__ inline fptype*
+    static   inline fptype*
     ieventAccessRecord( fptype* buffer,
                         const int ievt )
     {
@@ -70,7 +70,7 @@ namespace mg5amcCpu
     // Locate a field (output) of an event record (input) from the given field indexes (input)
     // [Signature (non-const) ===> fptype& decodeRecord( fptype* buffer, Ts... args ) <===]
     // [NB: expand variadic template "Ts... args" to "const int iw6, const int ix2" and rename "Field" as "Iw6Ix2"]
-    static __host__ __device__ inline fptype&
+    static   inline fptype&
     decodeRecord( fptype* buffer,
                   const int iw6,
                   const int ix2 )
@@ -142,13 +142,13 @@ namespace mg5amcCpu
 
 #else
 
-    static __host__ __device__ inline cxtype_sv*
+    static   inline cxtype_sv*
     kernelAccess( fptype* buffer )
     {
       return reinterpret_cast<cxtype_sv*>( buffer );
     }
 
-    static __host__ __device__ inline const cxtype_sv*
+    static   inline const cxtype_sv*
     kernelAccessConst( const fptype* buffer )
     {
       return reinterpret_cast<const cxtype_sv*>( buffer );

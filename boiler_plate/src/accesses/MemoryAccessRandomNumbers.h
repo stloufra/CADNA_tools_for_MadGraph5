@@ -6,15 +6,17 @@
 #ifndef MemoryAccessRandomNumbers_H
 #define MemoryAccessRandomNumbers_H 1
 
-#include "mgOnGpuConfig.h"
+#include "../typeTraits.h"
 
-#include "CPPProcess.h"
+#include "../Complex.h"
+
+#include "../CPPProcess.h"
 #include "MemoryAccessHelpers.h"
 
 #ifdef MGONGPUCPP_GPUIMPL
 using mg5amcGpu::CPPProcess;
 #else
-using mg5amcCpu::CPPProcess;
+//using ::CPPProcess;
 #endif
 
 //----------------------------------------------------------------------------
@@ -51,7 +53,7 @@ private: /* clang-format on */
 
   // Locate an event record (output) in a memory buffer (input) from the given event number (input)
   // [Signature (non-const) ===> fptype* ieventAccessRecord( fptype* buffer, const int ievt ) <===]
-  static __host__ __device__ inline fptype*
+  static   inline fptype*
   ieventAccessRecord( fptype* buffer,
                       const int ievt )
   {
@@ -67,7 +69,7 @@ private: /* clang-format on */
   // Locate a field (output) of an event record (input) from the given field indexes (input)
   // [Signature (non-const) ===> fptype& decodeRecord( fptype* buffer, Ts... args ) <===]
   // [NB: expand variadic template "Ts... args" to "const int ip4, const int iparf" and rename "Field" as "Ip4Iparf"]
-  static __host__ __device__ inline fptype&
+  static   inline fptype&
   decodeRecord( fptype* buffer,
                 const int ip4,
                 const int iparf )

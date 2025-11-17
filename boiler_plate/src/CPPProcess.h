@@ -44,7 +44,6 @@ public:
              const int nevt); // input: #events (for cuda: nevt == ndim == gpublocks*gputhreads)
 
 #include "accesses/includeAcesses.h"
-#include "CPPProcess.cpp"
 
 
 #endif //CPPPROCESS_STANDALONE_CPPPROCESS_H

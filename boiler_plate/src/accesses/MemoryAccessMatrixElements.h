@@ -6,11 +6,13 @@
 #ifndef MemoryAccessMatrixElements_H
 #define MemoryAccessMatrixElements_H 1
 
-#include "mgOnGpuConfig.h"
+#include "../typeTraits.h"
+
+#include "../Complex.h"
 
 #include "MemoryAccessHelpers.h"
 #include "MemoryAccessVectors.h"
-#include "MemoryBuffers.h" // for HostBufferMatrixElements::isaligned
+#include "../MemoryBuffers.h" // for HostBufferMatrixElements::isaligned
 
 // NB: namespaces mg5amcGpu and mg5amcCpu includes types which are defined in different ways for CPU and GPU builds (see #318 and #725)
 #ifdef MGONGPUCPP_GPUIMPL
@@ -39,7 +41,7 @@ namespace mg5amcCpu
 
     // Locate an event record (output) in a memory buffer (input) from the given event number (input)
     // [Signature (non-const) ===> fptype* ieventAccessRecord( fptype* buffer, const int ievt ) <===]
-    static __host__ __device__ inline fptype*
+    static   inline fptype*
     ieventAccessRecord( fptype* buffer,
                         const int ievt )
     {
@@ -51,7 +53,7 @@ namespace mg5amcCpu
     // Locate a field (output) of an event record (input) from the given field indexes (input)
     // [Signature (non-const) ===> fptype& decodeRecord( fptype* buffer, Ts... args ) <===]
     // [NB: expand variadic template "Ts... args" to empty and rename "Field" as empty]
-    static __host__ __device__ inline fptype&
+    static   inline fptype&
     decodeRecord( fptype* buffer )
     {
       constexpr int ievt = 0;
@@ -114,7 +116,7 @@ namespace mg5amcCpu
 
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal)
     // [Signature (non const, SCALAR OR VECTOR) ===> fptype_sv& kernelAccess( const fptype* buffer ) <===]
-    static __host__ __device__ inline fptype_sv&
+    static   inline fptype_sv&
     kernelAccess( fptype* buffer )
     {
       fptype& out = kernelAccess_s( buffer );
