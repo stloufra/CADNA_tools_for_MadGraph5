@@ -100,7 +100,8 @@ readSim_paramsFromFile(const std::string &filename, const int precision_tresh = 
                 if (pos < line.size()) {
                     currentEvent.event_num = std::stoi(line.substr(pos));
                 }
-                if(currentEvent.event_num == allEvents[event_num].event_num) {
+                if (event_num < static_cast<int>(allEvents.size()) &&
+                    currentEvent.event_num == allEvents[event_num].event_num) {
                     rightMomenta = true;
                 }
             }
@@ -117,7 +118,18 @@ readSim_paramsFromFile(const std::string &filename, const int precision_tresh = 
                 int idx;
                 FourMomentum m;
                 if (iss >> idx >> m.p[0] >> m.p[1] >> m.p[2] >> m.p[3])
-                    allEvents[event_num - 1].momenta.push_back(m);
+                    int idx = event_num - 1;
+                if (idx >= 0 && idx < static_cast<int>(allEvents.size()))
+                {
+                    int idx = event_num - 1;
+                    if (idx >= 0 && idx < static_cast<int>(allEvents.size())) {
+                        allEvents[idx].momenta.push_back(m);
+                    }
+                    else
+                    {
+                        std::cout << "Error: idx out of bounds" << std::endl;
+                    }
+                }
             }
         }
     }
