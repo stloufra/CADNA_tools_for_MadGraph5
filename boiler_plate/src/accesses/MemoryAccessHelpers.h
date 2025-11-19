@@ -6,9 +6,9 @@
 #ifndef MemoryAccessHelpers_H
 #define MemoryAccessHelpers_H 1
 
-#include "../typeTraits.h"
+#include "../boilerplate/typeTraits.h"
 
-#include "../Complex.h"
+#include "../boilerplate/Complex.h"
 
 
 

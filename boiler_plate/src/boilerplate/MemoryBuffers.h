@@ -5,7 +5,7 @@
 #ifndef CPPPROCESS_STANDALONE_MEMORYBUFFERS_H
 #define CPPPROCESS_STANDALONE_MEMORYBUFFERS_H
 #include "typeTraits.h"
-#include "CPPProcess.h"
+#include "../CPPProcess.h"
 //--------------------------------------------------------------------------
 
   namespace MemoryBuffers

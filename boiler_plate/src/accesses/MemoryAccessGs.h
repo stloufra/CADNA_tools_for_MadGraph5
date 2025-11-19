@@ -6,13 +6,13 @@
 #ifndef MemoryAccessGs_H
 #define MemoryAccessGs_H 1
 
-#include "../typeTraits.h"
+#include "../boilerplate/typeTraits.h"
 
-#include "../Complex.h"
+#include "../boilerplate/Complex.h"
 
 #include "MemoryAccessHelpers.h"
 #include "MemoryAccessVectors.h"
-#include "../MemoryBuffers.h" // for HostBufferMatrixElements::isaligned
+#include "../boilerplate/MemoryBuffers.h"
 
 // NB: namespaces mg5amcGpu and mg5amcCpu includes types which are defined in different ways for CPU and GPU builds (see #318 and #725)
 #ifdef MGONGPUCPP_GPUIMPL

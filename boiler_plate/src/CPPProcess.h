@@ -15,11 +15,13 @@
 #ifndef MG5_Sigma_sm_gg_ttxgg_H
 #define MG5_Sigma_sm_gg_ttxgg_H 1
 
-#include "typeTraits.h"
-#include "Complex.h"
-#include "Parameters_sm.h"
-
+#include "boilerplate/typeTraits.h"
+#include "boilerplate/Complex.h"
+#include "boilerplate/Parameters_sm.h"
 #include <vector>
+
+#include "HelAmps_sm.h"
+#include "color_sum.h"
 
 //--------------------------------------------------------------------------
 

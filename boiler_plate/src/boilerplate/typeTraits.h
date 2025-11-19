@@ -7,6 +7,10 @@
 #include <cmath>
 #include <algorithm>
 
+#ifdef __CADNA
+#include "cadna.h"
+#endif
+
 #define __host__
 #define __device__
 #define __global__
@@ -22,9 +26,13 @@ class cxtype_ref;
 
 const int neppV = 1;
 
-typedef float fptype;
-typedef float fptype2;
-
+#ifdef __CADNA
+typedef float_st fptype;
+typedef float_st fptype2;
+#else
+typedef double fptype;
+typedef double fptype2;
+#endif
 
 typedef cxsmpl<fptype> cxtype;
 
@@ -82,19 +90,4 @@ maskand(const bool& mask)
 {
     return mask;
 }
-
-/*namespace Parameters_sm_dependentCouplings
-{
-    constexpr size_t ndcoup = 3; // #couplings that vary event by event because they depend on the running alphas QCD
-    constexpr size_t idcoup_GC_10 = 0;
-    constexpr size_t idcoup_GC_11 = 1;
-    constexpr size_t idcoup_GC_12 = 2;
-
-    struct DependentCouplings_sv
-    {
-        cxtype_sv GC_10;
-        cxtype_sv GC_11;
-        cxtype_sv GC_12;
-    };
-}*/
 #endif //CPPPROCESS_STANDALONE_TYPETRAITS_H

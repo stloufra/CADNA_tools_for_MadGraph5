@@ -1,14 +1,25 @@
 #include <iostream>
-#include "src/typeTraits.h"
+#include "src/boilerplate/typeTraits.h"
 #include "src/CPPProcess.h"
-#include "src/MemoryBuffers.h"
-#include "src/read_momenta.h"
+#include "src/boilerplate/MemoryBuffers.h"
+#include "src/boilerplate/read_momenta.h"
 #include "src/accesses/MemoryAccessMomenta.h"
-#include "src/fillers.h"
+#include "src/boilerplate/fillers.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    const int nevt = 24;
+#ifdef __CADNA
+    cadna_init(-1);
+#endif
+
+    int nevt;
+    if (argc == 1)
+        nevt = 24;
+    else
+        nevt = std::stoi(argv[1]);
+
+    std::cout << "nevt = " << nevt << std::endl;
+
     HostBufferMomenta hstMomenta(nevt);
     HostBufferMatrixElements hstMe(nevt);
     HostBufferGs hstGs(nevt);
@@ -17,8 +28,8 @@ int main()
     HostBufferRndNumHelicity hstRndHel(nevt);
     HostBufferHelicityMask hstIsGoodHel(CPPProcess::ncomb);
 
-    CPPProcess process( true );
-    process.initProc( "../src/Cards/param_card.dat" );
+    CPPProcess process(true);
+    process.initProc("../src/Cards/param_card.dat");
 
     fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, true);
     fillGs(hstGs.data(), nevt);
@@ -33,5 +44,9 @@ int main()
 
     printMEandPreccision(hstMomenta, hstMe, nevt, true);
     std::cout << "Number of good helicities: " << nGoodHel << std::endl;
+
+#ifdef __CADNA
+    cadna_end();
+#endif
     return 0;
 }

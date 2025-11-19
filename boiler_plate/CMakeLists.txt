@@ -11,6 +11,7 @@ add_compile_options(
         -Wsign-conversion
 )
 
+#add_definitions(-D__CADNA)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4 -fsanitize=address")
 
@@ -28,16 +29,15 @@ else()
 endif()
 
 add_executable(CPPProcess_standalone main.cpp
-        src/typeTraits.h
-        src/Complex.h
-        src/MemoryBuffers.h
+        src/boilerplate/typeTraits.h
+        src/boilerplate/Complex.h
+        src/boilerplate/MemoryBuffers.h
         src/accesses/includeAcesses.h
-        src/calculate_jamps.h
-        src/commonNums.h
-        src/fillers.h
-        src/Parameters_sm.cc
-        src/constexpr_math.h
-        src/read_slha.cc
+        src/boilerplate/commonNums.h
+        src/boilerplate/fillers.h
+        src/boilerplate/Parameters_sm.cc
+        src/boilerplate/constexpr_math.h
+        src/boilerplate/read_slha.cc
         src/color_sum.cc
         src/CPPProcess.cc
         src/color_sum.h)

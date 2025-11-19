@@ -6,9 +6,9 @@
 #ifndef MemoryAccessRandomNumbers_H
 #define MemoryAccessRandomNumbers_H 1
 
-#include "../typeTraits.h"
+#include "../boilerplate/typeTraits.h"
 
-#include "../Complex.h"
+#include "../boilerplate/Complex.h"
 
 #include "../CPPProcess.h"
 #include "MemoryAccessHelpers.h"

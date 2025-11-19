@@ -5,9 +5,9 @@
 #ifndef CPPPROCESS_STANDALONE_FILLERS_H
 #define CPPPROCESS_STANDALONE_FILLERS_H
 #include "typeTraits.h"
-#include "CPPProcess.h"
-#include "accesses/MemoryAccessMomenta.h"
-#include "accesses/MemoryAccessMatrixElements.h"
+#include "../CPPProcess.h"
+#include "../accesses/MemoryAccessMomenta.h"
+#include "../accesses/MemoryAccessMatrixElements.h"
 
 using namespace mg5amcCpu;
 
@@ -71,10 +71,9 @@ void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt,
 
 void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int nevt, bool verbose = true)
 {
-
     const int meGeVexponent = -(2 * CPPProcess::npar - 8);
 #ifdef __CADNA
-    int avg_matrixElementPrecision, avg_matrixElementPrecision_n;
+    int avg_matrixElementPrecision = 0, avg_matrixElementPrecision_n = 0;
 #endif
     for (unsigned int ievt = 0; ievt < nevt; ++ievt) // Loop over all events in this iteration
     {
@@ -88,22 +87,30 @@ void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int n
                 const int ndigits = std::numeric_limits<double>::digits10;
                 std::cout << std::scientific // fixed format: affects all floats (default precision: 6)
                     << std::setw(4) << ipar + 1
-                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 0, ipar)
-                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 1, ipar)
-                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 2, ipar)
-                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 3, ipar)
+                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
+                        hstMomenta.data(), ievt, 0, ipar)
+                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
+                        hstMomenta.data(), ievt, 1, ipar)
+                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
+                        hstMomenta.data(), ievt, 2, ipar)
+                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
+                        hstMomenta.data(), ievt, 3, ipar)
                     << std::endl
 #ifdef __CADNA
-                    << std::setw(14) << MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 0, ipar).
-                    nb_significant_digit()
-                    << std::setw(14) << MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 1, ipar).
-                    nb_significant_digit()
-                    << std::setw(14) << MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 2, ipar).
-                    nb_significant_digit()
-                    << std::setw(14) << MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 3, ipar).
-                    nb_significant_digit()
+                    << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
+                            hstMomenta.data(), ievt, 0, ipar).
+                        nb_significant_digit()
+                        << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
+                            hstMomenta.data(), ievt, 1, ipar).
+                        nb_significant_digit()
+                        << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
+                            hstMomenta.data(), ievt, 2, ipar).
+                        nb_significant_digit()
+                        << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
+                            hstMomenta.data(), ievt, 3, ipar).
+                        nb_significant_digit()
 
-                    << std::endl
+                        << std::endl
 #endif
                     << std::defaultfloat; // default format: affects all floats
             }
@@ -116,6 +123,8 @@ void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int n
             std::cout << " Matrix element number of sig dig = " <<
                 MemoryAccessMatrixElements::ieventAccessConst(hstMatrixElements.data(), ievt).nb_significant_digit() <<
                 " " << std::endl;
+            avg_matrixElementPrecision += MemoryAccessMatrixElements::ieventAccessConst(hstMatrixElements.data(), ievt).
+                nb_significant_digit();
             avg_matrixElementPrecision += MemoryAccessMatrixElements::ieventAccessConst(hstMatrixElements.data(), ievt).
                 nb_significant_digit();
             avg_matrixElementPrecision_n++;

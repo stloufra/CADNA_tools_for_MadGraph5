@@ -6,10 +6,6 @@
 #ifndef COLOR_SUM_H
 #define COLOR_SUM_H 1
 
-#include "typeTraits.h"
-
-#include "CPPProcess.h"
-
 #ifdef MGONGPUCPP_GPUIMPL
 namespace mg5amcGpu
 #else

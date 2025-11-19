@@ -6,8 +6,10 @@
 #define CPPPROCESS_STANDALONE_COMPLEX_H
 #include <complex>
 #include "typeTraits.h"
+
+#ifdef __CADNA
 #include "cadna.h"
-#include "Complex.h"
+#endif
 
 // The number of floating point types in a complex type (real, imaginary)
 namespace mgOnGpu
@@ -208,6 +210,7 @@ operator/(const cxsmpl<FP>& a, const FP& b)
     return a / cxsmpl<FP>(b, 0);
 }
 
+#ifdef __CADNA
 //CADNA operator overload
 template <typename T>
 constexpr bool is_special_fp_v =
@@ -286,6 +289,8 @@ operator/(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
                            (a_temp.imag() * b.real() - a_temp.real() * b.imag()) / bnorm);
     }
 }
+
+#endif
 
 inline cxtype
   cxmake( const fptype& r, const fptype& i )

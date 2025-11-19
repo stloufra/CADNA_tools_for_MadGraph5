@@ -6,9 +6,9 @@
 #ifndef MemoryAccessMomenta_H
 #define MemoryAccessMomenta_H 1
 
-#include "../typeTraits.h"
+#include "../boilerplate/typeTraits.h"
 
-#include "../Complex.h"
+#include "../boilerplate/Complex.h"
 
 #include "../CPPProcess.h"
 #include "MemoryAccessHelpers.h"

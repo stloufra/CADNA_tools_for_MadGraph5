@@ -13,10 +13,6 @@
 //==========================================================================
 
 #include "CPPProcess.h"
-
-
-#include "HelAmps_sm.h"
-#include "color_sum.h"
 #include "accesses/includeAcesses.h"
 
 #ifdef MGONGPU_SUPPORTS_MULTICHANNEL

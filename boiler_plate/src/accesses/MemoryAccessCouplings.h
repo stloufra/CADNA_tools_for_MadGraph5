@@ -6,13 +6,13 @@
 #ifndef MemoryAccessCouplings_H
 #define MemoryAccessCouplings_H 1
 
-#include "../typeTraits.h"
+#include "../boilerplate/typeTraits.h"
 
-#include "../Complex.h"
+#include "../boilerplate/Complex.h"
 
 #include "MemoryAccessHelpers.h"
 #include "MemoryAccessMomenta.h" // for MemoryAccessMomentaBase::neppM
-#include "../MemoryBuffers.h"       // for HostBufferCouplings::isaligned
+#include "../boilerplate/MemoryBuffers.h"
 
 // NB: namespaces mg5amcGpu and mg5amcCpu includes types which are defined in different ways for CPU and GPU builds (see #318 and #725)
 #ifdef MGONGPUCPP_GPUIMPL

@@ -6,9 +6,9 @@
 #ifndef MemoryAccessVectors_H
 #define MemoryAccessVectors_H 1
 
-#include "../typeTraits.h"
+#include "../boilerplate/typeTraits.h"
 
-#include "../Complex.h"
+#include "../boilerplate/Complex.h"
 
 #ifndef MGONGPUCPP_GPUIMPL
 namespace mg5amcCpu // this is only needed for CPU SIMD vectorization

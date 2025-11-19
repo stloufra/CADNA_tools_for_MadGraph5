@@ -16,8 +16,8 @@
 #ifndef HelAmps_sm_H
 #define HelAmps_sm_H 1
 
-#include "typeTraits.h"
-#include "Complex.h"
+#include "boilerplate/typeTraits.h"
+#include "boilerplate/Complex.h"
 
 #include <cassert>
 //#include <cmath>

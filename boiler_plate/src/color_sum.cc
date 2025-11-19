@@ -3,7 +3,7 @@
 // Created by: A. Valassi (Sep 2025) for the MG5aMC CUDACPP plugin.
 // Further modified by: A. Valassi (2025) for the MG5aMC CUDACPP plugin.
 
-#include "typeTraits.h"
+#include "boilerplate/typeTraits.h"
 #include "CPPProcess.h"
 #include "accesses/includeAcesses.h"
 
