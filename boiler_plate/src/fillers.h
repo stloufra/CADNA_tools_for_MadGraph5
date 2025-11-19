@@ -56,7 +56,8 @@ void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt,
                     << std::setw(ndigits + 8) << p1
                     << std::setw(ndigits + 8) << p2
                     << std::setw(ndigits + 8) << p3
-                    << std::endl;
+                    << std::endl
+                    << std::defaultfloat; // default format: affects all floats
             }
 
             MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 0, ipar) = static_cast<fptype>(mass);

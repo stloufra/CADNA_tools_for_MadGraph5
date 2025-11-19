@@ -2507,6 +2507,56 @@ namespace mg5amcCpu
       jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
       jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
 
+      //for debuging with the upstream version
+      /*std::cout << "w_fp[0] = " << *w_fp[0] << std::endl;
+      std::cout << "w_fp[1] = " << *w_fp[1] << std::endl;
+      std::cout << "w_fp[2] = " << *w_fp[2] << std::endl;
+      std::cout << "w_fp[3] = " << *w_fp[3] << std::endl;
+      std::cout << "w_fp[4] = " << *w_fp[4] << std::endl;
+      std::cout << "w_fp[5] = " << *w_fp[5] << std::endl;
+      std::cout << "w_fp[6] = " << *w_fp[6] << std::endl;
+      std::cout << "w_fp[7] = " << *w_fp[7] << std::endl;
+      std::cout << "w_fp[8] = " << *w_fp[8] << std::endl;
+      std::cout << "w_fp[9] = " << *w_fp[9] << std::endl;
+      std::cout << "w_fp[10] = " << *w_fp[10] << std::endl;
+      std::cout << "w_fp[11] = " << *w_fp[11] << std::endl;
+      std::cout << "w_fp[12] = " << *w_fp[12] << std::endl;
+      std::cout << "w_fp[13] = " << *w_fp[13] << std::endl;
+      std::cout << "w_fp[14] = " << *w_fp[14] << std::endl;
+      std::cout << "w_fp[15] = " << *w_fp[15] << std::endl;
+      std::cout << "w_fp[16] = " << *w_fp[16] << std::endl;
+      std::cout << "w_fp[17] = " << *w_fp[17] << std::endl;
+      std::cout << "w_fp[18] = " << *w_fp[18] << std::endl;
+      std::cout << "w_fp[19] = " << *w_fp[19] << std::endl;
+      std::cout << "w_fp[20] = " << *w_fp[20] << std::endl;
+      std::cout << "w_fp[21] = " << *w_fp[21] << std::endl;
+      std::cout << "w_fp[22] = " << *w_fp[22] << std::endl;
+      std::cout << "w_fp[23] = " << *w_fp[23] << std::endl;
+      std::cout << "w_fp[24] = " << *w_fp[24] << std::endl;
+      std::cout << "jamp_sv[0] = " << jamp_sv[0] << std::endl;
+      std::cout << "jamp_sv[1] = " << jamp_sv[1] << std::endl;
+      std::cout << "jamp_sv[2] = " << jamp_sv[2] << std::endl;
+      std::cout << "jamp_sv[3] = " << jamp_sv[3] << std::endl;
+      std::cout << "jamp_sv[4] = " << jamp_sv[4] << std::endl;
+      std::cout << "jamp_sv[5] = " << jamp_sv[5] << std::endl;
+      std::cout << "jamp_sv[6] = " << jamp_sv[6] << std::endl;
+      std::cout << "jamp_sv[7] = " << jamp_sv[7] << std::endl;
+      std::cout << "jamp_sv[8] = " << jamp_sv[8] << std::endl;
+      std::cout << "jamp_sv[9] = " << jamp_sv[9] << std::endl;
+      std::cout << "jamp_sv[10] = " << jamp_sv[10] << std::endl;
+      std::cout << "jamp_sv[11] = " << jamp_sv[11] << std::endl;
+      std::cout << "jamp_sv[12] = " << jamp_sv[12] << std::endl;
+      std::cout << "jamp_sv[13] = " << jamp_sv[13] << std::endl;
+      std::cout << "jamp_sv[14] = " << jamp_sv[14] << std::endl;
+      std::cout << "jamp_sv[15] = " << jamp_sv[15] << std::endl;
+      std::cout << "jamp_sv[16] = " << jamp_sv[16] << std::endl;
+      std::cout << "jamp_sv[17] = " << jamp_sv[17] << std::endl;
+      std::cout << "jamp_sv[18] = " << jamp_sv[18] << std::endl;
+      std::cout << "jamp_sv[19] = " << jamp_sv[19] << std::endl;
+      std::cout << "jamp_sv[20] = " << jamp_sv[20] << std::endl;
+      std::cout << "jamp_sv[21] = " << jamp_sv[21] << std::endl;
+      std::cout << "jamp_sv[22] = " << jamp_sv[22] << std::endl;
+      std::cout << "jamp_sv[23] = " << jamp_sv[23] << std::endl;*/
       // *** COLOR CHOICE BELOW ***
 
       // Store the leading color flows for choice of color
