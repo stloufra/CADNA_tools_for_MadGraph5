@@ -24,6 +24,8 @@ const int neppV = 1;
 
 typedef float fptype;
 typedef float fptype2;
+
+
 typedef cxsmpl<fptype> cxtype;
 
 typedef bool bool_sv;
