@@ -12,9 +12,9 @@ add_compile_options(
 )
 
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4 -fsanitize=address")
 
-set(CMAKE_CXX_FLAGS_PROFILE "-O3 -g -gdwarf-4 -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS_PROFILE "-O3 -g -gdwarf-4 -fno-omit-frame-pointer ")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
@@ -28,11 +28,18 @@ else()
 endif()
 
 add_executable(CPPProcess_standalone main.cpp
-        src/CPPProcess.cpp
-        src/CPPProcess.h
         src/typeTraits.h
         src/Complex.h
         src/MemoryBuffers.h
-        src/accesses/includeAcesses.h)
+        src/accesses/includeAcesses.h
+        src/calculate_jamps.h
+        src/commonNums.h
+        src/fillers.h
+        src/Parameters_sm.cc
+        src/constexpr_math.h
+        src/read_slha.cc
+        src/color_sum.cc
+        src/CPPProcess.cc
+        src/color_sum.h)
 target_link_libraries(CPPProcess_standalone PRIVATE cadnaC)
 

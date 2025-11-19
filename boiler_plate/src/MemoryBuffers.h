@@ -6,10 +6,11 @@
 #define CPPPROCESS_STANDALONE_MEMORYBUFFERS_H
 #include "typeTraits.h"
 #include "CPPProcess.h"
-  //--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 
   namespace MemoryBuffers
   {
+    using namespace mg5amcCpu;
     // Process-independent compile-time constants
     static constexpr size_t np4 = CPPProcess::np4;
     static constexpr size_t nw6 = CPPProcess::nw6;

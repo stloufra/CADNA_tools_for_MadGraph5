@@ -16,11 +16,8 @@
 #ifndef HelAmps_sm_H
 #define HelAmps_sm_H 1
 
-#include "mgOnGpuConfig.h"
-
-#include "mgOnGpuVectors.h"
-
-#include "Parameters_sm.h"
+#include "typeTraits.h"
+#include "Complex.h"
 
 #include <cassert>
 //#include <cmath>

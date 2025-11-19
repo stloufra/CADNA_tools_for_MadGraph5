@@ -24,6 +24,8 @@ using mg5amcGpu::CPPProcess;
 // A class describing the internal layout of memory buffers for random numbers
 // This implementation uses an AOSOA[npagR][nparf][np4][neppR] where nevt=npagR*neppR
 // [If many implementations are used, a suffix _AOSOAv1 should be appended to the class name]
+
+using namespace mg5amcCpu;
 class MemoryAccessRandomNumbersBase //_AOSOAv1
 {
 public: /* clang-format off */

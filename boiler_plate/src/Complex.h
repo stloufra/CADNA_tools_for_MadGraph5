@@ -350,4 +350,12 @@ operator<<( std::ostream& out, const cxtype_ref& c )
     out << (cxtype)c;
     return out;
 }
+
+inline cxtype cxzero_sv() { return cxtype( 0, 0 ); }
+
+inline fptype_sv
+cxabs2( const cxtype_sv& c )
+{
+    return cxreal( c ) * cxreal( c ) + cximag( c ) * cximag( c );
+}
 #endif //CPPPROCESS_STANDALONE_COMPLEX_H

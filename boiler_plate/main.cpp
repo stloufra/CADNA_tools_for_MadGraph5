@@ -2,33 +2,36 @@
 #include "src/typeTraits.h"
 #include "src/CPPProcess.h"
 #include "src/MemoryBuffers.h"
+#include "src/read_momenta.h"
+#include "src/accesses/MemoryAccessMomenta.h"
+#include "src/fillers.h"
 
 int main()
 {
-
     const int nevt = 24;
+    HostBufferMomenta hstMomenta(nevt);
+    HostBufferMatrixElements hstMe(nevt);
     HostBufferGs hstGs(nevt);
-    HostBufferHelicityMask hstIsGoodHel( CPPProcess::ncomb );
-    HostBufferCouplings m_couplings(nevt);
+    HostBufferSelectedHelicity hstSelHel(nevt);
+    HostBufferCouplings hstCoup(nevt);
+    HostBufferRndNumHelicity hstRndHel(nevt);
+    HostBufferHelicityMask hstIsGoodHel(CPPProcess::ncomb);
 
-    for( unsigned int i = 0; i < nevt; ++i )
-    {
-        const fptype fixedG = 1.2177157847767195; // fixed G for aS=0.118 (hardcoded for now in check_sa.cc, fcheck_sa.f, runTest.cc)
-        hstGs[i] = fixedG;
-    }
-    computeDependentCouplings(hstGs.data(), m_couplings.data(), nevt );
+    CPPProcess process( true );
+    process.initProc( "../src/Cards/param_card.dat" );
 
+    fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, true);
+    fillGs(hstGs.data(), nevt);
+    fillRndHel(hstRndHel.data(), nevt);
 
-    //sigmaKin_setGoodHel();
+    computeDependentCouplings(hstGs.data(), hstCoup.data(), nevt);
+    sigmaKin_getGoodHel(hstMomenta.data(), hstCoup.data(), hstMe.data(), hstIsGoodHel.data(), nevt);
 
-    //computeDependentCouplings( m_gs.data(), m_couplings.data(), m_gs.size() );
-    /*CPPProcess::sigmaKin(allmomenta, // input: momenta[nevt*npar*4]
-             allcouplings, // input: couplings[nevt*ndcoup*2]
-             allrndhel, // input: random numbers[nevt] for helicity selection
-             allMEs, // output: allMEs[nevt], |M|^2 final_avg_over_helicities
-             allselhel, // output: helicity selection[nevt]
-             nevt);
-    */
+    const int nGoodHel = sigmaKin_setGoodHel(hstIsGoodHel.data());
+
+    sigmaKin(hstMomenta.data(), hstCoup.data(), hstRndHel.data(), hstMe.data(), hstSelHel.data(), nevt);
+
+    printMEandPreccision(hstMomenta, hstMe, nevt, true);
+    std::cout << "Number of good helicities: " << nGoodHel << std::endl;
     return 0;
-
 }

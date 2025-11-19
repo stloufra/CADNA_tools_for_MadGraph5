@@ -4,7 +4,20 @@
 
 #ifndef CPPPROCESS_STANDALONE_TYPETRAITS_H
 #define CPPPROCESS_STANDALONE_TYPETRAITS_H
-template <typename FP> class cxsmpl;
+#include <cmath>
+#include <algorithm>
+
+#define __host__
+#define __device__
+#define __global__
+#define mgDebug(x,y)
+#define SEP79 79
+#define mgDebugInitialise(x)
+#define mgDebugFinalise(x)
+
+
+template <typename FP>
+class cxsmpl;
 class cxtype_ref;
 
 const int neppV = 1;
@@ -20,24 +33,66 @@ typedef unsigned int uint_sv;
 typedef cxtype cxtype_sv;
 typedef cxtype_ref cxtype_sv_ref;
 
-inline constexpr bool
-ispoweroftwo( int n )
-{
-  return ( n > 0 ) && !( n & ( n - 1 ) );
-}
 #include "Complex.h"
 
-namespace Parameters_sm_dependentCouplings
+inline constexpr bool
+ispoweroftwo(int n)
 {
-  constexpr size_t ndcoup = 3; // #couplings that vary event by event because they depend on the running alphas QCD
-  constexpr size_t idcoup_GC_10 = 0;
-  constexpr size_t idcoup_GC_11 = 1;
-  constexpr size_t idcoup_GC_12 = 2;
-  struct DependentCouplings_sv
-  {
-    cxtype_sv GC_10;
-    cxtype_sv GC_11;
-    cxtype_sv GC_12;
-  };
+    return (n > 0) && !(n & (n - 1));
 }
+
+using std::max;
+using std::min;
+using std::sqrt;
+
+inline const fptype&
+fpmax(const fptype& a, const fptype& b)
+{
+    return max(a, b);
+}
+
+inline const fptype&
+fpmin(const fptype& a, const fptype& b)
+{
+    return min(a, b);
+}
+
+inline fptype
+fpsqrt(const fptype& f)
+{
+    return sqrt(f);
+}
+
+inline fptype
+fpternary(const bool& mask, const fptype& a, const fptype& b)
+{
+    return (mask ? a : b);
+}
+
+inline cxtype
+cxternary(const bool& mask, const cxtype& a, const cxtype& b)
+{
+    return (mask ? a : b);
+}
+
+inline bool
+maskand(const bool& mask)
+{
+    return mask;
+}
+
+/*namespace Parameters_sm_dependentCouplings
+{
+    constexpr size_t ndcoup = 3; // #couplings that vary event by event because they depend on the running alphas QCD
+    constexpr size_t idcoup_GC_10 = 0;
+    constexpr size_t idcoup_GC_11 = 1;
+    constexpr size_t idcoup_GC_12 = 2;
+
+    struct DependentCouplings_sv
+    {
+        cxtype_sv GC_10;
+        cxtype_sv GC_11;
+        cxtype_sv GC_12;
+    };
+}*/
 #endif //CPPPROCESS_STANDALONE_TYPETRAITS_H
