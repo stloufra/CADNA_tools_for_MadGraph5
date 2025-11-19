@@ -111,6 +111,20 @@ else
   echo "../../src/mgOnGpuCxtypes.h does not exist"
 fi
 
+          #remove fast math from the cudacpp one folder up
+if [ -f "../cuda_cpp.mk" ]
+then
+    if grep -Fq "removed for CADNA" ../cuda_cpp.mk
+    then
+        echo "fast math already comented out"
+    else
+        echo "comenting fast math in ../cuda_cpp.mk"
+        echo "skipping this step for now"
+       python3 $CURRENT_DIR/srcpy/cadnize_fast_math.py ../cuda_cpp.mk
+    fi
+else
+  echo "../../src/mgOnGpuCxtypes.h does not exist"
+fi
            #changes in mgOnGpuConfig.h - #include cadna.h, #undef SIMD, typdefs to _st
 echo
 echo "          cadnize_mgOnGpuConfig.py"
