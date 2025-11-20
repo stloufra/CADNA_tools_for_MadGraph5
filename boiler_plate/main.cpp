@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     CPPProcess process(true);
     process.initProc("../src/Cards/param_card.dat");
 
-    fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, true);
+    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, true);
     fillGs(hstGs.data(), nevt);
     fillRndHel(hstRndHel.data(), nevt);
 
