@@ -6,6 +6,10 @@
 #include "src/accesses/MemoryAccessMomenta.h"
 #include "src/boilerplate/fillers.h"
 
+#ifdef __CADNA
+#include "src/boilerplate/repair_momenta.h"
+#endif
+
 int main(int argc, char* argv[])
 {
 #ifdef __CADNA
@@ -29,9 +33,16 @@ int main(int argc, char* argv[])
     HostBufferHelicityMask hstIsGoodHel(CPPProcess::ncomb);
 
     CPPProcess process(true);
-    process.initProc("../src/Cards/param_card.dat");
 
+#if defined (__PRO__)
+    process.initProc("src/Cards/param_card.dat");
+    fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, true);
+#else
+    process.initProc("../src/Cards/param_card.dat");
     fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, true);
+    momenta_reparator::BoostMomenta(hstMomenta, nevt);
+#endif
+
     fillGs(hstGs.data(), nevt);
     fillRndHel(hstRndHel.data(), nevt);
 
@@ -42,10 +53,17 @@ int main(int argc, char* argv[])
 
     sigmaKin(hstMomenta.data(), hstCoup.data(), hstRndHel.data(), hstMe.data(), hstSelHel.data(), nevt);
 
-    printMEandPreccision(hstMomenta, hstMe, nevt, true);
-    std::cout << "Number of good helicities: " << nGoodHel << std::endl;
+#if defined (__PRO__)
+    PROMISE_CHECK_ARRAY(hstMe.data(), nevt);
+    PROMISE_CHECK_VAR(hstMe.data()[0]);
+#endif
 
 #ifdef __CADNA
+    printMEandPreccision(hstMomenta, hstMe, nevt, true);
+    std::cout << "Number of good helicities: " << nGoodHel << std::endl;
+    auto res = convert_to_array(hstMe, nevt);
+    //for (auto a : res) std::cout << a.nb_significant_digit() << std::endl;
+    //for (int ievt = 0; ievt < nevt; ++ievt) std::cout << (res[ievt].nb_significant_digit() == hstMe.data()[ievt].nb_significant_digit()) << std::endl;
     cadna_end();
 #endif
     return 0;

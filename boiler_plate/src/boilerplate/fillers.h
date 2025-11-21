@@ -125,8 +125,6 @@ void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int n
                 " " << std::endl;
             avg_matrixElementPrecision += MemoryAccessMatrixElements::ieventAccessConst(hstMatrixElements.data(), ievt).
                 nb_significant_digit();
-            avg_matrixElementPrecision += MemoryAccessMatrixElements::ieventAccessConst(hstMatrixElements.data(), ievt).
-                nb_significant_digit();
             avg_matrixElementPrecision_n++;
 #endif
             std::cout << std::string(SEP79, '-') << std::endl;
@@ -139,9 +137,19 @@ void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int n
     {
         std::cout << "avg_matrixElementPrecision = " << avg_matrixElementPrecision << std::endl;
         std::cout << "avg_matrixElementPrecision_n = " << avg_matrixElementPrecision_n << std::endl;
-        std::cout << "(1)/(2) = " << avg_matrixElementPrecision / avg_matrixElementPrecision_n << std::endl;
+        std::cout << "(1)/(2) = " << (double)avg_matrixElementPrecision / (double)avg_matrixElementPrecision_n << std::endl;
     }
 #endif
+}
+
+std::vector<fptype> convert_to_array(auto& hstMatrixElements, const int nevt)
+{
+    std::vector<fptype> out(nevt);
+    for (int ievt = 0; ievt < nevt; ++ievt)
+    {
+        out[ievt ] = MemoryAccessMatrixElements::ieventAccessConst(hstMatrixElements.data(), ievt);
+    }
+    return out;
 }
 
 #endif //CPPPROCESS_STANDALONE_FILLERS_H

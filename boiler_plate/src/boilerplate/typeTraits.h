@@ -26,19 +26,28 @@ class cxtype_ref;
 
 const int neppV = 1;
 
-#ifdef __CADNA
+#if defined __CADNA
 typedef float_st fptype;
 typedef float_st fptype2;
+typedef double_st fptype3;
+
+#elif defined ( __PRO__)
+
+#include "promiseTypes.h"
+
 #else
-typedef double fptype;
-typedef double fptype2;
+typedef float fptype;
+typedef float fptype2;
+typedef double fptype3;
 #endif
 
 typedef cxsmpl<fptype> cxtype;
+//typedef cxsmpl<fptype3> cxtype3;
 
 typedef bool bool_sv;
 typedef fptype fptype_sv;
 typedef fptype2 fptype2_sv;
+//typedef fptype3 fptype3_sv;
 typedef unsigned int uint_sv;
 typedef cxtype cxtype_sv;
 typedef cxtype_ref cxtype_sv_ref;
@@ -73,11 +82,47 @@ fpsqrt(const fptype& f)
     return sqrt(f);
 }
 
+#ifdef __CADNA
+inline fptype3
+fpsqrt(const fptype3& f)
+{
+    return sqrt(f);
+}
+
+inline const fptype3&
+fpmax(const fptype3& a, const fptype3& b)
+{
+    return max(a, b);
+}
+
+inline const fptype3&
+fpmin(const fptype3& a, const fptype3& b)
+{
+    return min(a, b);
+}
+#endif
+
 inline fptype
 fpternary(const bool& mask, const fptype& a, const fptype& b)
 {
     return (mask ? a : b);
 }
+#ifdef __CADNA
+
+template <typename FP, typename FP2,
+std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
+auto
+fpternary(const bool& mask, const  FP& a, const  FP2& b)
+{
+    if constexpr ( std::is_same_v<FP, double_st>)
+        return (mask ? a : static_cast<double_st>(b));
+    else if constexpr (std::is_same_v<FP2, double_st>)
+        return (mask ? static_cast<double_st>(a) : b);
+    //else
+    //    return (mask ? static_cast<float_st>(a) : static_cast<float_st>(b));
+}
+#endif
+
 
 inline cxtype
 cxternary(const bool& mask, const cxtype& a, const cxtype& b)
@@ -90,4 +135,40 @@ maskand(const bool& mask)
 {
     return mask;
 }
+
+#ifdef __CADNA
+template <typename FP, typename FP2,
+std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
+inline const double_st
+fpmax(const  FP& a, const  FP2& b)
+{
+    if constexpr (std::is_same_v<FP,double_st>)
+        return max(a, static_cast<FP>(b));
+    else
+        return max(static_cast<FP2>(a), b);
+}
+
+template <typename FP, typename FP2,
+std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
+inline const double_st
+fpmin(const  FP& a, const  FP2& b)
+{
+    if constexpr (std::is_same_v<FP,double_st>)
+        return min(a, static_cast<FP>(b));
+    else
+        return min(static_cast<FP2>(a), b);
+}
+
+template <typename FP, typename FP2,
+std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
+inline const double_st
+fpsqrt(const  FP& a, const  FP2& b)
+{
+    if constexpr (std::is_same_v<FP,double_st>)
+        return sqrt(a, static_cast<FP>(b));
+    else
+        return sqrt(static_cast<FP2>(a), b);
+}
+#endif
+
 #endif //CPPPROCESS_STANDALONE_TYPETRAITS_H
