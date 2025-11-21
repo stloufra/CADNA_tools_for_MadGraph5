@@ -18,6 +18,13 @@ namespace mgOnGpu
     constexpr int cppAlign = 64;
 }
 
+#if defined (__CADNA)
+//CADNA operator overload
+template <typename T>
+constexpr bool is_special_fp_v =
+    std::is_same_v<T, double_st> || std::is_same_v<T, float_st>;
+#endif
+
 // --- Type definition (simple complex type derived from cxtype_v)
 template <typename FP>
 class cxsmpl
@@ -59,8 +66,7 @@ public:
     constexpr const FP& imag() const { return m_imag; }
 
     template <typename FP2>
-    constexpr operator cxsmpl<FP2>() const { return cxsmpl<FP2>(m_real, m_imag); }
-
+    constexpr explicit operator cxsmpl<FP2>() const { return cxsmpl<FP2>(m_real, m_imag); }
 private:
     FP m_real, m_imag; // RI
 };
@@ -210,11 +216,16 @@ operator/(const cxsmpl<FP>& a, const FP& b)
     return a / cxsmpl<FP>(b, 0);
 }
 
-#ifdef __CADNA
-//CADNA operator overload
-template <typename T>
-constexpr bool is_special_fp_v =
-    std::is_same_v<T, double_st> || std::is_same_v<T, float_st>;
+
+
+#if defined (__CADNA)
+
+inline
+cxsmpl<double_st>
+operator/(const cxsmpl<double_st>& a, const float_st& b)
+{
+    return a / cxsmpl<double_st>(static_cast<double_st>(b), 0);
+}
 
 template <typename FP, typename FP2,
           std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
@@ -292,11 +303,133 @@ operator/(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
 
 #endif
 
-inline cxtype
-  cxmake( const fptype& r, const fptype& i )
+#if defined(__PRO__)
+template <typename T, typename = void>
+struct is_special_fp : std::false_type {};
+
+#ifdef double_st
+template <>
+struct is_special_fp<double_st> : std::true_type {};
+#endif
+
+#ifdef float_st
+template <>
+struct is_special_fp<float_st> : std::true_type {};
+#endif
+
+template <typename T>
+constexpr bool is_special_fp_v = is_special_fp<T>::value;
+
+    template <typename FP, typename FP2,
+              std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+    inline constexpr auto
+    operator+(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
+    {
+        if constexpr (is_special_fp_v<FP>)
+        {
+            cxsmpl<FP> b_temp = b;
+            return cxsmpl<FP>(a.real() + b_temp.real(), a.imag() + b_temp.imag());
+        }
+        else
+        {
+            cxsmpl<FP2> a_temp = a;
+            return cxsmpl<FP2>(a_temp.real() + b.real(), a_temp.imag() + b.imag());
+        }
+    }
+
+    template <typename FP, typename FP2,
+              std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+    inline constexpr auto
+    operator-(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
+    {
+        if constexpr (is_special_fp_v<FP>)
+        {
+            cxsmpl<FP> b_temp = b;
+            return cxsmpl<FP>(a.real() - b_temp.real(), a.imag() - b_temp.imag());
+        }
+        else
+        {
+            cxsmpl<FP2> a_temp = a;
+            return cxsmpl<FP2>(a_temp.real() - b.real(), a_temp.imag() - b.imag());
+        }
+    }
+
+    template <typename FP, typename FP2,
+              std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+    inline constexpr auto
+    operator*(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
+    {
+        if constexpr (is_special_fp_v<FP>)
+        {
+            cxsmpl<FP> b_temp = b;
+            return cxsmpl<FP>(a.real() * b_temp.real() - a.imag() * b_temp.imag(),
+                              a.imag() * b_temp.real() + a.real() * b_temp.imag());
+        }
+        else
+        {
+            cxsmpl<FP2> a_temp = a;
+            return cxsmpl<FP2>(a_temp.real() * b.real() - a_temp.imag() * b.imag(),
+                               a_temp.imag() * b.real() + a_temp.real() * b.imag());
+        }
+    }
+
+    template <typename FP, typename FP2,
+              std::enable_if_t<is_special_fp_v<FP2> || is_special_fp_v<FP2>, int> = 0>
+    inline constexpr auto
+    operator/(const cxsmpl<FP2>& a, const cxsmpl<FP2>& b)
+    {
+        if constexpr (is_special_fp_v<FP2>)
+        {
+            cxsmpl<FP2> b_temp = b;
+            FP2 bnorm = b_temp.real() * b_temp.real() + b_temp.imag() * b_temp.imag();
+            return cxsmpl<FP2>((a.real() * b_temp.real() + a.imag() * b_temp.imag()) / bnorm,
+                              (a.imag() * b_temp.real() - a.real() * b_temp.imag()) / bnorm);
+        }
+        else
+        {
+            cxsmpl<FP2> a_temp = a;
+            FP2 bnorm = b.real() * b.real() + b.imag() * b.imag();
+            return cxsmpl<FP2>((a_temp.real() * b.real() + a_temp.imag() * b.imag()) / bnorm,
+                               (a_temp.imag() * b.real() - a_temp.real() * b.imag()) / bnorm);
+        }
+    }
+
+#endif
+
+#ifdef __CADNA
+template <typename FP, typename FP2,
+          std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2,double_st>, int> = 0>
+inline auto
+cxmake( const FP& r, const FP2& i )
 {
-    return cxtype( r, i ); // cxsmpl constructor
+        if constexpr (std::is_same_v<FP, double_st>)
+            return cxsmpl<FP>( r, static_cast<FP>(i) ); // cxsmpl constructor
+        else if constexpr (std::is_same_v<FP2, double_st>)
+            return cxsmpl<FP2>( static_cast<FP2>(r), i ); // cxsmpl constructor
 }
+#endif
+
+inline cxtype
+cxmake( const fptype& r, const fptype& i )
+{
+      return cxtype( r, i ); // cxsmpl constructor
+}
+
+#ifdef __CADNA
+
+inline cxsmpl<float_st>
+cxmake_fst( const double_st& r, const double_st& i )
+    {
+        return cxtype( static_cast<float_st>(r), static_cast<float_st>(i) ); // cxsmpl constructor
+    }
+
+inline cxsmpl<float_st>
+cxmake_fst( const cxsmpl<double_st> c )
+    {
+        return cxtype( static_cast<float_st>(c.real()), static_cast<float_st>(c.imag()) ); // cxsmpl constructor
+    }
+#endif
+
 
 inline fptype
 cxreal( const cxtype& c )

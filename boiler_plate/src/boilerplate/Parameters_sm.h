@@ -17,8 +17,6 @@
 
 #include "typeTraits.h"
 
-#include "constexpr_math.h"
-
 //==========================================================================
 
 // AV Jan 2024 (PR #625): this ugly #define was the only way I found to avoid creating arrays[nBsm] in CPPProcess.cc if nBsm is 0
