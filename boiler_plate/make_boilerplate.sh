@@ -48,7 +48,26 @@ find "$DIR" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' file; do
     fi
 done
 
-BUILD_DIR1="./debug"
-BUILD_DIR2="./profile"
-BUILD_DIR3="./release"
+echo
+echo "          cadnize_constexpr_replace.py"
+#  loop over list of files
+files=(HelAmps_sm.h CPPProcess.cc color_sum.cc)
+for file in "${files[@]}"
+do
+    python3 $DIR/srcpy/cadnize_constexpr_replace.py $DIR/$file
+done
 
+echo
+echo "          cadnize_HelAmps.py"
+if [ -f "./src/HelAmps_sm.h" ]
+then
+    python3 $DIR/srcpy/cadnize_HelAmps.py $DIR/HelAmps_sm.h
+fi
+
+echo
+echo "          cadnize_std_replace.py"
+files=(HelAmps_sm.h)
+for file in "${files[@]}"
+do
+    python3  $DIR/srcpy/cadnize_std_replace.py $DIR/$file
+done
