@@ -71,6 +71,117 @@ private:
     FP m_real, m_imag; // RI
 };
 
+template< typename T >
+struct rne
+{
+   T sum;
+   T error;
+};
+
+template< typename T, std::enable_if_t< std::is_floating_point_v< T >
+#if defined (__CADNA)
+|| is_special_fp_v<T>
+#endif
+, int > = 0 >
+constexpr  inline rne< T >
+quick_two_sum( const T a, const T b )
+{
+  const T s = a + b;
+  const T z = s -a;
+  const T err = b -z;
+  return {s, err};
+}
+
+template< typename T, std::enable_if_t< std::is_floating_point_v< T >
+#if defined (__CADNA)
+|| is_special_fp_v<T>
+#endif
+, int > = 0 >
+constexpr rne< T >
+two_sum( const T a, const T b )
+{
+    const T s =  a + b;
+    const T aa = s -b;
+    const T bb = s -aa;
+    const T da = a -aa;
+    const T db = b -bb;
+    const T err = da + db;
+    return {s, err};
+}
+
+template<typename FP>
+class cxcomp
+{
+    FP m_real;
+    FP m_imag;
+    FP m_real_err;
+    FP m_imag_err;
+
+    public:
+
+    constexpr cxcomp() : m_real(0), m_imag(0),
+     m_real_err(0), m_imag_err(0)
+    {
+    }
+
+    cxcomp(const cxcomp&) = default;
+    cxcomp(cxcomp&&) = default;
+
+    constexpr cxcomp(const FP& r, const FP& i = 0, const FP& re = 0.f, const FP& ie = 0.f) : m_real(r), m_imag(i), m_real_err(re), m_imag_err(ie)
+    {
+    }
+
+    constexpr cxcomp(const std::complex<FP>& c) : m_real(c.real()), m_imag(c.imag()), m_real_err(0), m_imag_err(0)
+    {
+    }
+
+    cxcomp& operator=(const cxcomp&) = default;
+    cxcomp& operator=( cxcomp&&) = default;
+
+    cxcomp& operator=(const cxsmpl<FP>& c)
+    {
+        m_real = c.real();
+        m_imag = c.imag();
+        m_real_err = 0.f;
+        m_imag_err = 0.f;
+        return *this;
+    };
+
+    constexpr cxcomp& operator+=(const cxsmpl<FP>& c)
+    {
+        rne< FP > r_real = two_sum( m_real, c.real() );
+        rne< FP > r_imag = two_sum( m_imag, c.imag() );
+        m_real = r_real.sum;
+        m_real_err += r_real.error;
+        m_imag = r_imag.sum;
+        m_imag_err += r_imag.error;
+        return *this;
+    }
+
+    constexpr cxcomp& operator-=(const cxsmpl<FP>& c)
+    {
+        rne< FP > r_real = two_sum( m_real, -c.real() );
+        rne< FP > r_imag = two_sum( m_imag, -c.imag() );
+        m_real = r_real.sum;
+        m_real_err += r_real.error;
+        m_imag = r_imag.sum;
+        m_imag_err += r_imag.error;
+        return *this;
+    }
+
+    constexpr const FP& real() const { return m_real; }
+    constexpr const FP& imag() const { return m_imag; }
+
+    //template <typename FP2>
+    //constexpr explicit operator cxcomp<FP2>() const { return cxcomp<FP2>(m_real, m_imag); }
+
+    constexpr cxsmpl<FP> finalize()
+    {
+        return cxsmpl<FP>(m_real+m_real_err, m_imag+m_imag_err);
+    }
+
+};
+
 template <typename FP>
 constexpr
 inline cxsmpl<FP>
