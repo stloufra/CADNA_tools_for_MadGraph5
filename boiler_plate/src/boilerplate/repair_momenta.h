@@ -9,6 +9,8 @@
 #include <iostream>
 #include <array>
 #include <algorithm>
+#include <unistd.h>
+
 #include "typeTraits.h"
 
 namespace momenta_reparator
@@ -60,6 +62,11 @@ namespace momenta_reparator
 
     inline P3 to3(const P4& p){
         return {p.px, p.py, p.pz};
+    }
+
+    inline P3 minus(const P3& a)
+    {
+        return {-a[0], -a[1], -a[2]};
     }
 
     inline P3 normalize(const P3& v){
@@ -160,11 +167,12 @@ namespace momenta_reparator
 
                 if(is_collinear){
                     // Transverse boost (open angle)
-                    auto perp = perpendicular_unit(axis);
-                    fptype3 beta_mag = 0.1f; // safe fixed value (TODO:can be adaptive)
+                    auto perp = axis; // perpendicular_unit(axis);
+                    //std::cout << dot3(axis, perp) << std::endl;
+                    fptype3 beta_mag = 0.95f; // safe fixed value (TODO:can be adaptive)
                     beta = { beta_mag*perp[0], beta_mag*perp[1], beta_mag*perp[2] };
 
-                    std::cout << "[COLLINEAR FIX] Pair ("<<i<<","<<j<<") C="<<coll<<"\n";
+                    //std::cout << "[COLLINEAR FIX] Pair ("<<i<<","<<j<<") C="<<coll<<"\n";
                 }
 
                 else if(is_soft){
@@ -174,20 +182,20 @@ namespace momenta_reparator
                     // Boost direction: along axis
                     auto boost_dir = axis;
                     if(i_soft) {
-                        // boost along particle j → gives energy to i
+                        // boost along particle j gives energy to i
                         boost_dir = {axis[0], axis[1], axis[2]};
                     } else {
                         boost_dir = {-axis[0], -axis[1], -axis[2]};
                     }
 
-                    fptype3 beta_mag = 0.5f * tanh(log(Eratio)/2.0);
+                    fptype3 beta_mag = 0.2f * tanh(log(Eratio)/2.0);
                     beta = {
                         beta_mag * boost_dir[0],
                         beta_mag * boost_dir[1],
                         beta_mag * boost_dir[2]
                     };
 
-                    std::cout << "[SOFT FIX] Pair ("<<i<<","<<j<<") Ratio="<<Eratio<<"\n";
+                    //std::cout << "[SOFT FIX] Pair ("<<i<<","<<j<<") Ratio="<<Eratio<<"\n";
                 }
 
                 // Apply boost globally
@@ -217,10 +225,10 @@ namespace momenta_reparator
 
             }
 
-            std::cout << "Event " << ievt << std::endl;
+            //std::cout << "Event " << ievt << std::endl;
             bool repair = true;
             int i = 0;
-            while (repair && i < 1)
+            while (repair && i < 3)
             {
                 particles = repair_event(particles, repair, coll_cut, soft_ratio);
                 i++;
