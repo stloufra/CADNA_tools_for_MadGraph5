@@ -27,10 +27,10 @@ void fillRndHel(auto m_hel, const int nevt)
     }
 }
 
-void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt, bool verbose = false)
+void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt, bool verbose = false, int prec = 3)
 {
     using namespace mg5amcCpu;
-    auto in_params = readSim_paramsFromFile(filename);
+    auto in_params = readSim_paramsFromFile(filename, prec);
 
     for (unsigned int ievt = 0; ievt < nevt; ++ievt) // Loop over all events in this iteration
     {

@@ -138,7 +138,7 @@ class cxcomp
     cxcomp& operator=(const cxcomp&) = default;
     cxcomp& operator=( cxcomp&&) = default;
 
-    cxcomp& operator=(const cxsmpl<FP>& c)
+    /*cxcomp& operator=(const cxsmpl<FP>& c)
     {
         m_real = c.real();
         m_imag = c.imag();
@@ -146,8 +146,9 @@ class cxcomp
         m_imag_err = 0.f;
         return *this;
     };
+    */
 
-    constexpr cxcomp& operator+=(const cxsmpl<FP>& c)
+    /*constexpr cxcomp& operator+=(const cxsmpl<FP>& c)
     {
         rne< FP > r_real = two_sum( m_real, c.real() );
         rne< FP > r_imag = two_sum( m_imag, c.imag() );
@@ -167,6 +168,31 @@ class cxcomp
         m_imag = r_imag.sum;
         m_imag_err += r_imag.error;
         return *this;
+    }*/
+
+    template<typename FP2>
+    constexpr cxcomp& operator+=(const cxsmpl<FP2>& c)
+        {
+            m_real += static_cast<FP>(c.real());
+            m_imag += static_cast<FP>(c.imag());
+            return *this;
+        }
+
+    template<typename FP2>
+    constexpr cxcomp& operator-=(const cxsmpl<FP2>& c)
+        {
+            m_real -= static_cast<FP>(c.real());
+            m_imag -= static_cast<FP>(c.imag());
+            return *this;
+        }
+
+
+    template <typename FP2>
+    cxcomp& operator=(const cxsmpl<FP2> c )
+    {
+        m_real = static_cast<FP>(c.real());
+        m_imag = static_cast<FP>(c.imag());
+        return *this;
     }
 
     constexpr const FP& real() const { return m_real; }
@@ -175,9 +201,11 @@ class cxcomp
     //template <typename FP2>
     //constexpr explicit operator cxcomp<FP2>() const { return cxcomp<FP2>(m_real, m_imag); }
 
-    constexpr cxsmpl<FP> finalize()
+    template<typename FP2>
+    constexpr cxsmpl<FP2> finalize()
     {
-        return cxsmpl<FP>(m_real+m_real_err, m_imag+m_imag_err);
+        //return cxsmpl<FP>(m_real+m_real_err, m_imag+m_imag_err);
+        return cxsmpl<FP2>(static_cast<FP2>(m_real), static_cast<FP2>(m_imag));
     }
 
 };
