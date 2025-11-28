@@ -28,26 +28,19 @@ const int neppV = 1;
 
 #if defined __CADNA
 typedef float_st fptype;
-typedef float_st fptype2;
+typedef double_st fptype2;
 typedef double_st fptype3;
-
-#elif defined ( __PRO__)
-
-#include "promiseTypes.h"
-
-#else
+#elif
 typedef float fptype;
 typedef float fptype2;
 typedef double fptype3;
 #endif
 
 typedef cxsmpl<fptype> cxtype;
-//typedef cxsmpl<fptype3> cxtype3;
 
 typedef bool bool_sv;
 typedef fptype fptype_sv;
 typedef fptype2 fptype2_sv;
-//typedef fptype3 fptype3_sv;
 typedef unsigned int uint_sv;
 typedef cxtype cxtype_sv;
 typedef cxtype_ref cxtype_sv_ref;
@@ -83,7 +76,7 @@ fpsqrt(const fptype& f)
 }
 
 #ifdef __CADNA
-inline fptype3
+/*inline fptype3
 fpsqrt(const fptype3& f)
 {
     return sqrt(f);
@@ -99,7 +92,7 @@ inline const fptype3&
 fpmin(const fptype3& a, const fptype3& b)
 {
     return min(a, b);
-}
+}*/
 #endif
 
 inline fptype

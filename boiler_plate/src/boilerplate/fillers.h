@@ -32,6 +32,9 @@ void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt,
     using namespace mg5amcCpu;
     auto in_params = readSim_paramsFromFile(filename, prec);
 
+    std::cout << std::string(SEP79, '-') << std::endl;
+    std::cout << "Momenta from file: " << filename <<" which has less then "<< prec <<" nb. s.d. are in total - " << in_params.size()<< std::endl;
+    std::cout << std::string(SEP79, '-') << std::endl;
     for (unsigned int ievt = 0; ievt < nevt; ++ievt) // Loop over all events in this iteration
     {
         if (verbose)
@@ -65,7 +68,10 @@ void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt,
             MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 2, ipar) = static_cast<fptype>(p2);
             MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 3, ipar) = static_cast<fptype>(p3);
         }
-        std::cout << std::string(SEP79, '-') << std::endl;
+        if (verbose)
+        {
+            std::cout << std::string(SEP79, '-') << std::endl;
+        }
     }
 }
 
