@@ -7,7 +7,7 @@
 #include "src/boilerplate/fillers.h"
 
 #ifdef __CADNA
-#include "src/boilerplate/repair_momenta.h"
+#include "src/boilerplate/momentaHandling.h"
 #endif
 
 int main(int argc, char* argv[])
@@ -16,11 +16,9 @@ int main(int argc, char* argv[])
     cadna_init(-1);
 #endif
 
-    int nevt;
-    if (argc == 1)
-        nevt = 24;
-    else
-        nevt = std::stoi(argv[1]);
+    int nevt = 80000;
+    int n_broken = 0;
+
 
     std::cout << "nevt = " << nevt << std::endl;
 
@@ -35,9 +33,24 @@ int main(int argc, char* argv[])
     CPPProcess process(true);
 
     process.initProc("../src/Cards/param_card.dat");
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false );
+    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 8);
 
-    fillGs(hstGs.data(), nevt);
+   // Momenta sorting
+
+    auto broken = momenta_engine::PickMomenta(hstMomenta, n_broken, nevt, 0.995, 50.0);
+
+    std::cout << "Number of broken events: " << n_broken << std::endl;
+    std::cout << "Number of good events: " << (nevt - n_broken) << std::endl;
+
+    typedef HostBuffer<fptype_f, sizePerEventMomenta, HostBufferALIGNED> HostBufferMomenta_f;
+    typedef HostBuffer<fptype_d, sizePerEventMomenta, HostBufferALIGNED> HostBufferMomenta_d;
+
+    HostBufferMomenta_f hstMomenta_f(nevt - n_broken);
+    HostBufferMomenta_d hstMomenta_d(n_broken);
+
+    momenta_engine::SortMomenta(hstMomenta, hstMomenta_f, hstMomenta_d, broken, nevt);
+
+    /*fillGs(hstGs.data(), nevt);
     fillRndHel(hstRndHel.data(), nevt);
 
     computeDependentCouplings(hstGs.data(), hstCoup.data(), nevt);
@@ -52,6 +65,6 @@ int main(int argc, char* argv[])
     printMEandPreccision(hstMomenta, hstMe, nevt, true);
     std::cout << "Number of good helicities: " << nGoodHel << std::endl;
     cadna_end();
-#endif
+#endif*/
     return 0;
 }

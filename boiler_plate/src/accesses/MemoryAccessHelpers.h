@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 // A templated helper class that includes the boilerplate code for MemoryAccess classes
-template<class T, typename FT = fptype>
+template<class T, typename FT >
 class MemoryAccessHelper
 {
 public:

@@ -1,8 +1,0 @@
-compile:
-  - c++ -O3 -std=gnu++20 -arch arm64 main.cpp src/color_sum.cc src/CPPProcess.cc src/boilerplate/Parameters_sm.cc src/boilerplate/read_slha.cc -D__PRO__ -I$CADNA_PATH/include -L$CADNA_PATH/lib -lcadnaC -o CPPProcess_standalone
-run: CPPProcess_standalone
-files: main.cpp, ./src/boilerplate/promiseTypes.h #, ./src/CPPProcess.cc, ./src/color_sum.cc, ./src/HelAmps_sm.h,   ./src/boilerplate/Parameters_sm.cc, ./src/boilerplate/Parameters_sm.h #, ./src/boilerplate/Complex.h
-log: log_promise.txt
-verbosity: 4
-output: output_promise_files
-nbDigits: 8

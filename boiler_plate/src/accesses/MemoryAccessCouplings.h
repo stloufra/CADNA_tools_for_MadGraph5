@@ -69,7 +69,7 @@ namespace mg5amcCpu
 
   private:
 
-    friend class MemoryAccessHelper<MemoryAccessCouplingsBase>;
+    friend class MemoryAccessHelper<MemoryAccessCouplingsBase, fptype>;
     friend class KernelAccessHelper<MemoryAccessCouplingsBase, true>;
     friend class KernelAccessHelper<MemoryAccessCouplingsBase, false>;
 
@@ -124,30 +124,30 @@ namespace mg5amcCpu
 
     // Locate an event record (output) in a memory buffer (input) from the given event number (input)
     // [Signature (non-const) ===> fptype* ieventAccessRecord( fptype* buffer, const int ievt ) <===]
-    static constexpr auto ieventAccessRecord = MemoryAccessHelper<MemoryAccessCouplingsBase>::ieventAccessRecord;
+    static constexpr auto ieventAccessRecord = MemoryAccessHelper<MemoryAccessCouplingsBase, fptype>::ieventAccessRecord;
 
     // Locate an event record (output) in a memory buffer (input) from the given event number (input)
     // [Signature (const) ===> const fptype* ieventAccessRecordConst( const fptype* buffer, const int ievt ) <===]
-    static constexpr auto ieventAccessRecordConst = MemoryAccessHelper<MemoryAccessCouplingsBase>::ieventAccessRecordConst;
+    static constexpr auto ieventAccessRecordConst = MemoryAccessHelper<MemoryAccessCouplingsBase, fptype>::ieventAccessRecordConst;
 
     // Locate a field (output) of an event record (input) from the given field indexes (input)
     // [Signature (non-const) ===> fptype& decodeRecord( fptype* buffer, const int ix2 ) <===]
-    static constexpr auto decodeRecordIx2 = MemoryAccessHelper<MemoryAccessCouplingsBase>::decodeRecord;
+    static constexpr auto decodeRecordIx2 = MemoryAccessHelper<MemoryAccessCouplingsBase, fptype>::decodeRecord;
 
     // Locate a field (output) of an event record (input) from the given field indexes (input)
     // [Signature (const) ===> const fptype& decodeRecordConst( const fptype* buffer, const int ix2 ) <===]
     static constexpr auto decodeRecordIx2Const =
-      MemoryAccessHelper<MemoryAccessCouplingsBase>::template decodeRecordConst<int>;
+      MemoryAccessHelper<MemoryAccessCouplingsBase, fptype>::template decodeRecordConst<int>;
 
     // Locate a field (output) in a memory buffer (input) from the given event number (input) and the given field indexes (input)
     // [Signature (non-const) ===> fptype& ieventAccessIx2( fptype* buffer, const ievt, const int ix2 ) <===]
     static constexpr auto ieventAccessIx2 =
-      MemoryAccessHelper<MemoryAccessCouplingsBase>::template ieventAccessField<int>;
+      MemoryAccessHelper<MemoryAccessCouplingsBase, fptype>::template ieventAccessField<int>;
 
     // Locate a field (output) in a memory buffer (input) from the given event number (input) and the given field indexes (input)
     // [Signature (const) ===> const fptype& ieventAccessIx2Const( const fptype* buffer, const ievt, const int ix2 ) <===]
     static constexpr auto ieventAccessIx2Const =
-      MemoryAccessHelper<MemoryAccessCouplingsBase>::template ieventAccessFieldConst<int>;
+      MemoryAccessHelper<MemoryAccessCouplingsBase, fptype>::template ieventAccessFieldConst<int>;
   };
 
   //----------------------------------------------------------------------------

@@ -29,11 +29,18 @@ const int neppV = 1;
 #if defined __CADNA
 typedef float_st fptype;
 typedef double_st fptype2;
-typedef double_st fptype3;
+typedef double_st fptype_d;
+typedef float_st fptype_f;
+
+typedef double_st fptype_momenta;
+
 #elif
 typedef float fptype;
 typedef float fptype2;
-typedef double fptype3;
+typedef double_st fptype_d;
+typedef float_st fptype_f;
+
+typedef double fptype_momenta;
 #endif
 
 typedef cxsmpl<fptype> cxtype;
@@ -41,6 +48,9 @@ typedef cxsmpl<fptype> cxtype;
 typedef bool bool_sv;
 typedef fptype fptype_sv;
 typedef fptype2 fptype2_sv;
+typedef fptype_f fptype_f_sv;
+typedef fptype_d fptype_d_sv;
+
 typedef unsigned int uint_sv;
 typedef cxtype cxtype_sv;
 typedef cxtype_ref cxtype_sv_ref;

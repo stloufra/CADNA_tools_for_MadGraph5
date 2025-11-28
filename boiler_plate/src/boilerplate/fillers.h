@@ -27,10 +27,11 @@ void fillRndHel(auto m_hel, const int nevt)
     }
 }
 
-void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt, bool verbose = false, int prec = 3)
+void fillMomentaFromFile(std::string filename, auto& hstMomenta, int& nevt, bool verbose = false, int prec = 3)
 {
     using namespace mg5amcCpu;
     auto in_params = readSim_paramsFromFile(filename, prec);
+    nevt = in_params.size();
 
     std::cout << std::string(SEP79, '-') << std::endl;
     std::cout << "Momenta from file: " << filename <<" which has less then "<< prec <<" nb. s.d. are in total - " << in_params.size()<< std::endl;

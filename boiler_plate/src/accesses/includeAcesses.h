@@ -12,7 +12,11 @@
 #include "MemoryAccessGs.h"
 #include "MemoryAccessHelpers.h"
 #include "MemoryAccessMatrixElements.h"
+
 #include "MemoryAccessMomenta.h"
+#include "MemoryAccessMomenta_d.h"
+#include "MemoryAccessMomenta_f.h"
+
 #include "MemoryAccessNumerators.h"
 #include "MemoryAccessRandomNumbers.h"
 #include "MemoryAccessVectors.h"
