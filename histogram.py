@@ -34,7 +34,10 @@ if len(sys.argv) > 3:
 # get current directory:
 cwd = os.getcwd()
 process = cwd.split("/")[-1]
-process = process.split("_")[-2] + "_" + process.split("_")[-1]
+if "_" in process:
+    process = process.split("_")[-2] + "_" + process.split("_")[-1]
+else:
+    process = "test"
 print(process)
 
 #get the random number seed from the file name
