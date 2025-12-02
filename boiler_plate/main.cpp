@@ -16,11 +16,7 @@ int main(int argc, char* argv[])
     cadna_init(-1);
 #endif
 
-    int nevt;
-    if (argc == 1)
-        nevt = 24;
-    else
-        nevt = std::stoi(argv[1]);
+     int nevt = 80000;
 
     std::cout << "nevt = " << nevt << std::endl;
 
@@ -51,9 +47,10 @@ int main(int argc, char* argv[])
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count()/1.0e9 << "s" << std::endl;
     //---
-#ifdef __CADNA
-    printMEandPreccision(hstMomenta, hstMe, nevt, true);
+
+    //printMEandPreccision(hstMomenta, hstMe, nevt, true);
     std::cout << "Number of good helicities: " << nGoodHel << std::endl;
+#ifdef __CADNA
     cadna_end();
 #endif
     return 0;

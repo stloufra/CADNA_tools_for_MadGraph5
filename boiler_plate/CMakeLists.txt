@@ -15,7 +15,7 @@ add_compile_options(
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4 -fsanitize=address")
 
-set(CMAKE_CXX_FLAGS_PROFILE "-O2 -g -gdwarf-4 -fno-omit-frame-pointer ")
+set(CMAKE_CXX_FLAGS_PROFILE "-O3 -g -gdwarf-4 -fno-omit-frame-pointer ")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
