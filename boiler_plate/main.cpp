@@ -5,6 +5,7 @@
 #include "src/boilerplate/read_momenta.h"
 #include "src/accesses/MemoryAccessMomenta.h"
 #include "src/boilerplate/fillers.h"
+#include <chrono>
 
 #ifdef __CADNA
 #include "src/boilerplate/repair_momenta.h"
