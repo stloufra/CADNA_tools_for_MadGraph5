@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include "src/boilerplate/typeTraits.h"
 #include "src/CPPProcess.h"
 #include "src/CPPProcess_proc.h"

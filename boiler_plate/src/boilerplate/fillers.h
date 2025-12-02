@@ -5,6 +5,8 @@
 #ifndef CPPPROCESS_STANDALONE_FILLERS_H
 #define CPPPROCESS_STANDALONE_FILLERS_H
 #include "typeTraits.h"
+#include <iomanip>
+#include <iostream>
 #include "../CPPProcess.h"
 #include "../accesses/MemoryAccessMomenta.h"
 #include "../accesses/MemoryAccessMatrixElements.h"
