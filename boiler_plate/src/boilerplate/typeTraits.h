@@ -30,10 +30,10 @@ const int neppV = 1;
 typedef float_st fptype;
 typedef double_st fptype2;
 typedef double_st fptype3;
-#elif
-typedef float fptype;
-typedef float fptype2;
-typedef double fptype3;
+#else
+typedef double fptype;
+typedef double fptype2;
+//typedef double fptype3;
 #endif
 
 typedef cxsmpl<fptype> cxtype;

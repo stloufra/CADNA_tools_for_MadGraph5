@@ -11,7 +11,7 @@ add_compile_options(
         -Wsign-conversion
 )
 
-add_definitions(-D__CADNA)
+#add_definitions(-D__CADNA)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4 -fsanitize=address")
 
@@ -41,6 +41,6 @@ add_executable(CPPProcess_standalone main.cpp
         src/CPPProcess.cc
         src/color_sum.h
         src/boilerplate/repair_momenta.h
-        src/boilerplate/promiseTypes.h)
+       )
 target_link_libraries(CPPProcess_standalone PRIVATE cadnaC)
 
