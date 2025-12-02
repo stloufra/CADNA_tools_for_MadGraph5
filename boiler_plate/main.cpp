@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
 
     int n_f = nevt - n_broken;
     int n_d = n_broken;
-    std::cout << "Number of good events: " << n_f << std::endl;
-    std::cout << "Number of broken events: " << n_d << std::endl;
+    //std::cout << "Number of good events: " << n_f << std::endl;
+    //std::cout << "Number of broken events: " << n_d << std::endl;
 
     HostBufferMomenta_f hstMomenta_f(n_f);
     HostBufferMomenta_d hstMomenta_d(n_d);

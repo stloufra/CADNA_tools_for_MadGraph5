@@ -8,7 +8,7 @@
 // Further modified by: J. Teig, A. Valassi (2021-2024) for the MG5aMC CUDACPP plugin.
 //==========================================================================
 // This file has been automatically generated for CUDA/C++ standalone by
-// MadGraph5_aMC@NLO v. 3.6.4, 2025-09-13
+// MadGraph5_aMC@NLO v. 3.6f.4, 2025-09-13
 // By the MadGraph5_aMC@NLO Development Team
 // Visit launchpad.net/madgraph5 and amcatnlo.web.cern.ch
 //==========================================================================
@@ -215,7 +215,7 @@ namespace mg5amcCpu
       if( pp == 0. )
       {
         // NB: Do not use "abs" for floats! It returns an integer with no build warning! Use std::abs!
-        FT sqm[2] = { fpsqrt<FT>( abs( fmass ) ), 0. }; // possibility of negative fermion masses
+        FT sqm[2] = { fpsqrt<FT>( abs( fmass ) ), 0.f }; // possibility of negative fermion masses
         //sqm[1] = ( fmass < 0. ? -abs( sqm[0] ) : abs( sqm[0] ) ); // AV: why abs here?
         sqm[1] = ( fmass < 0. ? -sqm[0] : sqm[0] ); // AV: removed an abs here
         fi[2] = cxmake<FT>( ip * sqm[ip], 0 );
@@ -225,14 +225,14 @@ namespace mg5amcCpu
       }
       else
       {
-        const FT sf[2] = { FT( 1 + nsf + ( 1 - nsf ) * nh ) * (FT)0.5,
-                               FT( 1 + nsf - ( 1 - nsf ) * nh ) * (FT)0.5 };
-        FT omega[2] = { fpsqrt<FT>( pvec0 + pp ), 0. };
+        const FT sf[2] = { FT( 1 + nsf + ( 1 - nsf ) * nh ) * (FT)0.5f,
+                               FT( 1 + nsf - ( 1 - nsf ) * nh ) * (FT)0.5f };
+        FT omega[2] = { fpsqrt<FT>( pvec0 + pp ), 0.f };
         omega[1] = fmass / omega[0];
         const FT sfomega[2] = { sf[0] * omega[ip], sf[1] * omega[im] };
-        const FT pp3 = fpmax<FT>( pp + pvec3, 0. );
-        const CT chi[2] = { cxmake<FT>( fpsqrt<FT>( pp3 * (FT)0.5 / pp ), 0. ),
-                                ( pp3 == 0. ? cxmake<FT>( -nh, 0. ) : cxmake<FT>( nh * pvec1, pvec2 ) / fpsqrt<FT>( 2. * pp * pp3 ) ) };
+        const FT pp3 = fpmax<FT>( pp + pvec3, 0.f );
+        const CT chi[2] = { cxmake<FT>( fpsqrt<FT>( pp3 * (FT)0.5f / pp ), 0.f ),
+                                ( pp3 == 0.f ? cxmake<FT>( -nh, 0.f ) : cxmake<FT>( nh * pvec1, pvec2 ) / fpsqrt<FT>( 2.f * pp * pp3 ) ) };
         fi[2] = sfomega[0] * chi[im];
         fi[3] = sfomega[0] * chi[ip];
         fi[4] = sfomega[1] * chi[im];
@@ -248,15 +248,15 @@ namespace mg5amcCpu
       const CT fiA_4 = ip * nsf * sqm[im];            // scalar CT: real part initialised from FT, imag part = 0
       const CT fiA_5 = im * sqm[im];                  // scalar CT: real part initialised from FT, imag part = 0
       // Branch B: pp != 0.
-      const FT sf[2] = { FT( 1 + nsf + ( 1 - nsf ) * nh ) * (FT)0.5,
-                             FT( 1 + nsf - ( 1 - nsf ) * nh ) * (FT)0.5 };
+      const FT sf[2] = { FT( 1 + nsf + ( 1 - nsf ) * nh ) * (FT)0.5f,
+                             FT( 1 + nsf - ( 1 - nsf ) * nh ) * (FT)0.5f };
       FT_v omega[2] = { fpsqrt<FT>( pvec0 + pp ), 0 };
       omega[1] = fmass / omega[0];
       const FT_v sfomega[2] = { sf[0] * omega[ip], sf[1] * omega[im] };
       const FT_v pp3 = fpmax<FT>( pp + pvec3, 0 );
       volatile FT_v ppDENOM = fpternary<FT>( pp != 0, pp, 1. );    // hack: ppDENOM[ieppV]=1 if pp[ieppV]==0
       volatile FT_v pp3DENOM = fpternary<FT>( pp3 != 0, pp3, 1. ); // hack: pp3DENOM[ieppV]=1 if pp3[ieppV]==0
-      volatile FT_v chi0r2 = pp3 * 0.5 / ppDENOM;              // volatile fixes #736
+      volatile FT_v chi0r2 = pp3 * 0.5f / ppDENOM;              // volatile fixes #736
       const CT chi[2] = { cxmake<FT>( fpsqrt<FT>( chi0r2 ), 0 ),     // hack: dummy[ieppV] is not used if pp[ieppV]==0
                                 cxternary( ( pp3 == 0. ),
                                            cxmake<FT>( -nh, 0 ),
@@ -286,11 +286,11 @@ namespace mg5amcCpu
                                       cxmake<FT>( -(FT)nhel * fpsqrt<FT>( 2. * pvec0 ), 0. ),
                                       cxmake<FT>( (FT)nh * pvec1, pvec2 ) / (const FT_v)sqp0p3DENOM ) }; // hack: dummy[ieppV] is not used if sqp0p3[ieppV]==0
 #else
-      const FT sqp0p3 = fpternary<FT>( ( pvec1 == 0. and pvec2 == 0. and pvec3 < 0. ),
+      const FT sqp0p3 = fpternary<FT>( ( pvec1 == 0. and pvec2 == 0. and pvec3 < 0.f ),
                                           FT{ 0 },
-                                          fpsqrt<FT>( fpmax<FT>( pvec0 + pvec3, 0. ) ) * (FT)nsf );
-      const CT chi[2] = { cxmake<FT>( sqp0p3, 0. ),
-                                 ( sqp0p3 == 0. ? cxmake<FT>( -(FT)nhel * fpsqrt<FT>( 2. * pvec0 ), 0. ) : cxmake<FT>( (FT)nh * pvec1, pvec2 ) / sqp0p3 ) };
+                                          fpsqrt<FT>( fpmax<FT>( pvec0 + pvec3, 0.f ) ) * (FT)nsf );
+      const CT chi[2] = { cxmake<FT>( sqp0p3, 0.f ),
+                                 ( sqp0p3 == 0.f ? cxmake<FT>( -(FT)nhel * fpsqrt<FT>( 2.f * pvec0 ), 0.f ) : cxmake<FT>( (FT)nh * pvec1, pvec2 ) / sqp0p3 ) };
 #endif
       if( nh == 1 )
       {
@@ -329,7 +329,7 @@ namespace mg5amcCpu
     fi[0] = cxmake<FT>( -pvec3 * (FT)nsf, -pvec3 * (FT)nsf );
     fi[1] = cxzero_sv<CT>();
     const int nh = nhel * nsf;
-    const FT sqp0p3 = cxmake<FT>( fpsqrt<FT>( 2. * pvec3 ) * (FT)nsf, 0. );
+    const FT sqp0p3 = cxmake<FT>( fpsqrt<FT>( 2. * pvec3 ) * (FT)nsf, 0.f );
     fi[2] = fi[1];
     if( nh == 1 )
     {
@@ -364,7 +364,7 @@ namespace mg5amcCpu
     fi[0] = cxmake<FT>( pvec3 * (FT)nsf, -pvec3 * (FT)nsf );
     fi[1] = cxzero_sv<CT>();
     const int nh = nhel * nsf;
-    const CT chi = cxmake<FT>( -(FT)nhel * fpsqrt<FT>( -2. * pvec3 ), 0. );
+    const CT chi = cxmake<FT>( -(FT)nhel * fpsqrt<FT>( -2.f * pvec3 ), 0.f );
     fi[3] = cxzero_sv<CT>();
     fi[4] = cxzero_sv<CT>();
     if( nh == 1 )
@@ -406,7 +406,7 @@ namespace mg5amcCpu
     const int nh = nhel * nsf;
     //const float sqp0p3 = sqrtf( pvec0 + pvec3 ) * nsf; // AV: why force a float here?
     const FT sqp0p3 = fpsqrt<FT>( pvec0 + pvec3 ) * (FT)nsf;
-    const CT chi0 = cxmake<FT>( sqp0p3, 0. );
+    const CT chi0 = cxmake<FT>( sqp0p3, 0.f );
     const CT chi1 = cxmake<FT>( (FT)nh * pvec1 / sqp0p3, pvec2 / sqp0p3 );
     if( nh == 1 )
     {
@@ -447,24 +447,24 @@ namespace mg5amcCpu
     const FT& pvec2 = M_ACCESS::kernelAccessIp4IparConst( momenta, 2, ipar );
     const FT& pvec3 = M_ACCESS::kernelAccessIp4IparConst( momenta, 3, ipar );
     CT* vc = W_ACCESS::kernelAccess( wavefunctions );
-    const FT sqh = fpsqrt<FT>( (FT)0.5 ); // AV this is > 0!
+    const FT sqh = fpsqrt<FT>( (FT)0.5f ); // AV this is > 0!
     const FT hel = nhel;
     vc[0] = cxmake<FT>( pvec0 * (FT)nsv, pvec3 * (FT)nsv );
     vc[1] = cxmake<FT>( pvec1 * (FT)nsv, pvec2 * (FT)nsv );
     if( vmass != 0. )
     {
       const int nsvahl = nsv * abs( hel );
-      const FT hel0 = 1. - abs( hel );
+      const FT hel0 = 1.f - abs( hel );
 #ifndef MGONGPU_CPPSIMD
       const FT pt2 = ( pvec1 * pvec1 ) + ( pvec2 * pvec2 );
       const FT pp = fpmin<FT>( pvec0, fpsqrt<FT>( pt2 + ( pvec3 * pvec3 ) ) );
       const FT pt = fpmin<FT>( pp, fpsqrt<FT>( pt2 ) );
-      if( pp == 0. )
+      if( pp == 0.f )
       {
-        vc[2] = cxmake<FT>( 0., 0. );
-        vc[3] = cxmake<FT>( -hel * sqh, 0. );
-        vc[4] = cxmake<FT>( 0., nsvahl * sqh );
-        vc[5] = cxmake<FT>( hel0, 0. );
+        vc[2] = cxmake<FT>( 0.f, 0.f );
+        vc[3] = cxmake<FT>( -hel * sqh, 0.f );
+        vc[4] = cxmake<FT>( 0.f, nsvahl * sqh );
+        vc[5] = cxmake<FT>( hel0, 0.f );
       }
       else
       {
@@ -472,9 +472,9 @@ namespace mg5amcCpu
         //const FT emp = pvec / ( vmass * pp ); // this may give a FPE #1011 (why?! maybe when vmass=+-epsilon?)
         const FT emp = pvec0 / vmass / pp; // workaround for FPE #1011
         //printf( "DEBUG1011 (after emp): emp=%f\n", emp );
-        vc[2] = cxmake<FT>( hel0 * pp / vmass, 0. );
-        vc[5] = cxmake<FT>( hel0 * pvec3 * emp + hel * pt / pp * sqh, 0. );
-        if( pt != 0. )
+        vc[2] = cxmake<FT>( hel0 * pp / vmass, 0.f );
+        vc[5] = cxmake<FT>( hel0 * pvec3 * emp + hel * pt / pp * sqh, 0.f );
+        if( pt != 0.f )
         {
           const FT pzpt = pvec3 / ( pp * pt ) * sqh * hel;
           vc[3] = cxmake<FT>( hel0 * pvec1 * emp - pvec1 * pzpt, -nsvahl * pvec2 / pt * sqh );
@@ -482,10 +482,10 @@ namespace mg5amcCpu
         }
         else
         {
-          vc[3] = cxmake<FT>( -hel * sqh, 0. );
+          vc[3] = cxmake<FT>( -hel * sqh, 0.f );
           // NB: Do not use "abs" for floats! It returns an integer with no build warning! Use std::abs!
           //vc[4] = cxmake<FT>( 0., nsvahl * ( pvec3 < 0. ? -abs( sqh ) : abs( sqh ) ) ); // AV: why abs here?
-          vc[4] = cxmake<FT>( 0., nsvahl * ( pvec3 < 0. ? -sqh : sqh ) ); // AV: removed an abs here
+          vc[4] = cxmake<FT>( 0.f, nsvahl * ( pvec3 < 0.f ? -sqh : sqh ) ); // AV: removed an abs here
         }
       }
 #else
@@ -530,7 +530,7 @@ namespace mg5amcCpu
       const FT pt = fpsqrt<FT>( pt2 );
 #endif
       vc[2] = cxzero_sv<CT>();
-      vc[5] = cxmake<FT>( hel * pt / pp * sqh, 0. );
+      vc[5] = cxmake<FT>( hel * pt / pp * sqh, 0.f );
 #ifndef MGONGPU_CPPSIMD
       if( pt != 0. )
       {
@@ -540,10 +540,10 @@ namespace mg5amcCpu
       }
       else
       {
-        vc[3] = cxmake<FT>( -hel * sqh, 0. );
+        vc[3] = cxmake<FT>( -hel * sqh, 0.f );
         // NB: Do not use "abs" for floats! It returns an integer with no build warning! Use std::abs!
         //vc[4] = cxmake<FT>( 0, nsv * ( pvec3 < 0. ? -abs( sqh ) : abs( sqh ) ) ); // AV why abs here?
-        vc[4] = cxmake<FT>( 0., nsv * ( pvec3 < 0. ? -sqh : sqh ) ); // AV: removed an abs here
+        vc[4] = cxmake<FT>( 0.f, nsv * ( pvec3 < 0.f ? -sqh : sqh ) ); // AV: removed an abs here
       }
 #else
       // Branch A: pt != 0.
@@ -619,9 +619,9 @@ namespace mg5amcCpu
       if( pp == 0. )
       {
         // NB: Do not use "abs" for floats! It returns an integer with no build warning! Use std::abs!
-        FT sqm[2] = { fpsqrt<FT>( abs( fmass ) ), 0. }; // possibility of negative fermion masses
+        FT sqm[2] = { fpsqrt<FT>( abs( fmass ) ), 0.f }; // possibility of negative fermion masses
         //sqm[1] = ( fmass < 0. ? -abs( sqm[0] ) : abs( sqm[0] ) ); // AV: why abs here?
-        sqm[1] = ( fmass < 0. ? -sqm[0] : sqm[0] ); // AV: removed an abs here
+        sqm[1] = ( fmass < 0.f ? -sqm[0] : sqm[0] ); // AV: removed an abs here
         const int ip = -( ( 1 - nh ) / 2 ) * nhel;  // NB: Fortran sqm(0:1) also has indexes 0,1 as in C++
         const int im = ( 1 + nh ) / 2 * nhel;       // NB: Fortran sqm(0:1) also has indexes 0,1 as in C++
         fo[2] = cxmake<FT>( im * sqm[abs( ip )], 0 );
@@ -631,17 +631,17 @@ namespace mg5amcCpu
       }
       else
       {
-        const FT sf[2] = { FT( 1 + nsf + ( 1 - nsf ) * nh ) * (FT)0.5,
-                               FT( 1 + nsf - ( 1 - nsf ) * nh ) * (FT)0.5 };
-        FT omega[2] = { fpsqrt<FT>( pvec0 + pp ), 0. };
+        const FT sf[2] = { FT( 1 + nsf + ( 1 - nsf ) * nh ) * (FT)0.5f,
+                               FT( 1 + nsf - ( 1 - nsf ) * nh ) * (FT)0.5f };
+        FT omega[2] = { fpsqrt<FT>( pvec0 + pp ), 0.f };
         omega[1] = fmass / omega[0];
         const int ip = ( 1 + nh ) / 2; // NB: Fortran is (3+nh)/2 because omega(2) has indexes 1,2 and not 0,1
         const int im = ( 1 - nh ) / 2; // NB: Fortran is (3-nh)/2 because omega(2) has indexes 1,2 and not 0,1
         const FT sfomeg[2] = { sf[0] * omega[ip], sf[1] * omega[im] };
-        const FT pp3 = fpmax<FT>( pp + pvec3, 0. );
-        const CT chi[2] = { cxmake<FT>( fpsqrt<FT>( pp3 * (FT)0.5 / pp ), 0. ),
-                                ( ( pp3 == 0. ) ? cxmake<FT>( -nh, 0. )
-                                                : cxmake<FT>( nh * pvec1, -pvec2 ) / fpsqrt<FT>( 2. * pp * pp3 ) ) };
+        const FT pp3 = fpmax<FT>( pp + pvec3, 0.f );
+        const CT chi[2] = { cxmake<FT>( fpsqrt<FT>( pp3 * (FT)0.5f / pp ), 0.f ),
+                                ( ( pp3 == 0.f ) ? cxmake<FT>( -nh, 0.f )
+                                                : cxmake<FT>( nh * pvec1, -pvec2 ) / fpsqrt<FT>( 2.f * pp * pp3 ) ) };
         fo[2] = sfomeg[1] * chi[im];
         fo[3] = sfomeg[1] * chi[ip];
         fo[4] = sfomeg[0] * chi[im];
@@ -661,8 +661,8 @@ namespace mg5amcCpu
       const CT foA_4 = imA * nsf * sqm[abs( imA )];
       const CT foA_5 = ipA * sqm[abs( imA )];
       // Branch B: pp != 0.
-      const FT sf[2] = { FT( 1 + nsf + ( 1 - nsf ) * nh ) * (FT)0.5,
-                             FT( 1 + nsf - ( 1 - nsf ) * nh ) * (FT)0.5 };
+      const FT sf[2] = { FT( 1 + nsf + ( 1 - nsf ) * nh ) * (FT)0.5f,
+                             FT( 1 + nsf - ( 1 - nsf ) * nh ) * (FT)0.5f };
       FT_v omega[2] = { fpsqrt<FT>( pvec0 + pp ), 0 };
       omega[1] = fmass / omega[0];
       const int ipB = ( 1 + nh ) / 2;
@@ -671,7 +671,7 @@ namespace mg5amcCpu
       const FT_v pp3 = fpmax<FT>( pp + pvec3, 0. );
       volatile FT_v ppDENOM = fpternary<FT>( pp != 0, pp, 1. );    // hack: ppDENOM[ieppV]=1 if pp[ieppV]==0
       volatile FT_v pp3DENOM = fpternary<FT>( pp3 != 0, pp3, 1. ); // hack: pp3DENOM[ieppV]=1 if pp3[ieppV]==0
-      volatile FT_v chi0r2 = pp3 * 0.5 / ppDENOM;              // volatile fixes #736
+      volatile FT_v chi0r2 = pp3 * 0.5f / ppDENOM;              // volatile fixes #736
       const CT chi[2] = { cxmake<FT>( fpsqrt<FT>( chi0r2 ), 0. ),    // hack: dummy[ieppV] is not used if pp[ieppV]==0
                                 ( cxternary( ( pp3 == 0. ),
                                              cxmake<FT>( -nh, 0. ),
@@ -701,11 +701,11 @@ namespace mg5amcCpu
                                            cxmake<FT>( -nhel, 0. ) * fpsqrt<FT>( 2. * pvec0 ),
                                            cxmake<FT>( (FT)nh * pvec1, -pvec2 ) / (const FT)sqp0p3DENOM ) }; // hack: dummy[ieppV] is not used if sqp0p3[ieppV]==0
 #else
-      const FT sqp0p3 = fpternary<FT>( ( pvec1 == 0. ) and ( pvec2 == 0. ) and ( pvec3 < 0. ),
+      const FT sqp0p3 = fpternary<FT>( ( pvec1 == 0.f ) and ( pvec2 == 0.f ) and ( pvec3 < 0.f ),
                                           0,
-                                          fpsqrt<FT>( fpmax<FT>( pvec0 + pvec3, 0. ) ) * (FT)nsf );
-      const CT chi[2] = { cxmake<FT>( sqp0p3, 0. ),
-                                 ( sqp0p3 == 0. ? cxmake<FT>( -nhel, 0. ) * fpsqrt<FT>( 2. * pvec0 ) : cxmake<FT>( (FT)nh * pvec1, -pvec2 ) / sqp0p3 ) };
+                                          fpsqrt<FT>( fpmax<FT>( pvec0 + pvec3, 0.f ) ) * (FT)nsf );
+      const CT chi[2] = { cxmake<FT>( sqp0p3, 0.f ),
+                                 ( sqp0p3 == 0.f ? cxmake<FT>( -nhel, 0.f ) * fpsqrt<FT>( 2.f * pvec0 ) : cxmake<FT>( (FT)nh * pvec1, -pvec2 ) / sqp0p3 ) };
 #endif
       if( nh == 1 )
       {
@@ -745,7 +745,7 @@ namespace mg5amcCpu
     fo[0] = cxmake<FT>( pvec3 * (FT)nsf, pvec3 * (FT)nsf );
     fo[1] = cxzero_sv<CT>();
     const int nh = nhel * nsf;
-    const FT csqp0p3 = cxmake<FT>( fpsqrt<FT>( 2. * pvec3 ) * (FT)nsf, 0. );
+    const FT csqp0p3 = cxmake<FT>( fpsqrt<FT>( 2.f * pvec3 ) * (FT)nsf, 0.f );
     fo[3] = cxzero_sv<CT>();
     fo[4] = cxzero_sv<CT>();
     if( nh == 1 )
@@ -780,7 +780,7 @@ namespace mg5amcCpu
     fo[0] = cxmake<FT>( -pvec3 * (FT)nsf, pvec3 * (FT)nsf ); // remember pvec0 == -pvec3
     fo[1] = cxzero_sv<CT>();
     const int nh = nhel * nsf;
-    const CT chi1 = cxmake<FT>( -nhel, 0. ) * fpsqrt<FT>( -2. * pvec3 );
+    const CT chi1 = cxmake<FT>( -nhel, 0.f ) * fpsqrt<FT>( -2.f * pvec3 );
     if( nh == 1 )
     {
       fo[2] = cxzero_sv<CT>();
@@ -823,7 +823,7 @@ namespace mg5amcCpu
     const int nh = nhel * nsf;
     //const float sqp0p3 = sqrtf( pvec0 + pvec3 ) * nsf; // AV: why force a float here?
     const FT sqp0p3 = fpsqrt<FT>( pvec0 + pvec3 ) * (FT)nsf;
-    const CT chi0 = cxmake<FT>( sqp0p3, 0. );
+    const CT chi0 = cxmake<FT>( sqp0p3, 0.f );
     const CT chi1 = cxmake<FT>( (FT)nh * pvec1 / sqp0p3, -pvec2 / sqp0p3 );
     if( nh == 1 )
     {
@@ -1019,7 +1019,7 @@ namespace mg5amcCpu
     const CT* V3 = W_ACCESS::kernelAccessConst( allV3 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
     CT*  vertex = A_ACCESS::kernelAccess( allvertexes );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     const FT P1[4] = { +cxreal( V1[0] ), +cxreal( V1[1] ), +cximag( V1[1] ), +cximag( V1[0] ) };
     const FT P2[4] = { +cxreal( V2[0] ), +cxreal( V2[1] ), +cximag( V2[1] ), +cximag( V2[0] ) };
     const FT P3[4] = { +cxreal( V3[0] ), +cxreal( V3[1] ), +cximag( V3[1] ), +cximag( V3[0] ) };
@@ -1093,7 +1093,7 @@ namespace mg5amcCpu
     const CT* V3 = W_ACCESS::kernelAccessConst( allV3 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
     CT*  vertex = A_ACCESS::kernelAccess( allvertexes );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     const CT TMP9 = ( F1[2] * ( F2[4] * ( V3[2] + V3[5] ) + F2[5] * ( V3[3] + cI * V3[4] ) ) + ( F1[3] * ( F2[4] * ( V3[3] - cI * V3[4] ) + F2[5] * ( V3[2] - V3[5] ) ) + ( F1[4] * ( F2[2] * ( V3[2] - V3[5] ) - F2[3] * ( V3[3] + cI * V3[4] ) ) + F1[5] * ( F2[2] * ( -V3[3] + cI * V3[4] ) + F2[3] * ( V3[2] + V3[5] ) ) ) ) );
     ( *vertex ) = Ccoeff * COUP * -cI * TMP9;
     mgDebug( 1, __FUNCTION__ );
@@ -1118,11 +1118,11 @@ namespace mg5amcCpu
     const CT* V3 = W_ACCESS::kernelAccessConst( allV3 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
     CT* F1 = W_ACCESS::kernelAccess( allF1 );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     F1[0] = +F2[0] + V3[0];
     F1[1] = +F2[1] + V3[1];
     const FT P1[4] = { -cxreal( F1[0] ), -cxreal( F1[1] ), -cximag( F1[1] ), -cximag( F1[0] ) };
-    const FT one( 1. );
+    const FT one( 1.f );
     const  CT denom = Ccoeff * COUP / ( ( P1[0] * P1[0] ) - ( P1[1] * P1[1] ) - ( P1[2] * P1[2] ) - ( P1[3] * P1[3] ) - M1 * ( M1 - cI * W1 ) );
     F1[2] = denom * cI * ( F2[2] * ( P1[0] * ( -V3[2] + V3[5] ) + ( P1[1] * ( V3[3] - cI * V3[4] ) + ( P1[2] * ( +cI * V3[3] + V3[4] ) + P1[3] * ( -V3[2] + V3[5] ) ) ) ) + ( F2[3] * ( P1[0] * ( V3[3] + cI * V3[4] ) + ( P1[1] * ( -one ) * ( V3[2] + V3[5] ) + ( P1[2] * ( -one ) * ( +cI * ( V3[2] + V3[5] ) ) + P1[3] * ( V3[3] + cI * V3[4] ) ) ) ) + M1 * ( F2[4] * ( V3[2] + V3[5] ) + F2[5] * ( V3[3] + cI * V3[4] ) ) ) );
     F1[3] = denom * ( -cI ) * ( F2[2] * ( P1[0] * ( -V3[3] + cI * V3[4] ) + ( P1[1] * ( V3[2] - V3[5] ) + ( P1[2] * ( -cI * V3[2] + cI * V3[5] ) + P1[3] * ( V3[3] - cI * V3[4] ) ) ) ) + ( F2[3] * ( P1[0] * ( V3[2] + V3[5] ) + ( P1[1] * ( -one ) * ( V3[3] + cI * V3[4] ) + ( P1[2] * ( +cI * V3[3] - V3[4] ) - P1[3] * ( V3[2] + V3[5] ) ) ) ) + M1 * ( F2[4] * ( -V3[3] + cI * V3[4] ) + F2[5] * ( -V3[2] + V3[5] ) ) ) );
@@ -1150,7 +1150,7 @@ namespace mg5amcCpu
     const CT* V3 = W_ACCESS::kernelAccessConst( allV3 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
     CT* F2 = W_ACCESS::kernelAccess( allF2 );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f);
     F2[0] = +F1[0] + V3[0];
     F2[1] = +F1[1] + V3[1];
     const FT P2[4] = { -cxreal( F2[0] ), -cxreal( F2[1] ), -cximag( F2[1] ), -cximag( F2[0] ) };
@@ -1182,7 +1182,7 @@ namespace mg5amcCpu
     const CT* F2 = W_ACCESS::kernelAccessConst( allF2 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
      CT* V3 = W_ACCESS::kernelAccess( allV3 );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     V3[0] = +F1[0] + F2[0];
     V3[1] = +F1[1] + F2[1];
     const FT P3[4] = { -cxreal( V3[0] ), -cxreal( V3[1] ), -cximag( V3[1] ), -cximag( V3[0] ) };
@@ -1215,7 +1215,7 @@ namespace mg5amcCpu
     const CT* V4 = W_ACCESS::kernelAccessConst( allV4 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
     CT*  vertex = A_ACCESS::kernelAccess( allvertexes );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     const CT TMP10 = ( V1[2] * V4[2] - V1[3] * V4[3] - V1[4] * V4[4] - V1[5] * V4[5] );
     const CT TMP11 = ( V2[2] * V4[2] - V2[3] * V4[3] - V2[4] * V4[4] - V2[5] * V4[5] );
     const CT TMP3 = ( V3[2] * V1[2] - V3[3] * V1[3] - V3[4] * V1[4] - V3[5] * V1[5] );
@@ -1245,7 +1245,7 @@ namespace mg5amcCpu
     const CT* V4 = W_ACCESS::kernelAccessConst( allV4 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
      CT* V1 = W_ACCESS::kernelAccess( allV1 );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     V1[0] = +V2[0] + V3[0] + V4[0];
     V1[1] = +V2[1] + V3[1] + V4[1];
     const FT P1[4] = { -cxreal( V1[0] ), -cxreal( V1[1] ), -cximag( V1[1] ), -cximag( V1[0] ) };
@@ -1280,7 +1280,7 @@ namespace mg5amcCpu
     const CT* V4 = W_ACCESS::kernelAccessConst( allV4 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
     CT*  vertex = A_ACCESS::kernelAccess( allvertexes );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     const CT TMP1 = ( V2[2] * V1[2] - V2[3] * V1[3] - V2[4] * V1[4] - V2[5] * V1[5] );
     const CT TMP10 = ( V1[2] * V4[2] - V1[3] * V4[3] - V1[4] * V4[4] - V1[5] * V4[5] );
     const CT TMP12 = ( V3[2] * V4[2] - V3[3] * V4[3] - V3[4] * V4[4] - V3[5] * V4[5] );
@@ -1310,7 +1310,7 @@ namespace mg5amcCpu
     const CT* V4 = W_ACCESS::kernelAccessConst( allV4 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
      CT* V1 = W_ACCESS::kernelAccess( allV1 );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     V1[0] = +V2[0] + V3[0] + V4[0];
     V1[1] = +V2[1] + V3[1] + V4[1];
     const FT P1[4] = { -cxreal( V1[0] ), -cxreal( V1[1] ), -cximag( V1[1] ), -cximag( V1[0] ) };
@@ -1345,7 +1345,7 @@ namespace mg5amcCpu
     const CT* V4 = W_ACCESS::kernelAccessConst( allV4 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
     CT*  vertex = A_ACCESS::kernelAccess( allvertexes );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     const CT TMP1 = ( V2[2] * V1[2] - V2[3] * V1[3] - V2[4] * V1[4] - V2[5] * V1[5] );
     const CT TMP11 = ( V2[2] * V4[2] - V2[3] * V4[3] - V2[4] * V4[4] - V2[5] * V4[5] );
     const CT TMP12 = ( V3[2] * V4[2] - V3[3] * V4[3] - V3[4] * V4[4] - V3[5] * V4[5] );
@@ -1375,7 +1375,7 @@ namespace mg5amcCpu
     const CT* V4 = W_ACCESS::kernelAccessConst( allV4 );
     const CT COUP = C_ACCESS::kernelAccessConst( allCOUP );
      CT* V1 = W_ACCESS::kernelAccess( allV1 );
-    const CT cI = cxmake<FT>( 0., 1. );
+    const CT cI = cxmake<FT>( 0.f, 1.f );
     V1[0] = +V2[0] + V3[0] + V4[0];
     V1[1] = +V2[1] + V3[1] + V4[1];
     const FT P1[4] = { -cxreal( V1[0] ), -cxreal( V1[1] ), -cximag( V1[1] ), -cximag( V1[0] ) };

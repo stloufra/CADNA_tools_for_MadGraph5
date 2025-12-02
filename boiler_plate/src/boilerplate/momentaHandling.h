@@ -367,7 +367,7 @@ namespace momenta_engine
                 d++;
             }
         }
-        std::cout << "Broken: " << d << " Good: " << f << std::endl;
+        //std::cout << "Broken: " << d << " Good: " << f << std::endl;
 
     }
 
