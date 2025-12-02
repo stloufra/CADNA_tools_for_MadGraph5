@@ -65,8 +65,8 @@ namespace mg5amcCpu
   private:
 
     friend class MemoryAccessHelper<MemoryAccessMomentaBase, fptype>;
-    friend class KernelAccessHelper<MemoryAccessMomentaBase, true>;
-    friend class KernelAccessHelper<MemoryAccessMomentaBase, false>;
+    friend class KernelAccessHelper<MemoryAccessMomentaBase, true, fptype>;
+    friend class KernelAccessHelper<MemoryAccessMomentaBase, false, fptype>;
 
     // The number of components of a 4-momentum
     static constexpr int np4 = CPPProcess::np4;
@@ -176,13 +176,13 @@ namespace mg5amcCpu
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
     // [Signature (non-const, SCALAR) ===> fptype& kernelAccessIp4Ipar( fptype* buffer, const int ipar, const int ipar ) <===]
     static constexpr auto kernelAccessIp4Ipar =
-      KernelAccessHelper<MemoryAccessMomentaBase, onDevice>::template kernelAccessField<int, int>;
+      KernelAccessHelper<MemoryAccessMomentaBase, onDevice, fptype>::template kernelAccessField<int, int>;
 
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
     // [Signature (const, SCALAR) ===> const fptype& kernelAccessIp4IparConst( const fptype* buffer, const int ipar, const int ipar ) <===]
     // DEFAULT VERSION
     static constexpr auto kernelAccessIp4IparConst_s =
-      KernelAccessHelper<MemoryAccessMomentaBase, onDevice>::template kernelAccessFieldConst<int, int>;
+      KernelAccessHelper<MemoryAccessMomentaBase, onDevice, fptype>::template kernelAccessFieldConst<int, int>;
 
     /*
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)

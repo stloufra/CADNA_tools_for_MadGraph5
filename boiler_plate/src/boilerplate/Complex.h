@@ -66,7 +66,7 @@ public:
     constexpr const FP& imag() const { return m_imag; }
 
     template <typename FP2>
-    constexpr explicit operator cxsmpl<FP2>() const { return cxsmpl<FP2>(m_real, m_imag); }
+    constexpr explicit operator cxsmpl<FP2>() const { return cxsmpl<FP2>(static_cast<FP2>(m_real), static_cast<FP2>(m_imag)); }
 private:
     FP m_real, m_imag; // RI
 };
@@ -138,7 +138,7 @@ class cxcomp
     cxcomp& operator=(const cxcomp&) = default;
     cxcomp& operator=( cxcomp&&) = default;
 
-    /*cxcomp& operator=(const cxsmpl<FP>& c)
+    cxcomp& operator=(const cxsmpl<FP>& c)
     {
         m_real = c.real();
         m_imag = c.imag();
@@ -146,9 +146,9 @@ class cxcomp
         m_imag_err = 0.f;
         return *this;
     };
-    */
 
-    /*constexpr cxcomp& operator+=(const cxsmpl<FP>& c)
+
+    constexpr cxcomp& operator+=(const cxsmpl<FP>& c)
     {
         rne< FP > r_real = two_sum( m_real, c.real() );
         rne< FP > r_imag = two_sum( m_imag, c.imag() );
@@ -168,9 +168,9 @@ class cxcomp
         m_imag = r_imag.sum;
         m_imag_err += r_imag.error;
         return *this;
-    }*/
+    }
 
-    template<typename FP2>
+    /*template<typename FP2>
     constexpr cxcomp& operator+=(const cxsmpl<FP2>& c)
         {
             m_real += static_cast<FP>(c.real());
@@ -193,7 +193,7 @@ class cxcomp
         m_real = static_cast<FP>(c.real());
         m_imag = static_cast<FP>(c.imag());
         return *this;
-    }
+    }*/
 
     constexpr const FP& real() const { return m_real; }
     constexpr const FP& imag() const { return m_imag; }
@@ -204,8 +204,8 @@ class cxcomp
     template<typename FP2>
     constexpr cxsmpl<FP2> finalize()
     {
-        //return cxsmpl<FP>(m_real+m_real_err, m_imag+m_imag_err);
-        return cxsmpl<FP2>(static_cast<FP2>(m_real), static_cast<FP2>(m_imag));
+        return cxsmpl<FP>(m_real+m_real_err, m_imag+m_imag_err);
+        //return cxsmpl<FP2>(static_cast<FP2>(m_real), static_cast<FP2>(m_imag));
     }
 
 };
@@ -455,67 +455,59 @@ cxmake( const FP& r, const FP2& i )
 }
 #endif
 
-inline cxtype
-cxmake( const fptype& r, const fptype& i )
+template <typename FP>
+inline cxsmpl<FP>
+cxmake( const FP& r, const FP& i )
 {
-      return cxtype( r, i ); // cxsmpl constructor
+      return cxsmpl<FP>( r, i ); // cxsmpl constructor
 }
 
-#ifdef __CADNA
-
-/*inline cxsmpl<float_st>
-cxmake_fst( const double_st& r, const double_st& i )
-    {
-        return cxtype( static_cast<float_st>(r), static_cast<float_st>(i) ); // cxsmpl constructor
-    }
-
-inline cxsmpl<float_st>
-cxmake_fst( const cxsmpl<double_st> c )
-    {
-        return cxtype( static_cast<float_st>(c.real()), static_cast<float_st>(c.imag()) ); // cxsmpl constructor
-    }*/
-#endif
-
-
-inline fptype
-cxreal( const cxtype& c )
+template <typename FP>
+inline FP
+cxreal( const cxsmpl<FP>& c )
 {
     return c.real(); // cxsmpl::real()
 }
 
-inline fptype
-cximag( const cxtype& c )
+template <typename FP>
+inline FP
+cximag( const cxsmpl<FP>& c )
 {
     return c.imag(); // cxsmpl::imag()
 }
 
-inline cxtype
-cxconj( const cxtype& c )
+template <typename FP>
+inline cxsmpl<FP>
+cxconj( const cxsmpl<FP>& c )
 {
-    return conj( c ); // conj( cxsmpl )
+    return conj<FP>( c ); // conj( cxsmpl )
 }
 
-inline cxtype                 // NOT __device__
+template <typename FP>
+inline cxsmpl<FP>                 // NOT __device__
 cxmake( const std::complex<float>& c ) // std::complex to cxsmpl (float-to-float or float-to-double)
 {
-    return cxmake( c.real(), c.imag() );
+    return cxmake<FP>( c.real(), c.imag() );
 }
 
-inline cxtype                  // NOT __device__
+template <typename FP>
+inline cxsmpl<FP>                  // NOT __device__
 cxmake( const std::complex<double>& c ) // std::complex to cxsmpl (double-to-float or double-to-double)
 {
-    return cxmake( c.real(), c.imag() );
+    return cxmake<FP>( c.real(), c.imag() );
 }
+
+template <typename FT>
 class cxtype_ref
 {
 public:
     cxtype_ref() = delete;
-    cxtype_ref( const cxtype_ref& ) = delete;
-    cxtype_ref( cxtype_ref&& ) = default; // copy const refs
-    cxtype_ref( fptype& r, fptype& i )
+    cxtype_ref( const cxtype_ref<FT>& ) = delete;
+    cxtype_ref( cxtype_ref<FT>&& ) = default; // copy const refs
+    cxtype_ref( FT& r, FT& i )
       : m_preal( &r ), m_pimag( &i ) {} // copy (create from) const refs
-    cxtype_ref& operator=( const cxtype_ref& ) = delete;
-    cxtype_ref& operator=( const cxtype& c )
+    cxtype_ref& operator=( const cxtype_ref<FT>& ) = delete;
+    cxtype_ref& operator=( const cxsmpl<FT>& c )
     {
         *m_preal = cxreal( c );
         *m_pimag = cximag( c );
@@ -523,22 +515,34 @@ public:
     } // copy (assign) non-const values
     operator cxtype() const { return cxmake( *m_preal, *m_pimag ); }
 private:
-    fptype* const m_preal; // const pointer to non-const fptype R
-    fptype* const m_pimag; // const pointer to non-const fptype I
+    FT* const m_preal; // const pointer to non-const FT R
+    FT* const m_pimag; // const pointer to non-const FT I
 };
 
 // Printout to stream for user defined types
+template <typename FT>
 inline std::ostream&
-operator<<( std::ostream& out, const cxtype_ref& c )
+operator<<( std::ostream& out, const cxtype_ref<FT>& c )
 {
     out << (cxtype)c;
     return out;
 }
 
-inline cxtype cxzero_sv() { return cxtype( 0, 0 ); }
+template <
+    typename CT,
+    std::enable_if_t<
+        std::is_same_v<CT, cxtype> ||
+        std::is_same_v<CT, cxtype_d> ||
+        std::is_same_v<CT, cxtype_f>,
+    int> = 0>
+inline CT cxzero_sv() {
+    return CT(0, 0);
+}
 
-inline fptype_sv
-cxabs2( const cxtype_sv& c )
+
+template <typename FP>
+inline FP
+cxabs2( const cxsmpl<FP>& c )
 {
     return cxreal( c ) * cxreal( c ) + cximag( c ) * cximag( c );
 }

@@ -29,8 +29,8 @@ namespace mg5amcCpu
   private:
 
     friend class MemoryAccessHelper<MemoryAccessWeightsBase, fptype>;
-    friend class KernelAccessHelper<MemoryAccessWeightsBase, true>;
-    friend class KernelAccessHelper<MemoryAccessWeightsBase, false>;
+    friend class KernelAccessHelper<MemoryAccessWeightsBase, true, fptype>;
+    friend class KernelAccessHelper<MemoryAccessWeightsBase, false, fptype>;
 
     //--------------------------------------------------------------------------
     // NB all KernelLaunchers assume that memory access can be decomposed as "accessField = decodeRecord( accessRecord )"
@@ -118,7 +118,7 @@ namespace mg5amcCpu
     static   inline fptype&
     kernelAccess( fptype* buffer )
     {
-      return KernelAccessHelper<MemoryAccessWeightsBase, onDevice>::template kernelAccessField<>( buffer );
+      return KernelAccessHelper<MemoryAccessWeightsBase, onDevice, fptype>::template kernelAccessField<>( buffer );
     }
 
     /*
@@ -135,7 +135,7 @@ namespace mg5amcCpu
     static   inline const fptype&
     kernelAccessConst( const fptype* buffer )
     {
-      return KernelAccessHelper<MemoryAccessWeightsBase, onDevice>::template kernelAccessFieldConst<>( buffer );
+      return KernelAccessHelper<MemoryAccessWeightsBase, onDevice, fptype>::template kernelAccessFieldConst<>( buffer );
     }
   };
 

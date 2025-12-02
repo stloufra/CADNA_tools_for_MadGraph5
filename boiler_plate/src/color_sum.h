@@ -65,11 +65,13 @@ namespace mg5amcCpu
   //--------------------------------------------------------------------------
 
 #ifndef MGONGPUCPP_GPUIMPL
+    /*
+  template<typename FT, typename CT = cxsmpl<FT>>
   void
   color_sum_cpu( fptype* allMEs,              // output: allMEs[nevt], add |M|^2 for one specific helicity
-                 const cxtype_sv* allJamp_sv, // input: jamp_sv[ncolor] (float/double) or jamp_sv[2*ncolor] (mixed) for one specific helicity
+                 const CT* allJamp_sv, // input: jamp_sv[ncolor] (float/double) or jamp_sv[2*ncolor] (mixed) for one specific helicity
                  const int ievt0 );           // input: first event number in current C++ event page (for CUDA, ievt depends on threadid)
-#endif
+*/#endif
 
   //--------------------------------------------------------------------------
 

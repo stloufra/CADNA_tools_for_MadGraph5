@@ -16,9 +16,9 @@
 #define MG5_Sigma_sm_gg_ttxgg_H 1
 
 #include "boilerplate/typeTraits.h"
-
-
 #include "boilerplate/Parameters_sm.h"
+//#include "accesses/includeAcesses.h"
+#include <assert.h>
 
 #include <vector>
 
@@ -107,7 +107,7 @@ namespace mg5amcCpu
   };
 
   //--------------------------------------------------------------------------
-
+/*
 #ifdef MGONGPUCPP_GPUIMPL
   __global__ void
   computeDependentCouplings( const fptype* allgs,    // input: Gs[nevt]
@@ -122,7 +122,7 @@ namespace mg5amcCpu
   //--------------------------------------------------------------------------
 
 #ifdef MGONGPUCPP_GPUIMPL /* clang-format off */
-  void
+/*  void
   sigmaKin_getGoodHel( const fptype* allmomenta,   // input: momenta[nevt*npar*4]
                        const fptype* allcouplings, // input: couplings[nevt*ndcoup*2]
                        fptype* allMEs,             // output: allMEs[nevt], |M|^2 final_avg_over_helicities
@@ -134,10 +134,11 @@ namespace mg5amcCpu
                        bool* isGoodHel,            // output: isGoodHel[ncomb] - device array (GPU device implementation)
                        const int nevt );           // input: #events (for cuda: nevt == ndim == gpublocks*gputhreads)
 #else
+ template<typename FT, typename CT = cxsmpl<FT> >
   void
-  sigmaKin_getGoodHel( const fptype* allmomenta,   // input: momenta[nevt*npar*4]
+  sigmaKin_getGoodHel( const FT* allmomenta,   // input: momenta[nevt*npar*4]
                        const fptype* allcouplings, // input: couplings[nevt*ndcoup*2]
-                       fptype* allMEs,             // output: allMEs[nevt], |M|^2 final_avg_over_helicities
+                       FT* allMEs,             // output: allMEs[nevt], |M|^2 final_avg_over_helicities
 #ifdef MGONGPU_SUPPORTS_MULTICHANNEL
                        fptype* allNumerators,      // output: multichannel numerators[nevt], running_sum_over_helicities
                        fptype* allDenominators,    // output: multichannel denominators[nevt], running_sum_over_helicities
@@ -147,14 +148,14 @@ namespace mg5amcCpu
 #endif /* clang-format on */
 
   //--------------------------------------------------------------------------
-
+/*
   int                                           // output: nGoodHel (the number of good helicity combinations out of ncomb)
   sigmaKin_setGoodHel( const bool* isGoodHel ); // input: isGoodHel[ncomb] - host array
 
   //--------------------------------------------------------------------------
 
 #ifdef MGONGPUCPP_GPUIMPL /* clang-format off */
-  void
+/*  void
   sigmaKin( const fptype* allmomenta,           // input: momenta[nevt*npar*4]
             const fptype* allcouplings,         // input: couplings[nevt*ndcoup*2]
             const fptype* allrndhel,            // input: random numbers[nevt] for helicity selection

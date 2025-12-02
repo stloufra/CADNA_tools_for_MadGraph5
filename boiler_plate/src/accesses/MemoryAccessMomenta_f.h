@@ -65,8 +65,8 @@ namespace mg5amcCpu
   private:
 
     friend class MemoryAccessHelper<MemoryAccessMomentaBase_f, fptype_f>;
-    friend class KernelAccessHelper<MemoryAccessMomentaBase_f, true>;
-    friend class KernelAccessHelper<MemoryAccessMomentaBase_f, false>;
+    friend class KernelAccessHelper<MemoryAccessMomentaBase_f, true, fptype_f>;
+    friend class KernelAccessHelper<MemoryAccessMomentaBase_f, false, fptype_f>;
 
     // The number of components of a 4-momentum
     static constexpr int np4 = CPPProcess::np4;
@@ -176,13 +176,13 @@ namespace mg5amcCpu
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
     // [Signature (non-const, SCALAR) ===> fptype_f& kernelAccessIp4Ipar( fptype_f* buffer, const int ipar, const int ipar ) <===]
     static constexpr auto kernelAccessIp4Ipar =
-      KernelAccessHelper<MemoryAccessMomentaBase_f,  onDevice>::template kernelAccessField<int, int>;
+      KernelAccessHelper<MemoryAccessMomentaBase_f,  onDevice, fptype_f>::template kernelAccessField<int, int>;
 
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
     // [Signature (const, SCALAR) ===> const fptype_f& kernelAccessIp4IparConst( const fptype_f* buffer, const int ipar, const int ipar ) <===]
     // DEFAULT VERSION
     static constexpr auto kernelAccessIp4IparConst_s =
-      KernelAccessHelper<MemoryAccessMomentaBase_f,  onDevice>::template kernelAccessFieldConst<int, int>;
+      KernelAccessHelper<MemoryAccessMomentaBase_f,  onDevice, fptype_f>::template kernelAccessFieldConst<int, int>;
 
     /*
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
@@ -267,8 +267,8 @@ namespace mg5amcCpu
 
   //----------------------------------------------------------------------------
 
-  typedef KernelAccessMomenta<false> HostAccessMomenta;
-  typedef KernelAccessMomenta<true> DeviceAccessMomenta;
+  typedef KernelAccessMomenta<false> HostAccessMomenta_f;
+  typedef KernelAccessMomenta<true> DeviceAccessMomenta_f;
 
   //----------------------------------------------------------------------------
 

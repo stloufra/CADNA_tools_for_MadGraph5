@@ -22,28 +22,31 @@
 
 template <typename FP>
 class cxsmpl;
+
+template <typename FP>
 class cxtype_ref;
 
 const int neppV = 1;
 
 #if defined __CADNA
 typedef float_st fptype;
-typedef double_st fptype2;
+typedef float_st fptype2;
 typedef double_st fptype_d;
 typedef float_st fptype_f;
 
 typedef double_st fptype_momenta;
-
-#elif
+#else
 typedef float fptype;
 typedef float fptype2;
-typedef double_st fptype_d;
-typedef float_st fptype_f;
+typedef double fptype_d;
+typedef float fptype_f;
 
 typedef double fptype_momenta;
 #endif
 
 typedef cxsmpl<fptype> cxtype;
+typedef cxsmpl<fptype_d> cxtype_d;
+typedef cxsmpl<fptype_f> cxtype_f;
 
 typedef bool bool_sv;
 typedef fptype fptype_sv;
@@ -53,7 +56,9 @@ typedef fptype_d fptype_d_sv;
 
 typedef unsigned int uint_sv;
 typedef cxtype cxtype_sv;
-typedef cxtype_ref cxtype_sv_ref;
+
+//template<typename FT>
+//typedef cxtype_ref<FT> cxtype_sv_ref;
 
 #include "Complex.h"
 
@@ -67,52 +72,36 @@ using std::max;
 using std::min;
 using std::sqrt;
 
-inline const fptype&
-fpmax(const fptype& a, const fptype& b)
+template<typename FP>
+inline const FP&
+fpmax(const FP& a, const FP& b)
 {
     return max(a, b);
 }
 
-inline const fptype&
-fpmin(const fptype& a, const fptype& b)
+template<typename FP>
+inline const FP&
+fpmin(const FP& a, const FP& b)
 {
     return min(a, b);
 }
 
-inline fptype
-fpsqrt(const fptype& f)
+template<typename FP>
+inline FP
+fpsqrt(const FP& f)
 {
     return sqrt(f);
 }
 
-#ifdef __CADNA
-/*inline fptype3
-fpsqrt(const fptype3& f)
-{
-    return sqrt(f);
-}
-
-inline const fptype3&
-fpmax(const fptype3& a, const fptype3& b)
-{
-    return max(a, b);
-}
-
-inline const fptype3&
-fpmin(const fptype3& a, const fptype3& b)
-{
-    return min(a, b);
-}*/
-#endif
-
-inline fptype
-fpternary(const bool& mask, const fptype& a, const fptype& b)
+template<typename FP>
+inline FP
+fpternary(const bool& mask, const FP& a, const FP& b)
 {
     return (mask ? a : b);
 }
 #ifdef __CADNA
 
-template <typename FP, typename FP2,
+/*template <typename FP, typename FP2,
 std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
 auto
 fpternary(const bool& mask, const  FP& a, const  FP2& b)
@@ -123,7 +112,7 @@ fpternary(const bool& mask, const  FP& a, const  FP2& b)
         return (mask ? static_cast<double_st>(a) : b);
     //else
     //    return (mask ? static_cast<float_st>(a) : static_cast<float_st>(b));
-}
+}*/
 #endif
 
 
@@ -139,7 +128,7 @@ maskand(const bool& mask)
     return mask;
 }
 
-#ifdef __CADNA
+/*#ifdef __CADNA
 template <typename FP, typename FP2,
 std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
 inline const double_st
@@ -172,6 +161,6 @@ fpsqrt(const  FP& a, const  FP2& b)
     else
         return sqrt(static_cast<FP2>(a), b);
 }
-#endif
+#endif*/
 
 #endif //CPPPROCESS_STANDALONE_TYPETRAITS_H

@@ -65,8 +65,8 @@ namespace mg5amcCpu
   private:
 
     friend class MemoryAccessHelper<MemoryAccessMomentaBase_d, fptype_d>;
-    friend class KernelAccessHelper<MemoryAccessMomentaBase_d, true>;
-    friend class KernelAccessHelper<MemoryAccessMomentaBase_d, false>;
+    friend class KernelAccessHelper<MemoryAccessMomentaBase_d, true, fptype_d>;
+    friend class KernelAccessHelper<MemoryAccessMomentaBase_d, false, fptype_d>;
 
     // The number of components of a 4-momentum
     static constexpr int np4 = CPPProcess::np4;
@@ -176,13 +176,13 @@ namespace mg5amcCpu
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
     // [Signature (non-const, SCALAR) ===> fptype_d& kernelAccessIp4Ipar( fptype_d* buffer, const int ipar, const int ipar ) <===]
     static constexpr auto kernelAccessIp4Ipar =
-      KernelAccessHelper<MemoryAccessMomentaBase_d,  onDevice>::template kernelAccessField<int, int>;
+      KernelAccessHelper<MemoryAccessMomentaBase_d,  onDevice, fptype_d>::template kernelAccessField<int, int>;
 
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
     // [Signature (const, SCALAR) ===> const fptype_d& kernelAccessIp4IparConst( const fptype_d* buffer, const int ipar, const int ipar ) <===]
     // DEFAULT VERSION
     static constexpr auto kernelAccessIp4IparConst_s =
-      KernelAccessHelper<MemoryAccessMomentaBase_d,  onDevice>::template kernelAccessFieldConst<int, int>;
+      KernelAccessHelper<MemoryAccessMomentaBase_d,  onDevice, fptype_d>::template kernelAccessFieldConst<int, int>;
 
     /*
     // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
@@ -203,7 +203,7 @@ namespace mg5amcCpu
     // [Signature (const, SCALAR OR VECTOR) ===> fptype_d_sv kernelAccessIp4IparConst( const fptype_d* buffer, const int ipar, const int ipar ) <===]
     // FIXME? Eventually return by const reference and support aligned arrays only?
     // FIXME? Currently return by value to support also unaligned and arbitrary arrays
-    static   inline fptype_d_sv
+    static   inline fptype_d
     kernelAccessIp4IparConst( const fptype_d* buffer,
                               const int ip4,
                               const int ipar )
@@ -267,8 +267,8 @@ namespace mg5amcCpu
 
   //----------------------------------------------------------------------------
 
-  typedef KernelAccessMomenta<false> HostAccessMomenta;
-  typedef KernelAccessMomenta<true> DeviceAccessMomenta;
+  typedef KernelAccessMomenta_d<false> HostAccessMomenta_d;
+  typedef KernelAccessMomenta_d<true> DeviceAccessMomenta_d;
 
   //----------------------------------------------------------------------------
 

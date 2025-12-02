@@ -39,8 +39,8 @@ public: /* clang-format off */
 private: /* clang-format on */
 
   friend class MemoryAccessHelper<MemoryAccessRandomNumbersBase, fptype>;
-  friend class KernelAccessHelper<MemoryAccessRandomNumbersBase, true>;
-  friend class KernelAccessHelper<MemoryAccessRandomNumbersBase, false>;
+  friend class KernelAccessHelper<MemoryAccessRandomNumbersBase, true, fptype>;
+  friend class KernelAccessHelper<MemoryAccessRandomNumbersBase, false, fptype>;
 
   // The number of components of a 4-momentum
   static constexpr int np4 = CPPProcess::np4;
@@ -130,12 +130,12 @@ public:
   // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
   // [Signature (non-const) ===> fptype& kernelAccessIp4Iparf( fptype* buffer, const int ipar, const int iparf ) <===]
   static constexpr auto kernelAccessIp4Iparf =
-    KernelAccessHelper<MemoryAccessRandomNumbersBase, onDevice>::template kernelAccessField<int, int>;
+    KernelAccessHelper<MemoryAccessRandomNumbersBase, onDevice, fptype>::template kernelAccessField<int, int>;
 
   // Locate a field (output) in a memory buffer (input) from a kernel event-indexing mechanism (internal) and the given field indexes (input)
   // [Signature (const) ===> const fptype& kernelAccessIp4IparfConst( const fptype* buffer, const int ipar, const int iparf ) <===]
   static constexpr auto kernelAccessIp4IparfConst =
-    KernelAccessHelper<MemoryAccessRandomNumbersBase, onDevice>::template kernelAccessFieldConst<int, int>;
+    KernelAccessHelper<MemoryAccessRandomNumbersBase, onDevice, fptype>::template kernelAccessFieldConst<int, int>;
 };
 
 //----------------------------------------------------------------------------

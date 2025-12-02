@@ -271,8 +271,8 @@ namespace momenta_engine
     }
 
     [[nodiscard]]
-    std::vector<bool> PickMomenta(auto& hstMomenta, int& n_broken, const int nevt, const fptype_momenta coll_cut,
-                                  const fptype_momenta soft_ratio)
+    std::vector<bool> PickMomenta(auto& hstMomenta, int& n_broken, const int nevt, const fptype_momenta coll_cut = 0.995,
+                                  const fptype_momenta soft_ratio = 50.0)
     {
         //TODO: implement with buffer in future
         std::vector<bool> broken(nevt); //false by default
@@ -339,13 +339,13 @@ namespace momenta_engine
             {
                 for (int ipar = 0; ipar < N; ipar++)
                 {
-                    MemoryAccessMomenta_f::ieventAccessIp4Ipar(hstMom_f.data(), f, 0, ipar) =
+                    MemoryAccessMomenta_f::ieventAccessIp4Ipar(hstMom_f.data(), f, 0, ipar) = (fptype_f)
                         MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 0, ipar);
-                    MemoryAccessMomenta_f::ieventAccessIp4Ipar(hstMom_f.data(), f, 0, ipar) =
+                    MemoryAccessMomenta_f::ieventAccessIp4Ipar(hstMom_f.data(), f, 1, ipar) = (fptype_f)
                         MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 1, ipar);
-                    MemoryAccessMomenta_f::ieventAccessIp4Ipar(hstMom_f.data(), f, 0, ipar) =
+                    MemoryAccessMomenta_f::ieventAccessIp4Ipar(hstMom_f.data(), f, 2, ipar) = (fptype_f)
                         MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 2, ipar);
-                    MemoryAccessMomenta_f::ieventAccessIp4Ipar(hstMom_f.data(), f, 0, ipar) =
+                    MemoryAccessMomenta_f::ieventAccessIp4Ipar(hstMom_f.data(), f, 3, ipar) = (fptype_f)
                         MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 3, ipar);
                 }
                 f++;
@@ -354,19 +354,20 @@ namespace momenta_engine
             {
                 for (int ipar = 0; ipar < N; ipar++)
                 {
-                    MemoryAccessMomenta_d::ieventAccessIp4Ipar(hstMom_d.data(), d, 0, ipar) =
+                    MemoryAccessMomenta_d::ieventAccessIp4Ipar(hstMom_d.data(), d, 0, ipar) = (fptype_d)
                         MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 0, ipar);
-                    MemoryAccessMomenta_d::ieventAccessIp4Ipar(hstMom_d.data(), d, 0, ipar) =
+                    MemoryAccessMomenta_d::ieventAccessIp4Ipar(hstMom_d.data(), d, 1, ipar) = (fptype_d)
                         MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 1, ipar);
-                    MemoryAccessMomenta_d::ieventAccessIp4Ipar(hstMom_d.data(), d, 0, ipar) =
+                    MemoryAccessMomenta_d::ieventAccessIp4Ipar(hstMom_d.data(), d, 2, ipar) = (fptype_d)
                         MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 2, ipar);
-                    MemoryAccessMomenta_d::ieventAccessIp4Ipar(hstMom_d.data(), d, 0, ipar) =
+                    MemoryAccessMomenta_d::ieventAccessIp4Ipar(hstMom_d.data(), d, 3, ipar) = (fptype_d)
                         MemoryAccessMomenta::ieventAccessIp4IparConst(hstMomenta.data(), ievt, 3, ipar);
 
                 }
                 d++;
             }
         }
+        std::cout << "Broken: " << d << " Good: " << f << std::endl;
 
     }
 

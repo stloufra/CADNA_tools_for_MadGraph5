@@ -152,25 +152,25 @@ namespace mg5amcCpu
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable" // e.g. <<warning: variable ‘couplings_sv’ set but not used [-Wunused-but-set-variable]>>
 #endif
   // Compute the output couplings (e.g. gc10 and gc11) from the input gs
-  template<class G_ACCESS, class C_ACCESS>
+  template<class G_ACCESS, class C_ACCESS, typename FT>
   __device__ inline void
   G2COUP( const fptype gs[],
-          fptype couplings[],
+          FT couplings[],
           const double* bsmIndepParamPtr )
   {
     mgDebug( 0, __FUNCTION__ );
     using namespace Parameters_sm_dependentCouplings;
     const fptype_sv& gs_sv = G_ACCESS::kernelAccessConst( gs );
     DependentCouplings_sv couplings_sv = computeDependentCouplings_fromG( gs_sv, bsmIndepParamPtr );
-    fptype* GC_10s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_10 );
-    fptype* GC_11s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_11 );
-    fptype* GC_12s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_12 );
-    cxtype_sv_ref GC_10s_sv = C_ACCESS::kernelAccess( GC_10s );
-    cxtype_sv_ref GC_11s_sv = C_ACCESS::kernelAccess( GC_11s );
-    cxtype_sv_ref GC_12s_sv = C_ACCESS::kernelAccess( GC_12s );
-    GC_10s_sv = couplings_sv.GC_10;
-    GC_11s_sv = couplings_sv.GC_11;
-    GC_12s_sv = couplings_sv.GC_12;
+    FT* GC_10s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_10 );
+    FT* GC_11s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_11 );
+    FT* GC_12s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_12 );
+    cxtype_ref<FT> GC_10s_sv = C_ACCESS::kernelAccess( GC_10s );
+    cxtype_ref<FT> GC_11s_sv = C_ACCESS::kernelAccess( GC_11s );
+    cxtype_ref<FT> GC_12s_sv = C_ACCESS::kernelAccess( GC_12s );
+    GC_10s_sv = static_cast<cxsmpl<FT>>(couplings_sv.GC_10);
+    GC_11s_sv = static_cast<cxsmpl<FT>>(couplings_sv.GC_11);
+    GC_12s_sv = static_cast<cxsmpl<FT>>(couplings_sv.GC_12);
     mgDebug( 1, __FUNCTION__ );
     return;
   }

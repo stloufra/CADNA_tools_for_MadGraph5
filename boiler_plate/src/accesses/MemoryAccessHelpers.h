@@ -87,7 +87,7 @@ public:
 //----------------------------------------------------------------------------
 
 // A templated helper class that includes the boilerplate code for KernelAccess classes
-template<class T, bool onDevice, typename FT = fptype>
+template<class T, bool onDevice, typename FT >
 class KernelAccessHelper : public MemoryAccessHelper<T, FT>
 {
 public:
