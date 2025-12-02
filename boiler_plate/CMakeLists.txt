@@ -5,10 +5,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(
-        -Wall
-        -Wextra
-        -Wconversion
-        -Wsign-conversion
+    -Wall
+    #    -Wextra
+    #    -Wconversion
+    #    -Wsign-conversion
+        -Wfloat-conversion
 )
 
 #add_definitions(-D__CADNA)
@@ -17,7 +18,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4 -fsanitize=address")
 
 set(CMAKE_CXX_FLAGS_PROFILE "-O3 -g -gdwarf-4 -fno-omit-frame-pointer ")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile" CACHE STRING "" FORCE)
 

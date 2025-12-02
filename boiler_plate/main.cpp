@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     cadna_init(-1);
 #endif
 
-     int nevt = 80000;
+     int nevt = 80'000;
 
     std::cout << "nevt = " << nevt << std::endl;
 

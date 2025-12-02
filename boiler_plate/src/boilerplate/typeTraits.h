@@ -33,7 +33,6 @@ typedef double_st fptype3;
 #else
 typedef double fptype;
 typedef double fptype2;
-//typedef double fptype3;
 #endif
 
 typedef cxsmpl<fptype> cxtype;
