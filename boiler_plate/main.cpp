@@ -25,17 +25,19 @@ int main(int argc, char* argv[])
     std::cout << "nevt = " << nevt << std::endl;
 
     HostBufferMomenta hstMomenta(nevt);
-    HostBufferMatrixElements hstMe(nevt);
     HostBufferGs hstGs(nevt);
     HostBufferSelectedHelicity hstSelHel(nevt);
-    HostBufferCouplings hstCoup(nevt);
     HostBufferRndNumHelicity hstRndHel(nevt);
     HostBufferHelicityMask hstIsGoodHel(CPPProcess::ncomb);
 
     CPPProcess process(true);
 
     process.initProc("../src/Cards/param_card.dat");
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false );
+    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 8 );
+   //---
+    auto begin = std::chrono::high_resolution_clock::now();
+    HostBufferMatrixElements hstMe(nevt);
+    HostBufferCouplings hstCoup(nevt);
 
     fillGs(hstGs.data(), nevt);
     fillRndHel(hstRndHel.data(), nevt);
@@ -46,8 +48,9 @@ int main(int argc, char* argv[])
     const int nGoodHel = sigmaKin_setGoodHel(hstIsGoodHel.data());
 
     sigmaKin(hstMomenta.data(), hstCoup.data(), hstRndHel.data(), hstMe.data(), hstSelHel.data(), nevt);
-
-
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count()/1.0e9 << "s" << std::endl;
+    //---
 #ifdef __CADNA
     printMEandPreccision(hstMomenta, hstMe, nevt, true);
     std::cout << "Number of good helicities: " << nGoodHel << std::endl;
