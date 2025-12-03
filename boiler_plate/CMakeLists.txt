@@ -42,5 +42,5 @@ add_executable(CPPProcess_standalone main.cpp
         src/color_sum.h
         src/boilerplate/repair_momenta.h
         src/boilerplate/promiseTypes.h)
-target_link_libraries(CPPProcess_standalone PRIVATE cadnaC)
+target_link_libraries(CPPProcess_standalone PRIVATE cadnaC c++)
 
