@@ -3506,8 +3506,11 @@ namespace mg5amcCpu
 #if defined MGONGPU_CPPSIMD and defined MGONGPU_FPTYPE_DOUBLE and defined MGONGPU_FPTYPE2_FLOAT
       FT MEs_ighel2[ncomb] = {}; // sum of MEs for all good helicities up to ighel (for the second neppV page)
 #endif
+      if ( ipagV2 % 500 == 0)
+        printf("I am working on event = %d \n",  ipagV2);
       for( int ighel = 0; ighel < cNGoodHel; ighel++ )
       {
+
         const int ihel = cGoodHel[ighel];
         CT jamp_sv[nParity * ncolor] = {}; // fixed nasty bug (omitting 'nParity' caused memory corruptions after calling calculate_jamps)
 #ifdef MGONGPU_SUPPORTS_MULTICHANNEL

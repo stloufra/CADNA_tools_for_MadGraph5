@@ -31,19 +31,10 @@ namespace momenta_engine
 
     struct P3
     {
-        union
-        {
-            fptype_momenta v[3];
-
-            struct
-            {
-                fptype_momenta px, py, pz;
-            };
-        };
-
+        fptype_momenta v[3];
         P3() = default;
 
-        P3(fptype_momenta x, fptype_momenta y, fptype_momenta z) : px(x), py(y), pz(z)
+        P3(fptype_momenta x, fptype_momenta y, fptype_momenta z) : v{x,y,z}
         {
         }
 
@@ -117,7 +108,7 @@ namespace momenta_engine
             v[2] + ((gamma - 1.0) / b2) * bp * beta[2] - gamma * p.E * beta[2]
         };
 
-        return {Eprime, pprime.px, pprime.py, pprime.pz};
+        return {Eprime, pprime[0], pprime[1], pprime[2]};
     }
 
     // Collinearity test

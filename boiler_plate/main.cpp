@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 
 
    // Momenta sorting
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 8);
+    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 4);
     auto begin = std::chrono::high_resolution_clock::now();
     auto broken = momenta_engine::PickMomenta(hstMomenta, n_broken, nevt, 0.995, 50.0);
 
