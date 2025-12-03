@@ -16,7 +16,7 @@ add_compile_options(
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4 -fsanitize=address")
 
-set(CMAKE_CXX_FLAGS_PROFILE "-O3 -g -gdwarf-4 -fno-omit-frame-pointer ")
+set(CMAKE_CXX_FLAGS_PROFILE "-O1 -g -gdwarf-4 -fno-omit-frame-pointer ")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
 
@@ -42,6 +42,6 @@ add_executable(CPPProcess_standalone main.cpp
         src/CPPProcess.cc
         src/color_sum.h
         src/boilerplate/repair_momenta.h
-       )
-target_link_libraries(CPPProcess_standalone PRIVATE cadnaC)
+       	src/boilerplate/promiseTypes.h)
+target_link_libraries(CPPProcess_standalone PRIVATE cadnaC c++)
 

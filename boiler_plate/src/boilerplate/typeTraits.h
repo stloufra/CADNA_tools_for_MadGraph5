@@ -27,12 +27,13 @@ class cxtype_ref;
 const int neppV = 1;
 
 #if defined __CADNA
-typedef float_st fptype;
-typedef double_st fptype2;
-typedef double_st fptype3;
+#include "promiseTypes-Fitted.h"
+typedef float fptypemomenta;
+
+#elif defined ( __PRO__)
+#include "promiseTypes.h"
 #else
-typedef double fptype;
-typedef double fptype2;
+#include "promiseTypes-Fitted_wo_cadna.h"
 #endif
 
 typedef cxsmpl<fptype> cxtype;
@@ -68,37 +69,19 @@ fpmin(const fptype& a, const fptype& b)
     return min(a, b);
 }
 
-inline fptype
-fpsqrt(const fptype& f)
+template <typename FP>
+inline FP
+fpsqrt(const FP& f)
 {
     return sqrt(f);
 }
-
-#ifdef __CADNA
-/*inline fptype3
-fpsqrt(const fptype3& f)
-{
-    return sqrt(f);
-}
-
-inline const fptype3&
-fpmax(const fptype3& a, const fptype3& b)
-{
-    return max(a, b);
-}
-
-inline const fptype3&
-fpmin(const fptype3& a, const fptype3& b)
-{
-    return min(a, b);
-}*/
-#endif
 
 inline fptype
 fpternary(const bool& mask, const fptype& a, const fptype& b)
 {
     return (mask ? a : b);
 }
+
 #ifdef __CADNA
 
 template <typename FP, typename FP2,
@@ -114,7 +97,6 @@ fpternary(const bool& mask, const  FP& a, const  FP2& b)
     //    return (mask ? static_cast<float_st>(a) : static_cast<float_st>(b));
 }
 #endif
-
 
 inline cxtype
 cxternary(const bool& mask, const cxtype& a, const cxtype& b)
