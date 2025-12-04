@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, true);
 #else
     process.initProc("../src/Cards/param_card.dat");
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, true, 5);
+    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, true, 3);
 //    for (int i = 0; i < 100; ++i)
 //    momenta_reparator::BoostMomenta(hstMomenta, nevt);
 #endif
