@@ -27,13 +27,24 @@ class cxtype_ref;
 const int neppV = 1;
 
 #if defined __CADNA
-#include "promiseTypes-Fitted.h"
-typedef float fptypemomenta;
-
 #elif defined ( __PRO__)
 #include "promiseTypes.h"
 #else
-#include "promiseTypes-Fitted_wo_cadna.h"
+typedef float fptype;
+typedef float fptype2;
+typedef double fptypemomenta;
+typedef float FT_FFV1P0_3;
+typedef float FT_FFV1_0;
+typedef float FT_FFV1_1;
+typedef float FT_FFV1_2;
+typedef float FT_VVV1P0_1;
+typedef float FT_VVV1_0;
+typedef float FT_VVVV1P0_1;
+typedef float FT_VVVV1_0;
+typedef float FT_VVVV3P0_1;
+typedef float FT_VVVV3_0;
+typedef float FT_VVVV4P0_1;
+typedef float FT_VVVV4_0;
 #endif
 
 typedef cxsmpl<fptype> cxtype;

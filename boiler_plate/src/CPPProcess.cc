@@ -16,7 +16,7 @@
 
 #include "boilerplate/typeTraits.h"
 
-#include "HelAmps_sm.h"
+#include "HelAmps_sm_transformed.h"
 #include "accesses/MemoryAccessAmplitudes.h"
 #include "accesses/MemoryAccessChannelIds.h"
 #include "accesses/MemoryAccessCouplings.h"

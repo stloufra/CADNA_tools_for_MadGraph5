@@ -32,6 +32,7 @@ endif()
 add_executable(CPPProcess_standalone main.cpp
         src/boilerplate/typeTraits.h
         src/boilerplate/Complex.h
+        src/HelAmps_sm_transformed.h
         src/boilerplate/MemoryBuffers.h
         src/accesses/includeAcesses.h
         src/boilerplate/commonNums.h
