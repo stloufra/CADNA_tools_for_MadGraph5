@@ -30,7 +30,19 @@ const int neppV = 1;
 typedef float_st fptype;
 typedef float_st fptype2;
 typedef float_st fptypemomenta;
-typedef float_st FT_VVV1_0;
+typedef double_st allFP;
+typedef allFP FT_FFV1P0_3;
+typedef allFP FT_FFV1_0;
+typedef allFP FT_FFV1_1;
+typedef allFP FT_FFV1_2;
+typedef allFP FT_VVV1P0_1;
+typedef allFP FT_VVV1_0;
+typedef allFP FT_VVVV1P0_1;
+typedef allFP FT_VVVV1_0;
+typedef allFP FT_VVVV3P0_1;
+typedef allFP FT_VVVV3_0;
+typedef allFP FT_VVVV4P0_1;
+typedef allFP FT_VVVV4_0;
 #elif defined ( __PRO__)
 
 #include "promiseTypes.h"
@@ -39,6 +51,18 @@ typedef float_st FT_VVV1_0;
 typedef float fptype;
 typedef float fptype2;
 typedef double fptypemomenta;
+typedef float FT_FFV1P0_3;
+typedef float FT_FFV1_0;
+typedef float FT_FFV1_1;
+typedef float FT_FFV1_2;
+typedef float FT_VVV1P0_1;
+typedef float FT_VVV1_0;
+typedef float FT_VVVV1P0_1;
+typedef float FT_VVVV1_0;
+typedef float FT_VVVV3P0_1;
+typedef float FT_VVVV3_0;
+typedef float FT_VVVV4P0_1;
+typedef float FT_VVVV4_0;
 #endif
 
 typedef cxsmpl<fptype> cxtype;

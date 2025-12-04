@@ -66,7 +66,7 @@ public:
     constexpr const FP& imag() const { return m_imag; }
 
     template <typename FP2>
-    constexpr explicit operator cxsmpl<FP2>() const { return cxsmpl<FP2>(m_real, m_imag); }
+    constexpr explicit operator cxsmpl<FP2>() const { return cxsmpl<FP2>(static_cast<FP2>(m_real), static_cast<FP2>(m_imag)); }
 private:
     FP m_real, m_imag; // RI
 };
@@ -548,10 +548,11 @@ cxmake( const FP& r, const FP2& i )
 }
 #endif
 
-inline cxtype
-cxmake( const fptype& r, const fptype& i )
+template <typename FP>
+inline cxsmpl<FP>
+cxmake( const FP& r, const FP& i )
 {
-      return cxtype( r, i ); // cxsmpl constructor
+      return cxsmpl<FP>( r, i ); // cxsmpl constructor
 }
 
 #ifdef __CADNA
@@ -570,14 +571,16 @@ cxmake_fst( const cxsmpl<double_st> c )
 #endif
 
 
-inline fptype
-cxreal( const cxtype& c )
+template <typename FP>
+inline FP
+cxreal( const cxsmpl<FP>& c )
 {
     return c.real(); // cxsmpl::real()
 }
 
-inline fptype
-cximag( const cxtype& c )
+template <typename FP>
+inline FP
+cximag( const cxsmpl<FP>& c )
 {
     return c.imag(); // cxsmpl::imag()
 }
@@ -591,13 +594,13 @@ cxconj( const cxtype& c )
 inline cxtype                 // NOT __device__
 cxmake( const std::complex<float>& c ) // std::complex to cxsmpl (float-to-float or float-to-double)
 {
-    return cxmake( c.real(), c.imag() );
+    return cxmake<fptype>( c.real(), c.imag() );
 }
 
 inline cxtype                  // NOT __device__
 cxmake( const std::complex<double>& c ) // std::complex to cxsmpl (double-to-float or double-to-double)
 {
-    return cxmake( c.real(), c.imag() );
+    return cxmake<fptype>( c.real(), c.imag() );
 }
 class cxtype_ref
 {
