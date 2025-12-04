@@ -30,11 +30,10 @@ int main(int argc, char* argv[])
     CPPProcess process(true);
 
     process.initProc("../src/Cards/param_card.dat");
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 8 );
-   //---
-    auto begin = std::chrono::high_resolution_clock::now();
-    HostBufferMatrixElements hstMe(nevt);
-    HostBufferCouplings hstCoup(nevt);
+    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, true, 3);
+//    for (int i = 0; i < 100; ++i)
+//    momenta_reparator::BoostMomenta(hstMomenta, nevt);
+#endif
 
     fillGs(hstGs.data(), nevt);
     fillRndHel(hstRndHel.data(), nevt);
