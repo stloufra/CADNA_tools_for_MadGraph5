@@ -27,22 +27,8 @@ class cxtype_ref;
 const int neppV = 1;
 
 #if defined __CADNA
-typedef float_st fptype;
-typedef float_st fptype2;
+#include "promiseTypes-Fitted.h"
 typedef float_st fptypemomenta;
-typedef double_st allFP;
-typedef allFP FT_FFV1P0_3;
-typedef allFP FT_FFV1_0;
-typedef allFP FT_FFV1_1;
-typedef allFP FT_FFV1_2;
-typedef allFP FT_VVV1P0_1;
-typedef allFP FT_VVV1_0;
-typedef allFP FT_VVVV1P0_1;
-typedef allFP FT_VVVV1_0;
-typedef allFP FT_VVVV3P0_1;
-typedef allFP FT_VVVV3_0;
-typedef allFP FT_VVVV4P0_1;
-typedef allFP FT_VVVV4_0;
 #elif defined ( __PRO__)
 
 #include "promiseTypes.h"
@@ -63,6 +49,16 @@ typedef float FT_VVVV3P0_1;
 typedef float FT_VVVV3_0;
 typedef float FT_VVVV4P0_1;
 typedef float FT_VVVV4_0;
+typedef float FT_imzxxx;
+typedef float FT_ipzxxx;
+typedef float FT_ixxxxx;
+typedef float FT_ixzxxx;
+typedef float FT_omzxxx;
+typedef float FT_opzxxx;
+typedef float FT_oxxxxx;
+typedef float FT_oxzxxx;
+typedef float FT_sxxxxx;
+typedef float FT_vxxxxx;
 #endif
 
 typedef cxsmpl<fptype> cxtype;
@@ -98,8 +94,9 @@ fpmin(const fptype& a, const fptype& b)
     return min(a, b);
 }
 
-inline fptype
-fpsqrt(const fptype& f)
+template <typename FP>
+inline FP
+fpsqrt(const FP& f)
 {
     return sqrt(f);
 }

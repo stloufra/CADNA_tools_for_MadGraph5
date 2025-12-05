@@ -300,18 +300,18 @@ namespace mg5amcCpu
     // ** NB: in other words, amplitudes and wavefunctions still have TRIVIAL ACCESS: there is currently no need
     // ** NB: to have large memory structurs for wavefunctions/amplitudes in all events (no kernel splitting yet)!
     //MemoryBufferWavefunctions w_buffer[nwf]{ neppV };
-    cxtype_sv w_sv[nwf][nw6]; // particle wavefunctions within Feynman diagrams (nw6 is often 6, the dimension of spin 1/2 or spin 1 particles)
-    cxtype_sv amp_sv[1];      // invariant amplitude for one given Feynman diagram
+    cxsmpl<FT_w> w_sv[nwf][nw6]; // particle wavefunctions within Feynman diagrams (nw6 is often 6, the dimension of spin 1/2 or spin 1 particles)
+    cxsmpl<FT_amp_sv> amp_sv[1];      // invariant amplitude for one given Feynman diagram
 
     // Proof of concept for using fptype* in the interface
-    fptype* w_fp[nwf];
-    for( int iwf = 0; iwf < nwf; iwf++ ) w_fp[iwf] = reinterpret_cast<fptype*>( w_sv[iwf] );
-    fptype* amp_fp;
-    amp_fp = reinterpret_cast<fptype*>( amp_sv );
+    FT_w* w_fp[nwf];
+    for( int iwf = 0; iwf < nwf; iwf++ ) w_fp[iwf] = reinterpret_cast<FT_w*>( w_sv[iwf] );
+    FT_amp_sv* amp_fp;
+    amp_fp = reinterpret_cast<FT_amp_sv*>( amp_sv );
 
     // Local variables for the given CUDA event (ievt) or C++ event page (ipagV)
     // [jamp: sum (for one event or event page) of the invariant amplitudes for all Feynman diagrams in a given color combination]
-    cxtype_sv jamp_sv[ncolor] = {}; // all zeros (NB: vector cxtype_v IS initialized to 0, but scalar cxtype is NOT, if "= {}" is missing!)
+    cxcomp<FT_jamps> jamp_sv[ncolor] = {}; // all zeros (NB: vector cxtype_v IS initialized to 0, but scalar cxtype is NOT, if "= {}" is missing!)
 
     // === Calculate wavefunctions and amplitudes for all diagrams in all processes         ===
     // === (for one event in CUDA, for one - or two in mixed mode - SIMD event pages in C++ ===
@@ -362,7 +362,7 @@ namespace mg5amcCpu
 #endif
 
       // Reset color flows (reset jamp_sv) at the beginning of a new event or event page
-      for( int i = 0; i < ncolor; i++ ) { jamp_sv[i] = cxzero_sv(); }
+      for( int i = 0; i < ncolor; i++ ) { jamp_sv[i] = cxzero<FT_jamps>(); }
 
 #ifdef MGONGPU_SUPPORTS_MULTICHANNEL
 #ifdef MGONGPUCPP_GPUIMPL
@@ -394,32 +394,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 1
       VVVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[6], w_fp[7], w_fp[4], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[1] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[1] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV3_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[6], w_fp[7], w_fp[4], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV4_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[6], w_fp[7], w_fp[4], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 2 OF 123 ***
 
@@ -432,14 +432,14 @@ namespace mg5amcCpu
       if( channelId == 2 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 3 OF 123 ***
 
@@ -452,14 +452,14 @@ namespace mg5amcCpu
       if( channelId == 3 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 4 OF 123 ***
 
@@ -472,14 +472,14 @@ namespace mg5amcCpu
       if( channelId == 4 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[1] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[1] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 5 OF 123 ***
 
@@ -493,8 +493,8 @@ namespace mg5amcCpu
       if( channelId == 5 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 6 OF 123 ***
 
@@ -523,8 +523,8 @@ namespace mg5amcCpu
       if( channelId == 7 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[12] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[12] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 8 OF 123 ***
 
@@ -537,8 +537,8 @@ namespace mg5amcCpu
       if( channelId == 8 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 9 OF 123 ***
 
@@ -567,8 +567,8 @@ namespace mg5amcCpu
       if( channelId == 10 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[18] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[18] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 11 OF 123 ***
 
@@ -581,8 +581,8 @@ namespace mg5amcCpu
       if( channelId == 11 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 12 OF 123 ***
 
@@ -611,8 +611,8 @@ namespace mg5amcCpu
       if( channelId == 13 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 14 OF 123 ***
 
@@ -701,8 +701,8 @@ namespace mg5amcCpu
       if( channelId == 19 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 20 OF 123 ***
 
@@ -732,8 +732,8 @@ namespace mg5amcCpu
       if( channelId == 21 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[4] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[4] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 22 OF 123 ***
 
@@ -746,8 +746,8 @@ namespace mg5amcCpu
       if( channelId == 22 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 23 OF 123 ***
 
@@ -776,8 +776,8 @@ namespace mg5amcCpu
       if( channelId == 24 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[2] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[2] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 25 OF 123 ***
 
@@ -790,8 +790,8 @@ namespace mg5amcCpu
       if( channelId == 25 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 26 OF 123 ***
 
@@ -856,8 +856,8 @@ namespace mg5amcCpu
       if( channelId == 30 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[1] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[1] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 31 OF 123 ***
 
@@ -938,8 +938,8 @@ namespace mg5amcCpu
       if( channelId == 35 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[9] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[9] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 36 OF 123 ***
 
@@ -968,8 +968,8 @@ namespace mg5amcCpu
       if( channelId == 37 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[9] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[9] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 38 OF 123 ***
 
@@ -982,8 +982,8 @@ namespace mg5amcCpu
       if( channelId == 38 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 39 OF 123 ***
 
@@ -1012,8 +1012,8 @@ namespace mg5amcCpu
       if( channelId == 40 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 41 OF 123 ***
 
@@ -1026,8 +1026,8 @@ namespace mg5amcCpu
       if( channelId == 41 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 42 OF 123 ***
 
@@ -1092,8 +1092,8 @@ namespace mg5amcCpu
       if( channelId == 46 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[17] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[17] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 47 OF 123 ***
 
@@ -1145,8 +1145,8 @@ namespace mg5amcCpu
       if( channelId == 49 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[10] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[10] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 50 OF 123 ***
 
@@ -1175,8 +1175,8 @@ namespace mg5amcCpu
       if( channelId == 51 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 52 OF 123 ***
 
@@ -1189,8 +1189,8 @@ namespace mg5amcCpu
       if( channelId == 52 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 53 OF 123 ***
 
@@ -1219,8 +1219,8 @@ namespace mg5amcCpu
       if( channelId == 54 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 55 OF 123 ***
 
@@ -1265,14 +1265,14 @@ namespace mg5amcCpu
       if( channelId == 57 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 58 OF 123 ***
 
@@ -1281,32 +1281,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 58
       VVVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[12], w_fp[1], w_fp[7], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[2] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[2] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV3_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[12], w_fp[1], w_fp[7], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[2] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[2] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV4_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[12], w_fp[1], w_fp[7], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 59 OF 123 ***
 
@@ -1319,14 +1319,14 @@ namespace mg5amcCpu
       if( channelId == 59 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[2] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[2] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 60 OF 123 ***
 
@@ -1339,14 +1339,14 @@ namespace mg5amcCpu
       if( channelId == 60 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 61 OF 123 ***
 
@@ -1375,8 +1375,8 @@ namespace mg5amcCpu
       if( channelId == 62 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 63 OF 123 ***
 
@@ -1405,8 +1405,8 @@ namespace mg5amcCpu
       if( channelId == 64 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[2] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[2] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 65 OF 123 ***
 
@@ -1420,8 +1420,8 @@ namespace mg5amcCpu
       if( channelId == 65 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[8] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[8] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 66 OF 123 ***
 
@@ -1450,8 +1450,8 @@ namespace mg5amcCpu
       if( channelId == 67 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[7] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[7] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 68 OF 123 ***
 
@@ -1464,8 +1464,8 @@ namespace mg5amcCpu
       if( channelId == 68 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 69 OF 123 ***
 
@@ -1494,8 +1494,8 @@ namespace mg5amcCpu
       if( channelId == 70 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 71 OF 123 ***
 
@@ -1540,14 +1540,14 @@ namespace mg5amcCpu
       if( channelId == 73 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 74 OF 123 ***
 
@@ -1556,32 +1556,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 74
       VVVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[20], w_fp[1], w_fp[7], w_fp[4], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[4] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[4] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV3_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[20], w_fp[1], w_fp[7], w_fp[4], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[4] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[4] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV4_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[20], w_fp[1], w_fp[7], w_fp[4], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[5] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[5] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 75 OF 123 ***
 
@@ -1594,14 +1594,14 @@ namespace mg5amcCpu
       if( channelId == 75 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[4] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[4] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 76 OF 123 ***
 
@@ -1614,14 +1614,14 @@ namespace mg5amcCpu
       if( channelId == 76 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[5] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[5] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 77 OF 123 ***
 
@@ -1650,8 +1650,8 @@ namespace mg5amcCpu
       if( channelId == 78 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 79 OF 123 ***
 
@@ -1680,8 +1680,8 @@ namespace mg5amcCpu
       if( channelId == 80 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[4] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[4] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 81 OF 123 ***
 
@@ -1746,8 +1746,8 @@ namespace mg5amcCpu
       if( channelId == 85 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 86 OF 123 ***
 
@@ -1828,8 +1828,8 @@ namespace mg5amcCpu
       if( channelId == 91 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 92 OF 123 ***
 
@@ -1854,32 +1854,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 93
       VVVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[6], w_fp[7], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV3_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[6], w_fp[7], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV4_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[6], w_fp[7], w_fp[5], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 94 OF 123 ***
 
@@ -1892,14 +1892,14 @@ namespace mg5amcCpu
       if( channelId == 94 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 95 OF 123 ***
 
@@ -1912,14 +1912,14 @@ namespace mg5amcCpu
       if( channelId == 95 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 96 OF 123 ***
 
@@ -1948,8 +1948,8 @@ namespace mg5amcCpu
       if( channelId == 97 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[18] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[18] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 98 OF 123 ***
 
@@ -1978,8 +1978,8 @@ namespace mg5amcCpu
       if( channelId == 99 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[8] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[8] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 100 OF 123 ***
 
@@ -1988,32 +1988,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 100
       VVVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[18], w_fp[7], w_fp[4], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV3_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[18], w_fp[7], w_fp[4], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV4_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[18], w_fp[7], w_fp[4], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 101 OF 123 ***
 
@@ -2026,14 +2026,14 @@ namespace mg5amcCpu
       if( channelId == 101 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 102 OF 123 ***
 
@@ -2046,14 +2046,14 @@ namespace mg5amcCpu
       if( channelId == 102 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 103 OF 123 ***
 
@@ -2082,8 +2082,8 @@ namespace mg5amcCpu
       if( channelId == 104 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[12] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[12] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 105 OF 123 ***
 
@@ -2112,8 +2112,8 @@ namespace mg5amcCpu
       if( channelId == 106 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[10] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[10] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 107 OF 123 ***
 
@@ -2122,32 +2122,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 107
       VVVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[1], w_fp[7], w_fp[10], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[1] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[1] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV3_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[1], w_fp[7], w_fp[10], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[1] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[1] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVVV4_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[1], w_fp[7], w_fp[10], COUPs[2], 1.0, &amp_fp[0] );
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 108 OF 123 ***
 
@@ -2160,14 +2160,14 @@ namespace mg5amcCpu
       if( channelId == 108 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[1] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[1] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 109 OF 123 ***
 
@@ -2180,14 +2180,14 @@ namespace mg5amcCpu
       if( channelId == 109 ) numerators_sv += cxabs2( amp_sv[0] );
       if( channelId != 0 ) denominators_sv += cxabs2( amp_sv[0] );
 #endif
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 110 OF 123 ***
 
@@ -2250,32 +2250,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 114
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[12], w_fp[7], w_fp[5], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[24], w_fp[7], w_fp[5], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[21], w_fp[7], w_fp[5], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[0] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 115 OF 123 ***
 
@@ -2330,32 +2330,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 117
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[21], w_fp[7], w_fp[4], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[13], w_fp[7], w_fp[4], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[24], w_fp[7], w_fp[4], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[1] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[12] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[14] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[18] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[20] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[12] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[14] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[18] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[20] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 118 OF 123 ***
 
@@ -2454,32 +2454,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 122
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[24], w_fp[1], w_fp[7], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[3] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[3] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[15], w_fp[1], w_fp[7], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[7] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[16] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[7] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[16] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[13], w_fp[1], w_fp[7], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[6] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[8] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[10] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[13] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[19] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[22] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[6] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[8] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[10] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[13] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[19] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[22] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** DIAGRAM 123 OF 123 ***
 
@@ -2488,32 +2488,32 @@ namespace mg5amcCpu
 
       // Amplitude(s) for diagram number 123
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[17], w_fp[7], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[0] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[19], w_fp[7], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[1] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[3] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[11] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[17] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[1] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[3] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[11] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[17] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
       VVV1_0<W_ACCESS, A_ACCESS, CD_ACCESS>( w_fp[0], w_fp[8], w_fp[7], COUPs[0], 1.0, &amp_fp[0] );
-      jamp_sv[0] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[2] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[4] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[5] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[9] -= cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[15] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[21] += cxtype( 0, 1 ) * amp_sv[0];
-      jamp_sv[23] -= cxtype( 0, 1 ) * amp_sv[0];
+      jamp_sv[0] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[2] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[4] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[5] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[9] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[15] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[21] += cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
+      jamp_sv[23] -= cxsmpl<FT_amp_sv>(0,1) * amp_sv[0];
 
       // *** COLOR CHOICE BELOW ***
 
@@ -2548,7 +2548,7 @@ namespace mg5amcCpu
 #else
       // In C++, copy the local jamp to the output array passed as function argument
       for( int icol = 0; icol < ncolor; icol++ )
-        allJamp_sv[iParity * ncolor + icol] = jamp_sv[icol];
+        allJamp_sv[iParity * ncolor + icol] = static_cast<cxsmpl<fptype>>( jamp_sv[icol]);
 #endif
     }
     // END LOOP ON IPARITY

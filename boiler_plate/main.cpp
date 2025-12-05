@@ -36,10 +36,10 @@ int main(int argc, char* argv[])
 
 #if defined (__PRO__)
     process.initProc("src/Cards/param_card.dat");
-    fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, true);
+    fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
 #else
     process.initProc("../src/Cards/param_card.dat");
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, true, 3);
+    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
 //    for (int i = 0; i < 100; ++i)
 //    momenta_reparator::BoostMomenta(hstMomenta, nevt);
 #endif
@@ -56,7 +56,6 @@ int main(int argc, char* argv[])
 
 #if defined (__PRO__)
     PROMISE_CHECK_ARRAY(hstMe.data(), nevt);
-    PROMISE_CHECK_VAR(hstMe.data()[0]);
 #endif
 
 #ifdef __CADNA

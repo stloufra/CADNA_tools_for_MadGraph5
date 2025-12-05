@@ -65,6 +65,7 @@ void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt,
             MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 2, ipar) = static_cast<fptype>(p2);
             MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 3, ipar) = static_cast<fptype>(p3);
         }
+        if (verbose)
         std::cout << std::string(SEP79, '-') << std::endl;
     }
 }
