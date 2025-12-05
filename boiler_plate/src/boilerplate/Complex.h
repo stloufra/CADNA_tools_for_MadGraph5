@@ -202,11 +202,14 @@ class cxcomp
     //constexpr explicit operator cxcomp<FP2>() const { return cxcomp<FP2>(m_real, m_imag); }
 
     template<typename FP2>
-    constexpr cxsmpl<FP2> finalize()
+    constexpr cxsmpl<FP2> finalize() const
     {
         //return cxsmpl<FP>(m_real+m_real_err, m_imag+m_imag_err);
         return cxsmpl<FP2>(static_cast<FP2>(m_real), static_cast<FP2>(m_imag));
     }
+
+    template<typename FP2>
+    explicit operator cxsmpl<FP2>() const { return finalize<FP2>(); }
 
 };
 
@@ -538,7 +541,8 @@ operator<<( std::ostream& out, const cxtype_ref& c )
     return out;
 }
 
-inline cxtype cxzero_sv() { return cxtype( 0, 0 ); }
+template<typename T>
+inline cxsmpl<T> cxzero() { return cxsmpl<T>( 0.f, 0.f ); }
 
 inline fptype_sv
 cxabs2( const cxtype_sv& c )

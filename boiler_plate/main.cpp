@@ -29,8 +29,12 @@ int main(int argc, char* argv[])
 
     CPPProcess process(true);
 
+#if defined (__PRO__)
+    process.initProc("src/Cards/param_card.dat");
+    fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
+#else
     process.initProc("../src/Cards/param_card.dat");
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, true, 3);
+    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
 //    for (int i = 0; i < 100; ++i)
 //    momenta_reparator::BoostMomenta(hstMomenta, nevt);
 #endif
@@ -48,7 +52,12 @@ int main(int argc, char* argv[])
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count()/1.0e9 << "s" << std::endl;
     //---
 
-    //printMEandPreccision(hstMomenta, hstMe, nevt, true);
+#if defined (__PRO__)
+    PROMISE_CHECK_ARRAY(hstMe.data(), nevt);
+#endif
+
+#ifdef __CADNA
+    printMEandPreccision(hstMomenta, hstMe, nevt, true);
     std::cout << "Number of good helicities: " << nGoodHel << std::endl;
 #ifdef __CADNA
     cadna_end();
