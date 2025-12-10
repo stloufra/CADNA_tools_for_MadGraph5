@@ -137,6 +137,7 @@ def transform_propagators(func_text: str, func_name: str) -> Tuple[str, str, int
     new_lines = []
     in_ACCESS = False
     find_end = False
+    OM3there = False
 
     for line in lines:
         new_line = line
@@ -151,7 +152,8 @@ def transform_propagators(func_text: str, func_name: str) -> Tuple[str, str, int
             for arg in arg_const:
                 if "all" in arg:
                     if "COUP" in arg:
-                        new_lines.append("\t \t const cxsmpl<" + ft_type + "> COUP = static_cast<cxsmpl<" + ft_type + ">>(COUP_);")
+                        arg = arg.replace("all","")
+                        new_lines.append("\t \t const cxsmpl<" + ft_type + "> "+arg+" = static_cast<cxsmpl<" + ft_type + ">>("+arg+"_);")
                     else:
                         arg = arg.replace("all","")
                         new_lines.append("\t \t cxsmpl<" + ft_type + "> " + arg + "[6];")
@@ -172,7 +174,13 @@ def transform_propagators(func_text: str, func_name: str) -> Tuple[str, str, int
             new_line = new_line.replace("fpsqrt<fptype>", "fpsqrt<"+ft_type+">")
             for arg in arg_const:
                 if "all" not in arg and arg in line:
-                    new_line = new_line.replace(arg, "static_cast<"+ft_type+">("+arg+")")
+                    if line[line.find(arg)-1:line.find(arg)] != "O":
+                        new_line = new_line.replace(arg, "static_cast<"+ft_type+">("+arg+")")
+                    else:
+                        OM3there = True
+                        new_line = new_line.replace(arg, "static_cast<"+ft_type+">("+arg+")")
+                        new_line = new_line.replace("Ostatic_cast<"+ft_type+">("+arg+")", "O"+arg)
+
 
             if arg_out[0] in line and "const" not in line:
                 arg = arg_out[0]
@@ -223,7 +231,7 @@ def transform_incoming(func_text: str, func_name: str) -> Tuple[str, str, int]:
         if "fmass" in line and "skip" not in line:
             fmass = True
             body = body.replace("fmass", "fmass_FT")
-        if "wavefunction" in line:
+        #if "wavefunction" in line:
             #body = body.replace("fptype wavefunctions[", "FT_w wavefunction")
 
     lines = body.split('\n')
@@ -287,7 +295,73 @@ def transform_incoming(func_text: str, func_name: str) -> Tuple[str, str, int]:
     inserted_lines = len(func_text.split('\n')) - line_count_start
 
     return func_text, ft_type, inserted_lines
+def transform_CPPP(func_text: str, func_name: str) -> Tuple[str, str, int]:
+    """Transform a single function to use FT_ types, now including F arrays and casting outputs."""
 
+    line_count_start = len(func_text.split('\n'))
+
+    body_begin = func_text.find('{')
+    func_text = func_text.replace("\r\n", "\n")
+
+    body = func_text[body_begin:]
+    before = func_text[:body_begin]
+
+    lines = body.split('\n')
+    new_lines = []
+    all_names = []
+    exists = False
+
+    for line in lines:
+        new_line = line
+
+        if "cxtype_sv" in line :
+            name = line.split("cxtype_sv")[1].split("_sv[")[0].replace(" ","")
+            all_names.append(name)
+            new_line = new_line.replace("cxtype_sv","cxsmpl<FT_"+name+">")
+
+        if "fptype*" in line and "_fp" in line and not "reinterpret_cast" in line:
+            name = line.split("fptype*")[1].split("_fp")[0].replace(" ","")
+            exists = False
+            for n in all_names:
+                if n == name:
+                    new_line = new_line.replace("fptype*","FT_"+name+"*")
+                    exists = True
+                    break
+
+            if not exists:
+               print("Be aware! Did not find previous name created new one " + name)
+               new_line = new_line.replace("fptype*","cxsmpl<FT_"+name+">*")
+               all_names.append(name)
+
+        if "fptype" in line and "reinterpret_cast" in line:
+           if "amp" in line:
+               new_line = new_line.replace("reinterpret_cast<fptype*>","reinterpret_cast<FT_amp*>")
+           if "w_fp" in line:
+               new_line = new_line.replace("reinterpret_cast<fptype*>","reinterpret_cast<FT_w*>")
+
+        if "jamp_sv" in line and "cxzero" in line:
+            new_line = new_line.replace("cxzero_sv","cxzero<FT_jamp>")
+        if "jamp_sv" in line and "cxmake" in line:
+            new_line = new_line.replace("cxmake","cxmake<FT_jamp>")
+        if "jamp_sv" in line and "cxtype" in line:
+            new_line = new_line.replace("cxtype","cxsmpl<FT_amp>")
+
+        
+
+        if "allJamp" in line and "jamp_sv[icol]" in line:
+            new_line = new_line.replace("jamp_sv[icol]","static_cast<cxsmpl<fptype>>(jamp_sv[icol])")
+
+
+        new_lines.append(new_line)
+
+    # Reassemble
+    all_names = ["FT_" + name for name in all_names]
+
+    ft_type = all_names
+    func_text = before + "\n".join(new_lines)
+    inserted_lines = len(func_text.split('\n')) - line_count_start
+
+    return func_text, ft_type, inserted_lines
 def process_propagators(input_text: str) -> Tuple[str, List[str]]:
     """Process entire file containing propagators and return modified text and list of FT types."""
 
@@ -379,7 +453,7 @@ def process_CPPP(input_text: str) -> Tuple[str, List[str]]:
 
 
     #find calculate jamps
-    start_pos = input_text.find("calculate_jamps")
+    start_pos = input_text.find("calculate_jamps(")
     func_text, _, func_end = extract_function_signature(input_text, start_pos)
 
     # Cumulative character offset between input_text positions and output_text
@@ -389,7 +463,7 @@ def process_CPPP(input_text: str) -> Tuple[str, List[str]]:
 
     func_name = "calculate_jamps"
 
-    transformed, ft_types, more = transform_incoming(func_text, func_name)
+    transformed, ft_types, more = transform_CPPP(func_text, func_name)
     transformed_len = len(transformed)
 
     # Compute positions in the current output_text
@@ -400,10 +474,21 @@ def process_CPPP(input_text: str) -> Tuple[str, List[str]]:
     output_text = output_text[:out_start] + transformed + output_text[out_end:]
 
     return output_text, sorted(set(ft_types))
-# Read input file
-with open('HelAmps_sm.h', 'r') as f:
-    input_text = f.read()
 
+#-------------------------------------------§
+#-------------------------------------------§
+#-------------------------------------------§
+import os
+
+if os.path.exists('HelAmps_sm_bckp'):
+    with open ('HelAmps_sm_bckp', 'r') as f:
+        input_text = f.read()
+else:
+    with open('HelAmps_sm.h', 'r') as f:
+        input_text = f.read()
+
+with open('HelAmps_sm_bckp', 'w') as f:
+    f.write(input_text)
 
 
 input_text = input_text.replace("cxzero_sv", "cxzero")
@@ -411,17 +496,36 @@ input_text = input_text.replace("cxmake", "cxmake<fptype>")
 input_text = input_text.replace("cxzero", "cxzero<fptype>")
 input_text = input_text.replace("fpsqrt", "fpsqrt<fptype>")
 
-# Process file
+
 output_text, ft_types_in = process_incoming(input_text)
 output_text, ft_types = process_propagators(output_text)
 ft_types = ft_types_in + ft_types
-#import shutil
-#shutil.copy('HelAmps_sm.h', 'HelAmps_sm_original.h')
-# Write output file
-with open('HelAmps_sm_transformed.h', 'w') as f:
+
+with open('HelAmps_sm.h', 'w') as f:
     f.write(output_text)
 
-# Print FT types
+#-------------------------------------------§
+#-------------------------------------------§
+#-------------------------------------------§
+if os.path.exists('CPPProcess_bckp'):
+    with open ('CPPProcess_bckp', 'r') as f:
+        input_text = f.read()
+else:
+    with open('CPPProcess.cc', 'r') as f:
+        input_text = f.read()
+with open('CPPProcess_bckp', 'w') as f:
+    f.write(input_text)
+
+output_text, ft_types_cpp = process_CPPP(input_text)
+ft_types = ft_types_cpp + ft_types
+
+with open('CPPProcess.cc', 'w') as f:
+    f.write(output_text)
+
+#-------------------------------------------§
+#-------------------------------------------§
+#-------------------------------------------§
+
 print("Generated FT types:")
 print("=" * 50)
 for ft_type in ft_types:
@@ -431,12 +535,4 @@ for ft_type in ft_types:
     print(f"typedef float {ft_type};")
 print("=" * 50)
 print(f"\nTotal: {len(ft_types)} types")
-print(f"\nTransformed file written to: HelAmps_sm_transformed.h")
-
-'''with open('CPPProcess.cc', 'r') as f:
-    input_text = f.read()
-
-output_text, ft_types = process_CPPP(input_text)
-
-wit open('CPPProcess_transformed.cc', 'w') as f:
-    f.write(output_text)'''
+print(f"\nTransformed file written to: HelAmps_sm.h")

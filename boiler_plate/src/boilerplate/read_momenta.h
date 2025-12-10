@@ -65,7 +65,15 @@ readSim_paramsFromFile(const std::string &filename, const int precision_tresh = 
         if (line.find("Matrix element =") != std::string::npos) {
             size_t pos = line.find('=');
             if (pos != std::string::npos)
-                currentEvent.matrixElement = std::stod(line.substr(pos + 1));
+            {
+                std::string value = line.substr(pos + 1);
+
+                // replace Fortran-style "@." with "0."
+                if (!value.empty() && value.find("@.") != std::string::npos)
+                    value.replace(value.find("@."), 2, "0.");
+
+                currentEvent.matrixElement = std::stod(value);
+            }
             continue;
         }
 

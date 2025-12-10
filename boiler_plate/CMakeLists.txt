@@ -12,9 +12,10 @@ add_compile_options(
         -Wfloat-conversion
 )
 
-#add_definitions(-D__CADNA)
+add_definitions(-D__CADNA)
+#add_definitions(-D__PRO__)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4 -fsanitize=address")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4")
 
 set(CMAKE_CXX_FLAGS_PROFILE "-O1 -g -gdwarf-4 -fno-omit-frame-pointer ")
 
@@ -32,7 +33,7 @@ endif()
 add_executable(CPPProcess_standalone main.cpp
         src/boilerplate/typeTraits.h
         src/boilerplate/Complex.h
-        src/HelAmps_sm_transformed.h
+        src/HelAmps_sm.h
         src/boilerplate/MemoryBuffers.h
         src/accesses/includeAcesses.h
         src/boilerplate/commonNums.h

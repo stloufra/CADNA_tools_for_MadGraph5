@@ -7,17 +7,13 @@
 #include "src/boilerplate/fillers.h"
 #include <chrono>
 
-#ifdef __CADNA
-#include "src/boilerplate/repair_momenta.h"
-#endif
-
 int main(int argc, char* argv[])
 {
 #ifdef __CADNA
     cadna_init(-1);
 #endif
 
-     int nevt = 80'000;
+    int nevt = 142;
 
     std::cout << "nevt = " << nevt << std::endl;
 
@@ -35,8 +31,6 @@ int main(int argc, char* argv[])
 #else
     process.initProc("../src/Cards/param_card.dat");
     fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
-//    for (int i = 0; i < 100; ++i)
-//    momenta_reparator::BoostMomenta(hstMomenta, nevt);
 #endif
 
     fillGs(hstGs.data(), nevt);
@@ -59,7 +53,7 @@ int main(int argc, char* argv[])
 #ifdef __CADNA
     printMEandPreccision(hstMomenta, hstMe, nevt, true);
     std::cout << "Number of good helicities: " << nGoodHel << std::endl;
-#ifdef __CADNA
+    auto res = convert_to_array(hstMe, nevt);
     cadna_end();
 #endif
     return 0;

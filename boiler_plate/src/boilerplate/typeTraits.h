@@ -6,11 +6,6 @@
 #define CPPPROCESS_STANDALONE_TYPETRAITS_H
 #include <cmath>
 #include <algorithm>
-
-#ifdef __CADNA
-#include "cadna.h"
-#endif
-
 #define __host__
 #define __device__
 #define __global__
@@ -28,35 +23,11 @@ const int neppV = 1;
 
 #if defined __CADNA
 #include "promiseTypes-Fitted.h"
-typedef float_st fptypemomenta;
+typedef float fptypemomenta;
+
 #elif defined ( __PRO__)
 #include "promiseTypes.h"
-#else
-typedef float fptype;
-typedef float fptype2;
-typedef double fptypemomenta;
-typedef float FT_FFV1P0_3;
-typedef float FT_FFV1_0;
-typedef float FT_FFV1_1;
-typedef float FT_FFV1_2;
-typedef float FT_VVV1P0_1;
-typedef float FT_VVV1_0;
-typedef float FT_VVVV1P0_1;
-typedef float FT_VVVV1_0;
-typedef float FT_VVVV3P0_1;
-typedef float FT_VVVV3_0;
-typedef float FT_VVVV4P0_1;
-typedef float FT_VVVV4_0;
-typedef float FT_imzxxx;
-typedef float FT_ipzxxx;
-typedef float FT_ixxxxx;
-typedef float FT_ixzxxx;
-typedef float FT_omzxxx;
-typedef float FT_opzxxx;
-typedef float FT_oxxxxx;
-typedef float FT_oxzxxx;
-typedef float FT_sxxxxx;
-typedef float FT_vxxxxx;
+typedef float fptypemomenta;
 #endif
 
 typedef cxsmpl<fptype> cxtype;
@@ -104,8 +75,7 @@ fpternary(const bool& mask, const fptype& a, const fptype& b)
 {
     return (mask ? a : b);
 }
-
-#ifdef __CADNA
+#ifdef __CADNA__
 
 template <typename FP, typename FP2,
 std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
@@ -133,39 +103,29 @@ maskand(const bool& mask)
     return mask;
 }
 
-#ifdef __CADNA
+#ifdef __CADNA__
 template <typename FP, typename FP2,
-std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
-inline const double_st
+          std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+inline const auto
 fpmax(const  FP& a, const  FP2& b)
 {
-    if constexpr (std::is_same_v<FP,double_st>)
+    if constexpr (is_special_fp_v<FP>)
         return max(a, static_cast<FP>(b));
     else
         return max(static_cast<FP2>(a), b);
 }
 
 template <typename FP, typename FP2,
-std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
-inline const double_st
+          std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+inline const auto
 fpmin(const  FP& a, const  FP2& b)
 {
-    if constexpr (std::is_same_v<FP,double_st>)
+    if constexpr (is_special_fp_v<FP>)
         return min(a, static_cast<FP>(b));
     else
         return min(static_cast<FP2>(a), b);
 }
 
-template <typename FP, typename FP2,
-std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2, double_st>, int> = 0>
-inline const double_st
-fpsqrt(const  FP& a, const  FP2& b)
-{
-    if constexpr (std::is_same_v<FP,double_st>)
-        return sqrt(a, static_cast<FP>(b));
-    else
-        return sqrt(static_cast<FP2>(a), b);
-}
 #endif
 
 #endif //CPPPROCESS_STANDALONE_TYPETRAITS_H

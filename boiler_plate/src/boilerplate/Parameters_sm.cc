@@ -96,7 +96,11 @@ Parameters_sm::setIndependentParameters( SLHAReader& slha )
 void
 Parameters_sm::setIndependentCouplings()
 {
-
+  GC_50 = -( mdl_cw * mdl_ee * mdl_complexi ) / ( 2. * mdl_sw );
+  GC_58 = -( mdl_ee * mdl_complexi * mdl_sw ) / ( 6. * mdl_cw );
+  GC_72 = ( mdl_ee__exp__2 * mdl_complexi * mdl_vev ) / ( 2. * mdl_sw__exp__2 );
+  GC_81 = mdl_ee__exp__2 * mdl_complexi * mdl_vev + ( mdl_cw__exp__2 * mdl_ee__exp__2 * mdl_complexi * mdl_vev ) / ( 2. * mdl_sw__exp__2 ) + ( mdl_ee__exp__2 * mdl_complexi * mdl_sw__exp__2 * mdl_vev ) / ( 2. * mdl_cw__exp__2 );
+  GC_100 = ( mdl_ee * mdl_complexi * mdl_conjg__CKM1x1 ) / ( mdl_sw * mdl_sqrt__2 );
 }
 
 
@@ -162,5 +166,20 @@ void
 Parameters_sm::printIndependentCouplings()
 {
   std::cout << "sm model couplings independent of event kinematics:" << std::endl;
+  std::cout << std::setw( 20 ) << "GC_50 = " << std::setiosflags( std::ios::scientific ) << std::setw( 10 ) << GC_50 << std::endl;
+  std::cout << std::setw( 20 ) << "GC_58 = " << std::setiosflags( std::ios::scientific ) << std::setw( 10 ) << GC_58 << std::endl;
+  std::cout << std::setw( 20 ) << "GC_72 = " << std::setiosflags( std::ios::scientific ) << std::setw( 10 ) << GC_72 << std::endl;
+  std::cout << std::setw( 20 ) << "GC_81 = " << std::setiosflags( std::ios::scientific ) << std::setw( 10 ) << GC_81 << std::endl;
+  std::cout << std::setw( 20 ) << "GC_100 = " << std::setiosflags( std::ios::scientific ) << std::setw( 10 ) << GC_100 << std::endl;
 }
 
+/*
+void
+Parameters_sm::printDependentParameters() // now computed event-by-event (running alphas #373)
+{
+  std::cout << "sm model parameters dependent on event kinematics:" << std::endl;
+  std::cout << std::setw( 20 ) << "mdl_sqrt__aS = " << std::setiosflags( std::ios::scientific ) << std::setw( 10 ) << mdl_sqrt__aS << std::endl;
+  std::cout << std::setw( 20 ) << "G = " << std::setiosflags( std::ios::scientific ) << std::setw( 10 ) << G << std::endl;
+  std::cout << std::setw( 20 ) << "mdl_G__exp__2 = " << std::setiosflags( std::ios::scientific ) << std::setw( 10 ) << mdl_G__exp__2 << std::endl;
+}
+*/
