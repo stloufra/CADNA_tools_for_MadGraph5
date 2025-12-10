@@ -22,7 +22,6 @@ MAKE_CMD = [
 
 FAILED_DIRS_FILE = "test_fail.txt"
 
-
 # -----------------------------
 # Utilities
 # -----------------------------
@@ -87,6 +86,11 @@ for loc in folders:
 
         # Step 3: Run Cadnize.sh
         if not run_cmd(["./Cadnize.sh"], cwd=loc):
+            failed_folders.append(loc)
+            continue
+
+        # Step 4.1 make dist clean
+        if not run_cmd(["make distclean"], cwd=loc ):
             failed_folders.append(loc)
             continue
 
