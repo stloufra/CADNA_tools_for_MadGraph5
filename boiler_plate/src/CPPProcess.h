@@ -12,8 +12,8 @@
 // Visit launchpad.net/madgraph5 and amcatnlo.web.cern.ch
 //==========================================================================
 
-#ifndef MG5_Sigma_sm_gg_ttxgg_H
-#define MG5_Sigma_sm_gg_ttxgg_H 1
+#ifndef MG5_Sigma_sm_uu_hgguu_H
+#define MG5_Sigma_sm_uu_hgguu_H 1
 
 #include "boilerplate/typeTraits.h"
 
@@ -32,7 +32,7 @@ namespace mg5amcCpu
 {
   //==========================================================================
   // A class for calculating the matrix elements for
-  // Process: g g > t t~ g g WEIGHTED<=4 @1
+  // Process: u u > h g g u u WEIGHTED<=8 @1
   //--------------------------------------------------------------------------
 
   class CPPProcess
@@ -70,11 +70,11 @@ namespace mg5amcCpu
 
     // Process-dependent compile-time constants
     static constexpr int npari = 2; // #particles in the initial state (incoming): e.g. 2 (e+ e-) for e+ e- -> mu+ mu-
-    static constexpr int nparf = 4; // #particles in the final state (outgoing): e.g. 2 (mu+ mu-) for e+ e- -> mu+ mu-
+    static constexpr int nparf = 5; // #particles in the final state (outgoing): e.g. 2 (mu+ mu-) for e+ e- -> mu+ mu-
     static constexpr int npar = npari + nparf; // #particles in total (external = initial + final): e.g. 4 for e+ e- -> mu+ mu-
     static constexpr int ncomb = 64; // #helicity combinations: e.g. 16 for e+ e- -> mu+ mu- (2**4 = fermion spin up/down ** npar)
-    static constexpr int ndiagrams = 123; // #Feynman diagrams: e.g. 3 for e+ e- -> mu+ mu-
-    static constexpr int ncolor = 24; // the number of leading colors: e.g. 1 for e+ e- -> mu+ mu-
+    static constexpr int ndiagrams = 48; // #Feynman diagrams: e.g. 3 for e+ e- -> mu+ mu-
+    static constexpr int ncolor = 12; // the number of leading colors: e.g. 1 for e+ e- -> mu+ mu-
 
     // Hardcoded parameters for this process (constant class variables)
     // [NB: this class assumes nprocesses==1 i.e. a single DSIG1 and no DSIG2 in Fortran (#272 and #343)]
@@ -84,9 +84,9 @@ namespace mg5amcCpu
 
     // Other variables of this instance (???)
     //static const int ninitial = CPPProcess::npari;
-    //static const int nexternal = 6; // CPPProcess::npar (nexternal was nioparticles)
+    //static const int nexternal = 7; // CPPProcess::npar (nexternal was nioparticles)
     //static const int nwavefuncs = 6; // (?!?! this should be nwf but export_cpp gives the wrong value here)
-    //static const int namplitudes = 159;
+    //static const int namplitudes = 48;
     //static const int ncomb = 64; // CPPProcess::ncomb
 
   private: /* clang-format on */
@@ -199,4 +199,4 @@ namespace mg5amcCpu
   //--------------------------------------------------------------------------
 }
 
-#endif // MG5_Sigma_sm_gg_ttxgg_H
+#endif // MG5_Sigma_sm_uu_hgguu_H

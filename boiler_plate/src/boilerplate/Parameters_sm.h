@@ -46,13 +46,13 @@ namespace mg5amcCpu
     cxsmpl<double> mdl_complexi, mdl_I1x33, mdl_I2x33, mdl_I3x33, mdl_I4x33;
 
     // Model couplings independent of aS
-    // (none)
+    cxsmpl<double> GC_50, GC_58, GC_72, GC_81, GC_100;
 
     // Model parameters dependent on aS
     //double mdl_sqrt__aS, G, mdl_G__exp__2; // now computed event-by-event (running alphas #373)
 
     // Model couplings dependent on aS
-    //cxsmpl<double> GC_10, GC_11, GC_12; // now computed event-by-event (running alphas #373)
+    //cxsmpl<fptype> GC_11, GC_10; // now computed event-by-event (running alphas #373)
 
     // Set parameters that are unchanged during the run
     void setIndependentParameters( SLHAReader& slha );
@@ -97,15 +97,13 @@ namespace mg5amcCpu
 {
   namespace Parameters_sm_dependentCouplings
   {
-    constexpr size_t ndcoup = 3; // #couplings that vary event by event because they depend on the running alphas QCD
-    constexpr size_t idcoup_GC_10 = 0;
-    constexpr size_t idcoup_GC_11 = 1;
-    constexpr size_t idcoup_GC_12 = 2;
+    constexpr size_t ndcoup = 2; // #couplings that vary event by event because they depend on the running alphas QCD
+    constexpr size_t idcoup_GC_11 = 0;
+    constexpr size_t idcoup_GC_10 = 1;
     struct DependentCouplings_sv
     {
-      cxtype_sv GC_10;
       cxtype_sv GC_11;
-      cxtype_sv GC_12;
+      cxtype_sv GC_10;
     };
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"        // e.g. <<warning: unused parameter ‘G’ [-Wunused-parameter]>>
@@ -127,9 +125,8 @@ namespace mg5amcCpu
         // *** NB Compute all dependent parameters, including aS, in terms of G rather than in terms of aS ***
         const fptype_sv mdl_G__exp__2 = ( ( G ) * ( G ) );
         // Model couplings dependent on aS
-        out.GC_10 = -G;
         out.GC_11 = cI * G;
-        out.GC_12 = cI * mdl_G__exp__2;
+        out.GC_10 = -G;
       }
 
       return out;
@@ -141,8 +138,12 @@ namespace mg5amcCpu
 
   namespace Parameters_sm_independentCouplings
   {
-    constexpr size_t nicoup = 0; // #couplings that are fixed for all events because they do not depend on the running alphas QCD
-    // NB: there are no aS-independent couplings in this physics process
+    constexpr size_t nicoup = 5; // #couplings that are fixed for all events because they do not depend on the running alphas QCD
+    //constexpr size_t ixcoup_GC_50 = 0 + Parameters_sm_dependentCouplings::ndcoup; // out of ndcoup+nicoup
+    //constexpr size_t ixcoup_GC_58 = 1 + Parameters_sm_dependentCouplings::ndcoup; // out of ndcoup+nicoup
+    //constexpr size_t ixcoup_GC_72 = 2 + Parameters_sm_dependentCouplings::ndcoup; // out of ndcoup+nicoup
+    //constexpr size_t ixcoup_GC_81 = 3 + Parameters_sm_dependentCouplings::ndcoup; // out of ndcoup+nicoup
+    //constexpr size_t ixcoup_GC_100 = 4 + Parameters_sm_dependentCouplings::ndcoup; // out of ndcoup+nicoup
   }
 
   //==========================================================================
@@ -162,15 +163,12 @@ namespace mg5amcCpu
     using namespace Parameters_sm_dependentCouplings;
     const fptype_sv& gs_sv = G_ACCESS::kernelAccessConst( gs );
     DependentCouplings_sv couplings_sv = computeDependentCouplings_fromG( gs_sv, bsmIndepParamPtr );
-    fptype* GC_10s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_10 );
     fptype* GC_11s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_11 );
-    fptype* GC_12s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_12 );
-    cxtype_sv_ref GC_10s_sv = C_ACCESS::kernelAccess( GC_10s );
+    fptype* GC_10s = C_ACCESS::idcoupAccessBuffer( couplings, idcoup_GC_10 );
     cxtype_sv_ref GC_11s_sv = C_ACCESS::kernelAccess( GC_11s );
-    cxtype_sv_ref GC_12s_sv = C_ACCESS::kernelAccess( GC_12s );
-    GC_10s_sv = couplings_sv.GC_10;
+    cxtype_sv_ref GC_10s_sv = C_ACCESS::kernelAccess( GC_10s );
     GC_11s_sv = couplings_sv.GC_11;
-    GC_12s_sv = couplings_sv.GC_12;
+    GC_10s_sv = couplings_sv.GC_10;
     mgDebug( 1, __FUNCTION__ );
     return;
   }

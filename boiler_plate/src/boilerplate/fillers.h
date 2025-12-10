@@ -73,7 +73,7 @@ void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt,
 void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int nevt, bool verbose = true)
 {
     const int meGeVexponent = -(2 * CPPProcess::npar - 8);
-#ifdef __CADNA
+#ifdef __CADNA__
     int avg_matrixElementPrecision = 0, avg_matrixElementPrecision_n = 0;
 #endif
     for (unsigned int ievt = 0; ievt < nevt; ++ievt) // Loop over all events in this iteration
@@ -97,7 +97,7 @@ void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int n
                     << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
                         hstMomenta.data(), ievt, 3, ipar)
                     << std::endl
-#ifdef __CADNA
+#ifdef __CADNA__
                     << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
                             hstMomenta.data(), ievt, 0, ipar).
                         nb_significant_digit()
@@ -120,7 +120,7 @@ void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int n
             std::cout << " Matrix element = " << MemoryAccessMatrixElements::ieventAccessConst(
                     hstMatrixElements.data(), ievt)
                 << " GeV^" << meGeVexponent << std::endl;
-#ifdef __CADNA
+#ifdef __CADNA__
             std::cout << " Matrix element number of sig dig = " <<
                 MemoryAccessMatrixElements::ieventAccessConst(hstMatrixElements.data(), ievt).nb_significant_digit() <<
                 " " << std::endl;
@@ -133,7 +133,7 @@ void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int n
         }
     }
 
-#ifdef __CADNA
+#ifdef __CADNA__
     if (verbose)
     {
         std::cout << "avg_matrixElementPrecision = " << avg_matrixElementPrecision << std::endl;

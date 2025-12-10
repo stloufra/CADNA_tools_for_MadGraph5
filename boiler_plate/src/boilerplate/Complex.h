@@ -7,9 +7,7 @@
 #include <complex>
 #include "typeTraits.h"
 
-#ifdef __CADNA
-#include "cadna.h"
-#endif
+
 
 // The number of floating point types in a complex type (real, imaginary)
 namespace mgOnGpu
@@ -18,7 +16,7 @@ namespace mgOnGpu
     constexpr int cppAlign = 64;
 }
 
-#if defined (__CADNA)
+#if defined (__CADNA__)
 //CADNA operator overload
 template <typename T>
 constexpr bool is_special_fp_v =
@@ -79,7 +77,7 @@ struct rne
 };
 
 template< typename T, std::enable_if_t< std::is_floating_point_v< T >
-#if defined (__CADNA)
+#if defined (__CADNA__)
 || is_special_fp_v<T>
 #endif
 , int > = 0 >
@@ -93,7 +91,7 @@ quick_two_sum( const T a, const T b )
 }
 
 template< typename T, std::enable_if_t< std::is_floating_point_v< T >
-#if defined (__CADNA)
+#if defined (__CADNA__)
 || is_special_fp_v<T>
 #endif
 , int > = 0 >
@@ -360,7 +358,7 @@ operator/(const cxsmpl<FP>& a, const FP& b)
 
 
 
-#if defined (__CADNA)
+#if defined (__CADNA__)
 
 inline
 cxsmpl<double_st>
@@ -443,102 +441,42 @@ operator/(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
     }
 }
 
-#endif
+template <typename FP, typename FP2,
+         std::enable_if_t<is_special_fp_v<FP2>, int> = 0>
+inline constexpr auto
+operator*(const FP& a, const cxsmpl<FP2>& b)
+{
+    return cxsmpl<FP2>(static_cast<FP2>(a), 0) * b;
+}
 
-#if defined(__PRO__)
-template <typename T, typename = void>
-struct is_special_fp : std::false_type {};
+template <typename FP, typename FP2,
+    std::enable_if_t<is_special_fp_v<FP>, int> = 0>
+inline constexpr auto
+operator *(const cxsmpl<FP>& a, const FP& b)
+{
+    return a * cxsmpl<FP>(b, 0);
+}
 
-#ifdef double_st
-template <>
-struct is_special_fp<double_st> : std::true_type {};
-#endif
+template <typename FP, typename FP2,
+         std::enable_if_t<is_special_fp_v<FP2>, int> = 0>
+inline constexpr auto
+operator/(const FP& a, const cxsmpl<FP2>& b)
+{
+    return cxsmpl<FP2>(static_cast<FP2>(a), 0) / b;
+}
 
-#ifdef float_st
-template <>
-struct is_special_fp<float_st> : std::true_type {};
-#endif
+template <typename FP, typename FP2,
+    std::enable_if_t<is_special_fp_v<FP>, int> = 0>
+inline constexpr auto
+operator /(const cxsmpl<FP>& a, const FP& b)
+{
+    return a / cxsmpl<FP>(b, 0);
+}
 
-template <typename T>
-constexpr bool is_special_fp_v = is_special_fp<T>::value;
-
-    template <typename FP, typename FP2,
-              std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
-    inline constexpr auto
-    operator+(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
-    {
-        if constexpr (is_special_fp_v<FP>)
-        {
-            cxsmpl<FP> b_temp = b;
-            return cxsmpl<FP>(a.real() + b_temp.real(), a.imag() + b_temp.imag());
-        }
-        else
-        {
-            cxsmpl<FP2> a_temp = a;
-            return cxsmpl<FP2>(a_temp.real() + b.real(), a_temp.imag() + b.imag());
-        }
-    }
-
-    template <typename FP, typename FP2,
-              std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
-    inline constexpr auto
-    operator-(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
-    {
-        if constexpr (is_special_fp_v<FP>)
-        {
-            cxsmpl<FP> b_temp = b;
-            return cxsmpl<FP>(a.real() - b_temp.real(), a.imag() - b_temp.imag());
-        }
-        else
-        {
-            cxsmpl<FP2> a_temp = a;
-            return cxsmpl<FP2>(a_temp.real() - b.real(), a_temp.imag() - b.imag());
-        }
-    }
-
-    template <typename FP, typename FP2,
-              std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
-    inline constexpr auto
-    operator*(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
-    {
-        if constexpr (is_special_fp_v<FP>)
-        {
-            cxsmpl<FP> b_temp = b;
-            return cxsmpl<FP>(a.real() * b_temp.real() - a.imag() * b_temp.imag(),
-                              a.imag() * b_temp.real() + a.real() * b_temp.imag());
-        }
-        else
-        {
-            cxsmpl<FP2> a_temp = a;
-            return cxsmpl<FP2>(a_temp.real() * b.real() - a_temp.imag() * b.imag(),
-                               a_temp.imag() * b.real() + a_temp.real() * b.imag());
-        }
-    }
-
-    template <typename FP, typename FP2,
-              std::enable_if_t<is_special_fp_v<FP2> || is_special_fp_v<FP2>, int> = 0>
-    inline constexpr auto
-    operator/(const cxsmpl<FP2>& a, const cxsmpl<FP2>& b)
-    {
-        if constexpr (is_special_fp_v<FP2>)
-        {
-            cxsmpl<FP2> b_temp = b;
-            FP2 bnorm = b_temp.real() * b_temp.real() + b_temp.imag() * b_temp.imag();
-            return cxsmpl<FP2>((a.real() * b_temp.real() + a.imag() * b_temp.imag()) / bnorm,
-                              (a.imag() * b_temp.real() - a.real() * b_temp.imag()) / bnorm);
-        }
-        else
-        {
-            cxsmpl<FP2> a_temp = a;
-            FP2 bnorm = b.real() * b.real() + b.imag() * b.imag();
-            return cxsmpl<FP2>((a_temp.real() * b.real() + a_temp.imag() * b.imag()) / bnorm,
-                               (a_temp.imag() * b.real() - a_temp.real() * b.imag()) / bnorm);
-        }
-    }
 
 #endif
 
-#ifdef __CADNA
+#ifdef __CADNA__
 template <typename FP, typename FP2,
           std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2,double_st>, int> = 0>
 inline auto
@@ -549,6 +487,14 @@ cxmake( const FP& r, const FP2& i )
         else if constexpr (std::is_same_v<FP2, double_st>)
             return cxsmpl<FP2>( static_cast<FP2>(r), i ); // cxsmpl constructor
 }
+
+template <typename FP, typename FP2,
+    std::enable_if_t<is_special_fp_v<FP> and !is_special_fp_v<FP2>, int> = 0>
+inline constexpr auto
+  cxmake( const cxsmpl<FP2>& c ) // cxsmpl to cxtype (double-float to double_st-float_st)
+  {
+        return cxsmpl<FP>( c.real(), c.imag() );
+  }
 #endif
 
 template <typename FP>
@@ -557,22 +503,6 @@ cxmake( const FP& r, const FP& i )
 {
       return cxsmpl<FP>( r, i ); // cxsmpl constructor
 }
-
-#ifdef __CADNA
-/*
-inline cxsmpl<float_st>
-cxmake_fst( const double_st& r, const double_st& i )
-    {
-        return cxtype( static_cast<float_st>(r), static_cast<float_st>(i) ); // cxsmpl constructor
-    }
-
-inline cxsmpl<float_st>
-cxmake_fst( const cxsmpl<double_st> c )
-    {
-        return cxtype( static_cast<float_st>(c.real()), static_cast<float_st>(c.imag()) ); // cxsmpl constructor
-    }*/
-#endif
-
 
 template <typename FP>
 inline FP
@@ -602,6 +532,12 @@ cxmake( const std::complex<float>& c ) // std::complex to cxsmpl (float-to-float
 
 inline cxtype                  // NOT __device__
 cxmake( const std::complex<double>& c ) // std::complex to cxsmpl (double-to-float or double-to-double)
+{
+    return cxmake<fptype>( c.real(), c.imag() );
+}
+
+inline cxtype                  // NOT __device__
+cxmake( const cxtype c ) // std::complex to cxsmpl (double-to-float or double-to-double)
 {
     return cxmake<fptype>( c.real(), c.imag() );
 }
