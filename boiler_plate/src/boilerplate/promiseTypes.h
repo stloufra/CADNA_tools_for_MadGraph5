@@ -24,14 +24,6 @@ typedef __PR_fptype2__ fptype2;
 //typedef __PR_sxxxxx__  FT_sxxxxx;
 ////typedef __PR_vxxxxx__  FT_vxxxxx;
 
-typedef float FT_imzxxx;
-typedef float FT_ipzxxx;
-typedef float FT_ixzxxx;
-typedef float FT_omzxxx;
-typedef float FT_opzxxx;
-typedef float FT_oxzxxx;
-typedef float FT_sxxxxx;
-
 typedef __PR_w__ FT_w;
 typedef __PR_ampsv__ FT_amp_sv;
 typedef __PR_jamps__ FT_jamps;

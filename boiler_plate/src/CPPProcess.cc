@@ -16,7 +16,7 @@
 
 #include "boilerplate/typeTraits.h"
 
-#include "HelAmps_sm_transformed.h"
+#include "HelAmps_sm.h"
 #include "accesses/MemoryAccessAmplitudes.h"
 #include "accesses/MemoryAccessChannelIds.h"
 #include "accesses/MemoryAccessCouplings.h"
@@ -311,7 +311,7 @@ namespace mg5amcCpu
 
     // Local variables for the given CUDA event (ievt) or C++ event page (ipagV)
     // [jamp: sum (for one event or event page) of the invariant amplitudes for all Feynman diagrams in a given color combination]
-    cxcomp<FT_jamps> jamp_sv[ncolor] = {}; // all zeros (NB: vector cxtype_v IS initialized to 0, but scalar cxtype is NOT, if "= {}" is missing!)
+    cxcomp<FT_jamps> jamp_sv[ncolor] = {}; // all zeros (NB: vector cxsmpl<FT_amp>_v IS initialized to 0, but scalar cxsmpl<FT_amp> is NOT, if "= {}" is missing!)
 
     // === Calculate wavefunctions and amplitudes for all diagrams in all processes         ===
     // === (for one event in CUDA, for one - or two in mixed mode - SIMD event pages in C++ ===
@@ -2544,11 +2544,11 @@ namespace mg5amcCpu
       constexpr int ihel0 = 0; // the allJamps buffer already points to a specific helicity _within a super-buffer for dcNGoodHel helicities_
       using J_ACCESS = DeviceAccessJamp;
       for( int icol = 0; icol < ncolor; icol++ )
-        J_ACCESS::kernelAccessIcolIhelNhel( allJamps, icol, ihel0, dcNGoodHel ) = jamp_sv[icol];
+        J_ACCESS::kernelAccessIcolIhelNhel( allJamps, icol, ihel0, dcNGoodHel ) = static_cast<cxsmpl<fptype>>(jamp_sv[icol]);
 #else
       // In C++, copy the local jamp to the output array passed as function argument
       for( int icol = 0; icol < ncolor; icol++ )
-        allJamp_sv[iParity * ncolor + icol] = static_cast<cxsmpl<fptype>>( jamp_sv[icol]);
+        allJamp_sv[iParity * ncolor + icol] = static_cast<cxsmpl<fptype>>( static_cast<cxsmpl<fptype>>(jamp_sv[icol]));
 #endif
     }
     // END LOOP ON IPARITY
