@@ -8,8 +8,13 @@ if [[ " $* " =~ " --help" ]] || [[ " $* " =~ " -h" ]]; then
     echo "This script configures and modifies source files for CADNA integration."
     echo
     echo "Options:"
-    echo "  exact_momenta      Make output of phase space picker exact numbers"
+    echo " -  [D] is the default option" 
+    echo
+    echo "  exact_momenta[D]   Make output of phase space picker exact numbers"
     echo "                     Applies cadnize_exact_momenta.py to rambo.h"
+    echo 
+    echo "  exact_momenta_no   Takes into account the accuracy lost during" 
+    echo "                     momenta generation."
     echo
     echo "  load_momenta       Load exact momenta from file (experimental)"
     echo "                     Note: Does not work for now"
@@ -31,7 +36,18 @@ if [[ " $* " =~ " --help" ]] || [[ " $* " =~ " -h" ]]; then
     echo
     exit 0
 fi
+
+
+args=" $* "
+
+if [[ "$args" =~ (^|[[:space:]])exact_momenta($|[[:space:]]) ]] && \
+   [[ "$args" =~ (^|[[:space:]])exact_momenta_no($|[[:space:]]) ]]; then
+    echo "Error: Cannot use both exact_momenta and exact_momenta_no simultaneously."
+    exit 1
+fi
+
 #checks for macOS
+
 if [[ "$(uname)" == "Darwin" ]]; then
     echo "Running on macOS"
     IS_MAC=true
@@ -189,7 +205,7 @@ python3 $CURRENT_DIR/srcpy/cadnize_expand_equations.py ../../src/HelAmps_sm.h
 #care for the additional options
 
                 #Make output of phase space picker exact numbers
-if [[ " $* " =~ " exact_momenta" ]]; then
+if [[ ! " $* " =~ " exact_momenta_no" ]]; then
     echo
     echo "          cadnize_exact_momenta.py"
     #python3 $CURRENT_DIR/srcpy/cadnize_exact_momenta.py ../../src/rambo.h
