@@ -475,6 +475,46 @@ def process_CPPP(input_text: str) -> Tuple[str, List[str]]:
 
     return output_text, sorted(set(ft_types))
 
+def write_types(ft_types: List[str]):
+    """Write list of FT types to a promiseTypes.txt and promiseTypes-Fitted.h """
+    if os.path.exists(os.getcwd()+"/boilerplate/promiseTypes.h") :
+        os.remove(os.getcwd()+"/boilerplate/promiseTypes.h")
+    os.system("touch "+os.getcwd()+"/boilerplate/promiseTypes.h")
+    with open(os.getcwd()+"/boilerplate/promiseTypes.h", "w") as f:
+        f.write("""
+        #ifndef CPPPROCESS_STANDALONE_PROMISETYPES_H
+        #define CPPPROCESS_STANDALONE_PROMISETYPES_H
+
+        typedef __PR_fptype__ fptype;
+        typedef __PR_fptype2__ fptype2;
+        """)
+
+
+        for ft_type in ft_types:
+            f.write(f"\ntypedef __PR_{ft_type.strip().replace('_','').replace('FT','')}__  {ft_type};")
+
+        f.write("\n#endif")
+        f.close()
+
+    if os.path.exists(os.getcwd()+"/boilerplate/promiseTypes-Fitted.h") :
+        os.remove(os.getcwd()+"/boilerplate/promiseTypes-Fitted.h")
+    os.system("touch "+os.getcwd()+"/boilerplate/promiseTypes-Fitted.h")
+    with open(os.getcwd()+"/boilerplate/promiseTypes-Fitted.h", "w") as f:
+        f.write("""
+        #ifndef CPPPROCESS_STANDALONE_PROMISETYPES_H
+        #define CPPPROCESS_STANDALONE_PROMISETYPES_H
+        #include <cadna.h>
+        
+        
+        typedef float_st fptype;
+        typedef float_st fptype2;
+        """)
+
+        for ft_type in ft_types:
+            f.write(f"typedef float_st {ft_type};\n")
+        f.write("\n#endif")
+        f.close()
+
 #-------------------------------------------§
 #-------------------------------------------§
 #-------------------------------------------§
@@ -516,6 +556,12 @@ else:
 with open('CPPProcess_bckp', 'w') as f:
     f.write(input_text)
 
+
+input_text = input_text.replace("cxzero_sv", "cxzero")
+input_text = input_text.replace("cxmake", "cxmake<fptype>")
+input_text = input_text.replace("cxzero", "cxzero<fptype>")
+input_text = input_text.replace("fpsqrt", "fpsqrt<fptype>")
+
 output_text, ft_types_cpp = process_CPPP(input_text)
 ft_types = ft_types_cpp + ft_types
 
@@ -536,3 +582,7 @@ for ft_type in ft_types:
 print("=" * 50)
 print(f"\nTotal: {len(ft_types)} types")
 print(f"\nTransformed file written to: HelAmps_sm.h")
+
+print("=" * 50)
+print("\n\nWriting promiseTypes.txt")
+write_types(ft_types)
