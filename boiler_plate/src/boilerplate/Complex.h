@@ -452,7 +452,7 @@ operator*(const FP& a, const cxsmpl<FP2>& b)
 template <typename FP, typename FP2,
     std::enable_if_t<is_special_fp_v<FP>, int> = 0>
 inline constexpr auto
-operator *(const cxsmpl<FP>& a, const FP& b)
+operator *(const cxsmpl<FP>& a, const FP2& b)
 {
     return a * cxsmpl<FP>(b, 0);
 }
@@ -468,7 +468,7 @@ operator/(const FP& a, const cxsmpl<FP2>& b)
 template <typename FP, typename FP2,
     std::enable_if_t<is_special_fp_v<FP>, int> = 0>
 inline constexpr auto
-operator /(const cxsmpl<FP>& a, const FP& b)
+operator /(const cxsmpl<FP>& a, const FP2& b)
 {
     return a / cxsmpl<FP>(b, 0);
 }
@@ -505,6 +505,13 @@ cxmake( const FP& r, const FP& i )
 }
 
 template <typename FP>
+inline cxsmpl<FP>
+cxmake(  cxsmpl<FP> a)
+{
+      return a;
+}
+
+template <typename FP>
 inline FP
 cxreal( const cxsmpl<FP>& c )
 {
@@ -523,6 +530,8 @@ cxconj( const cxtype& c )
 {
     return conj( c ); // conj( cxsmpl )
 }
+
+
 
 inline cxtype                 // NOT __device__
 cxmake( const std::complex<float>& c ) // std::complex to cxsmpl (float-to-float or float-to-double)
