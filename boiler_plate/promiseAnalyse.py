@@ -19,7 +19,7 @@ os.chdir(Current_path + "/boiler_plate")
 Current_path = os.getcwd()
 
 #copy from toolbox
-print("Copying files from toolbox:")
+print(" 1) Copying files from toolbox:")
 COPY_FILES = ["CMakeLists.txt", "main.cpp", "make_boilerplate.sh", "promise.yml", "src"]
 for file in COPY_FILES:
     #print(file)
@@ -45,7 +45,7 @@ FILES_CARDS = ["param_card.dat"]
 FILES_MAIN = ["gdb_run_output_float-03_1.out"]
 
 #check for old files and remove
-print("Removing old files:")
+print(" 2) Removing old files:")
 for f in FILES_SRC:
     if os.path.exists("src/" + f):
         #print("Removing src/" + f)
@@ -68,7 +68,7 @@ for f in FILES_MAIN:
         os.remove(f)
 
 #copy the new files
-print("Copying new files")
+print(" 3) Copying new files")
 shutil.copy2("../../../src/Parameters_sm.h", "src/boilerplate")
 shutil.copy2("../../../src/Parameters_sm.cc", "src/boilerplate")
 shutil.copy2("../../../Cards/param_card.dat", "src/Cards")
@@ -80,20 +80,18 @@ shutil.copy2('../CPPProcess.cc', 'src')
 shutil.copy2('../CPPProcess.h', 'src')
 
 #make boilerplate
-print("Making boilerplate")
+print(" 4) Making boilerplate")
 os.system("./make_boilerplate.sh")
 
 #promises HelAmps_sm.h
-print("Promises HelAmps_sm.h")
+print(" 5) Promises HelAmps_sm.h")
 os.chdir(Current_path+"/src")
-os.system("python3 promisesHelAmps.py")
+os.system("python3 promisesHelAmps.py > /dev/null 2>&1")
 os.chdir(Current_path)
 
 #source promise enviroment
-print("Sourcing promise environment")
+print(" 6) Running promise")
 os.system("source " + PROMISE_env_path)
-os.system("promise --precs=sd --nbDigits=3 --debug --verbosity=4")
-
-
+os.system("promise --precs=sd --nbDigits=3 --verbosity=1")
 
 
