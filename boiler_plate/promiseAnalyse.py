@@ -7,6 +7,43 @@
 
 import os
 import shutil
+import momnetumParser as mpr
+
+def numberOfBadMomenta(subprocess_dir, precision_threshold = 3):
+
+    if os.path.exists("gdb_run_output_float-O3_1.out"):
+        f = open( "gdb_run_output_float-O3_1.out", 'r')
+    else:
+        print("No file gdb_run_output_float-O3_1.out")
+        return 0
+
+    matrix_element = []
+    matrixElementPrecision = []
+    matrixElementPrecisionZeros = 0
+    momentum = []
+    momentaPrecision = []
+
+    # parse the file
+    matrixElementPrecisionZeros = mpr.parse_file(f, momentum, momentaPrecision, matrix_element, matrixElementPrecision,
+                                                 matrixElementPrecisionZeros)
+    count = 0
+    for prec in matrixElementPrecision:
+        if prec < precision_threshold:
+            count += 1
+
+#    count += matrixElementPrecisionZeros
+    return count
+
+def change_nevt_main(nevt):
+    with open("main.cpp", "r") as f:
+        lines = f.readlines()
+    with open("main.cpp", "w") as f:
+        for line in lines:
+            if "int nevt = " in line:
+                line = "    int nevt = " + str(nevt) + ";\n"
+            f.write(line)
+
+    f.close()
 
 # create dir and cd
 # TODO: make a env. var.
@@ -88,6 +125,11 @@ print(" 5) Promises HelAmps_sm.h")
 os.chdir(Current_path+"/src")
 os.system("python3 promisesHelAmps.py > /dev/null 2>&1")
 os.chdir(Current_path)
+
+print(" 6) Setting number of bad momenta")
+nb = numberOfBadMomenta(Current_path)
+print("Number of bad momenta: " + str(nb))
+change_nevt_main(nb)
 
 #source promise enviroment
 print(" 6) Running promise")
