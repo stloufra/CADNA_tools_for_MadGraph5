@@ -38,6 +38,8 @@ for P in P_dirs:
     delete_compile_errors(P)
     if not os.path.exists(base_dir + "/" + P + "/boiler_plate/output_promise_files/src/boilerplate/promiseTypes.h"):
         os.chdir(P)
+        if os.path.exists("promiseAnalyse.py"):
+            os.remove("promiseAnalyse.py")
         os.system('ln -s ' + cadna_path )
         print("=" *20)
         print("Working on subprocess " + P)
