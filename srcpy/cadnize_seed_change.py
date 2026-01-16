@@ -17,10 +17,10 @@ if len(sys.argv) > 2:
         rand_num = sys.argv[2]
     if isinstance(rand_num, str):
         randomQ = sys.argv[2]
-        if randomQ == "True" or randomQ == "true" or randomQ == "1" or randomQ == "t" or randomQ == "T" or randomQ == "random":
+        if randomQ == "True" or randomQ == "true"  or randomQ == "t" or randomQ == "T" or randomQ == "random":
             randomQ = True
             rand_num = random.randint(0, 1_000_000)
-        elif randomQ == "False" or randomQ == "false" or randomQ == "0" or randomQ == "f" or randomQ == "F" or randomQ == "original":
+        elif randomQ == "False" or randomQ == "false"  or randomQ == "f" or randomQ == "F" or randomQ == "original":
             randomQ = False
         else:
             exit("Second argument must be True or False or int")
