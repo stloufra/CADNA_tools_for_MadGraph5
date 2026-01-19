@@ -27,7 +27,8 @@ typedef float fptypemomenta;
 
 #elif defined ( __PRO__)
 #include "promiseTypes.h"
-typedef float fptypemomenta;
+#else
+#include "promiseTypes-Fitted_wo_cadna.h"
 #endif
 
 typedef cxsmpl<fptype> cxtype;
@@ -51,14 +52,16 @@ using std::max;
 using std::min;
 using std::sqrt;
 
-inline const fptype&
-fpmax(const fptype& a, const fptype& b)
+template <typename FP>
+inline const FP&
+fpmax(const FP& a, const FP& b)
 {
     return max(a, b);
 }
 
-inline const fptype&
-fpmin(const fptype& a, const fptype& b)
+template <typename FP>
+inline const FP&
+fpmin(const FP& a, const FP& b)
 {
     return min(a, b);
 }

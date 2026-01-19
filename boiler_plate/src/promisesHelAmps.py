@@ -22,6 +22,20 @@ def extract_function_signature(text: str, start_pos: int) -> Tuple[str, int, int
                 break
 
     return text[start_pos:func_end], func_start, func_end
+def extract_function_declaration(text: str, start_pos: int) -> Tuple[str, int, int]:
+    """Extract function signature and body bounds."""
+    # Find the opening brace
+    brace_count = 0
+    in_function = False
+    func_start = start_pos
+    func_end = start_pos
+
+    for i in range(start_pos, len(text)):
+        if text[i] == ';':
+            func_end = i + 1
+            break
+
+    return text[start_pos:func_end], func_start, func_end
 
 def extract_function_argumets(text: str, start_pos: int) -> Tuple[str, str]:
     """Extract function arguments from signature."""
@@ -78,7 +92,7 @@ def get_function_name(signature: str) -> str:
         return match.group(1)
     return ""
 
-def should_transform_function(func_text: str, func_name: str) -> bool:
+def should_transform_propagator(func_text: str, func_name: str) -> bool:
     """Determine if function should be transformed."""
     # Transform functions that:
     # 1. Have vertex or amplitude computation (contain vertex = or *vertex =)
@@ -86,6 +100,21 @@ def should_transform_function(func_text: str, func_name: str) -> bool:
     # 3. Have cxtype_sv operations
     if "INLINE" in func_text:
         return False
+    if re.search(r'\*?\s*vertex\s*\)', func_text) or 'allvertexes' in func_text:
+        if re.search(r'cxtype_sv', func_text):
+            return True
+    if func_name.endswith('_0') or func_name.endswith('_1'):
+        return True
+    if func_name.startswith('V') or func_name.startswith('F'):
+        return True
+    return False
+
+def should_transform_propagator_dec(func_text: str, func_name: str) -> bool:
+    """Determine if function should be transformed."""
+    # Transform functions that:
+    # 1. Have vertex or amplitude computation (contain vertex = or *vertex =)
+    # 2. Are computation functions (end with _0 or similar pattern)
+    # 3. Have cxtype_sv operations
     if re.search(r'\*?\s*vertex\s*\)', func_text) or 'allvertexes' in func_text:
         if re.search(r'cxtype_sv', func_text):
             return True
@@ -107,7 +136,27 @@ def should_transform_incoming(func_text: str, func_name: str) -> bool:
         return False
     if func_name.endswith('xxx'):
         return True
-    if func_name.startswith('i'):
+    if func_name.startswith('i') or func_name.startswith('v') or func_name.startswith('s') or func_name.startswith('o'):
+        return True
+    return False
+def add_f_to_decimals(text):
+    # Pattern matches decimal numbers like 4. or 0.5 or 3.14 that don't already end with 'f'
+    # Uses negative lookahead to avoid adding 'f' if it's already there
+    pattern = r'\b(\d+\.\d*|\d*\.\d+)(?!f\b)'
+
+    # Add 'f' suffix to matched decimals
+    return re.sub(pattern, r'\1f', text)
+def should_transform_incoming_dec(func_text : str, func_name: str) -> bool:
+    """Determine if function should be transformed."""
+    # Transform functions that:
+    # 1. Have vertex or amplitude computation (contain vertex = or *vertex =)
+    # 2. Are computation functions (end with _0 or similar pattern)
+    # 3. Have cxtype_sv operations
+    if "1" in func_name or "_" in func_name or "2" in func_name or "0" in func_name:
+        return False
+    if func_name.endswith('xxx'):
+        return True
+    if func_name.startswith('i') or func_name.startswith('v') or func_name.startswith('s') or func_name.startswith('o'):
         return True
     return False
 
@@ -130,6 +179,8 @@ def transform_propagators(func_text: str, func_name: str) -> Tuple[str, str, int
     body_begin = func_text.find('{')
     func_text = func_text.replace("\r\n", "\n")
 
+    has_amp = func_name[-1] == "0"
+
     body = func_text[body_begin:]
     before = func_text[:body_begin]
 
@@ -147,6 +198,14 @@ def transform_propagators(func_text: str, func_name: str) -> Tuple[str, str, int
                 arg = arg.replace("all","")
                 if arg in new_line and "ACCESS" in new_line:
                     new_line = new_line.replace(" " + arg, " " + arg + "_")
+                    if not "COUP" in new_line:
+                        new_line = new_line.replace("cxtype_sv", "cxsmpl<FT_w>")
+            for arg in arg_out:
+                if arg in new_line and "ACCESS" in new_line:
+                    if has_amp:
+                        new_line = new_line.replace("cxtype_sv", "cxsmpl<FT_amp>")
+                    else:
+                        new_line = new_line.replace("cxtype_sv", "cxsmpl<FT_w>")
         if in_ACCESS and "ACCESS" not in new_line:
             in_ACCESS = False
             for arg in arg_const:
@@ -184,10 +243,15 @@ def transform_propagators(func_text: str, func_name: str) -> Tuple[str, str, int
 
             if arg_out[0] in line and "const" not in line:
                 arg = arg_out[0]
-                if ";" in new_line:
-                    new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<fptype>>(" +new_line[new_line.find("=")+1:].replace(";",");")
+                if has_amp:
+                    cast_to = "FT_amp"
                 else:
-                    new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<fptype>>(" +new_line[new_line.find("=")+1:]
+                    cast_to = "FT_w"
+
+                if ";" in new_line:
+                    new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<"+cast_to+">>(" +new_line[new_line.find("=")+1:].replace(";",");")
+                else:
+                    new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<"+cast_to+">>(" +new_line[new_line.find("=")+1:]
                     find_end = True
 
             if arg_out[0] in line and "const" in line:
@@ -207,12 +271,52 @@ def transform_propagators(func_text: str, func_name: str) -> Tuple[str, str, int
 
         new_lines.append(new_line)
 
+
+    lines_bf = before.split('\n')
+    new_lines_bf = []
+
+    for line in lines_bf:
+        new_line = line
+        if "all" in line and "[]" in line and "COUP" not in line:
+            new_line = new_line.replace("fptype", "FT_w")
+            if has_amp and not "const" in line :
+                new_line = new_line.replace("FT_w", "FT_amp")
+        new_lines_bf.append(new_line)
+
+        # Reassemble
+    func_text ="\n".join(new_lines_bf) + "\n".join(new_lines)
     # Reassemble
-    func_text = before + "\n".join(new_lines)
     inserted_lines = len(func_text.split('\n')) - line_count_start
 
     return func_text, ft_type, inserted_lines
 
+def transform_propagators_dec(func_text: str, func_name: str) -> Tuple[str, int]:
+    """Transform a single function declaration to use FT_ types, now including F arrays and casting outputs."""
+
+    line_count_start = len(func_text.split('\n'))
+    lines = func_text.split('\n')
+    new_lines = []
+
+    has_amp = func_name[-1] == "0"
+
+
+    for line in lines:
+        new_line = line
+        if "all" in line and "[]" in line and "COUP" not in line:
+            if "const" in line:
+                new_line = new_line.replace("fptype", "FT_w")
+            else:
+                if has_amp:
+                    new_line = new_line.replace("fptype", "FT_amp")
+                else:
+                    new_line = new_line.replace("fptype", "FT_w")
+        new_lines.append(new_line)
+
+    # Reassemble
+    func_text = "\n".join(new_lines)
+    inserted_lines = len(func_text) - line_count_start
+
+    return func_text, inserted_lines
 def transform_incoming(func_text: str, func_name: str) -> Tuple[str, str, int]:
     """Transform a single function to use FT_ types, now including F arrays and casting outputs."""
 
@@ -240,6 +344,7 @@ def transform_incoming(func_text: str, func_name: str) -> Tuple[str, str, int]:
     find_end = False
     allp = []
     argout = ""
+    argout_wave = ""
 
     for line in lines:
         new_line = line
@@ -250,9 +355,10 @@ def transform_incoming(func_text: str, func_name: str) -> Tuple[str, str, int]:
                 new_line = new_line.replace("pvec", "_pvec")
                 pvec_arg =line[line.find("pvec"):line.find("pvec") +5]
                 allp.append(pvec_arg)
-            if "cxtype_sv*" in line:
+            if "cxtype_sv*" in line :
                 gg = line.split("cxtype_sv*")[1].split("=")[0].replace(" ","")
                 argout = gg
+                new_line = new_line.replace("cxtype_sv*","cxsmpl<FT_w>*")
 
         if in_ACCESS and "ACCESS" not in new_line:
             if fmass:
@@ -268,9 +374,9 @@ def transform_incoming(func_text: str, func_name: str) -> Tuple[str, str, int]:
             new_line = new_line.replace("fpsqrt<fptype>", "fpsqrt<"+ft_type+">")
             if argout +"[" in line and "const" not in line and argout != "":
                 if ";" in new_line:
-                    new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<fptype>>(" +new_line[new_line.find("=")+1:].replace(";",");")
+                    new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<FT_w>>(" +new_line[new_line.find("=")+1:].replace(";",");")
                 else:
-                    new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<fptype>>(" +new_line[new_line.find("=")+1:]
+                    new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<FT_w>>(" +new_line[new_line.find("=")+1:]
                     find_end = True
 
             '''if "fi" in line and "const" in line:
@@ -290,11 +396,39 @@ def transform_incoming(func_text: str, func_name: str) -> Tuple[str, str, int]:
 
         new_lines.append(new_line)
 
+    lines_bf = before.split('\n')
+    new_lines_bf = []
+
+    for line in lines_bf:
+        new_line = line
+        if "wavefunction" in line:
+            new_line = new_line.replace("fptype wavefunctions[", "FT_w wavefunctions[")
+        new_lines_bf.append(new_line)
+
     # Reassemble
-    func_text = before + "\n".join(new_lines)
+    func_text ="\n".join(new_lines_bf) + "\n".join(new_lines)
     inserted_lines = len(func_text.split('\n')) - line_count_start
 
     return func_text, ft_type, inserted_lines
+def transform_incoming_dec(func_text: str, func_name: str) -> Tuple[str, int]:
+    """Transform a single function declaration to use FT_ types, now including F arrays and casting outputs."""
+
+    line_count_start = len(func_text.split('\n'))
+    lines = func_text.split('\n')
+    new_lines = []
+
+
+    for line in lines:
+        new_line = line
+        if "wavefunction" in line:
+            new_line = new_line.replace("fptype wavefunctions[", "FT_w wavefunctions[")
+        new_lines.append(new_line)
+
+    # Reassemble
+    func_text = "\n".join(new_lines)
+    inserted_lines = len(func_text) - line_count_start
+
+    return func_text, inserted_lines
 def transform_CPPP(func_text: str, func_name: str) -> Tuple[str, str, int]:
     """Transform a single function to use FT_ types, now including F arrays and casting outputs."""
 
@@ -344,13 +478,23 @@ def transform_CPPP(func_text: str, func_name: str) -> Tuple[str, str, int]:
         if "jamp_sv" in line and "cxmake" in line:
             new_line = new_line.replace("cxmake","cxmake<FT_jamp>")
         if "jamp_sv" in line and "cxtype" in line:
-            new_line = new_line.replace("cxtype","cxsmpl<FT_amp>")
+            new_line = new_line.replace("cxtype","cxsmpl<FT_jamp>")
 
         
 
         if "allJamp" in line and "jamp_sv[icol]" in line:
             new_line = new_line.replace("jamp_sv[icol]","static_cast<cxsmpl<fptype>>(jamp_sv[icol])")
 
+        if "jamp_sv" in line and ("+=" in line or "-=" in line) and "amp_sv[" in line:
+            front = new_line[:line.find("=")]
+            end = new_line[line.find("="):]
+
+            idx = end.split("amp_sv[")[1].split("]")[0]
+            amp = "amp_sv["+idx+"]"
+            new_line = front + end.replace(amp, "cxmake<FT_jamp>("+amp+".real(),"+amp+".imag())")
+
+        if "jamp_sv[i] = cxzero<fptype>" in line:
+            new_line = new_line.replace("cxzero<fptype>","cxzero<FT_jamp>")
 
         new_lines.append(new_line)
 
@@ -383,7 +527,10 @@ def process_propagators(input_text: str) -> Tuple[str, List[str]]:
         func_text, _, func_end = extract_function_signature(input_text, start_pos)
         original_len = func_end - start_pos  # length in characters
 
-        if should_transform_function(func_text, func_name):
+        definition = should_transform_propagator(func_text, func_name)
+
+        if definition:
+
             print(func_name)
             transformed, ft_type, more = transform_propagators(func_text, func_name)
             # If `more` is "additional lines", convert to characters instead or
@@ -402,6 +549,26 @@ def process_propagators(input_text: str) -> Tuple[str, List[str]]:
 
             ft_types.append(ft_type)
 
+        elif should_transform_propagator_dec(func_text, func_name):
+            func_text, _, func_end = extract_function_declaration(input_text, start_pos)
+            original_len = func_end - start_pos  # length in characters
+            print("Declaration = " + func_name)
+
+            transformed, more = transform_propagators_dec(func_text, func_name)
+            # If `more` is "additional lines", convert to characters instead or
+            # better: let transform_function return the full transformed text
+            transformed_len = len(transformed)
+
+            # Compute positions in the current output_text
+            out_start = start_pos + offset
+            out_end = out_start + original_len
+
+            # Replace in output_text
+            output_text = output_text[:out_start] + transformed + output_text[out_end:]
+
+            # Update offset by the character delta
+            offset += transformed_len - original_len
+
     return output_text, sorted(set(ft_types))
 def process_incoming(input_text: str) -> Tuple[str, List[str]]:
     """Process entire file containing propagators and return modified text and list of FT types."""
@@ -419,13 +586,14 @@ def process_incoming(input_text: str) -> Tuple[str, List[str]]:
     for match in matches:
         func_name = match.group(2)
         start_pos = match.start()
-
         # Extract full function from the original input_text
         func_text, _, func_end = extract_function_signature(input_text, start_pos)
         original_len = func_end - start_pos  # length in characters
 
-        if should_transform_incoming(func_text, func_name):
-            print(func_name)
+        definition = should_transform_incoming(func_text, func_name)
+
+        if definition:
+            print("Definition = " + func_name)
             transformed, ft_type, more = transform_incoming(func_text, func_name)
             # If `more` is "additional lines", convert to characters instead or
             # better: let transform_function return the full transformed text
@@ -443,7 +611,29 @@ def process_incoming(input_text: str) -> Tuple[str, List[str]]:
 
             ft_types.append(ft_type)
 
+        elif should_transform_incoming_dec(func_text, func_name):
+            func_text, _, func_end = extract_function_declaration(input_text, start_pos)
+            original_len = func_end - start_pos  # length in characters
+            print("Declaration = " + func_name)
+
+            transformed, more = transform_incoming_dec(func_text, func_name)
+
+            # If `more` is "additional lines", convert to characters instead or
+            # better: let transform_function return the full transformed text
+            transformed_len = len(transformed)
+            
+            # Compute positions in the current output_text
+            out_start = start_pos + offset
+            out_end = out_start + original_len
+
+            # Replace in output_text
+            output_text = output_text[:out_start] + transformed + output_text[out_end:]
+
+            # Update offset by the character delta
+            offset += transformed_len - original_len
+
     return output_text, sorted(set(ft_types))
+
 
 def process_CPPP(input_text: str) -> Tuple[str, List[str]]:
     """Process entire file containing CPPProcess and return modified text and list of FT types."""
@@ -454,6 +644,9 @@ def process_CPPP(input_text: str) -> Tuple[str, List[str]]:
 
     #find calculate jamps
     start_pos = input_text.find("calculate_jamps(")
+    if start_pos == -1:
+        print("failed to find calculate_jamps isn't CPPProcess_bckp empty file?")
+
     func_text, _, func_end = extract_function_signature(input_text, start_pos)
 
     # Cumulative character offset between input_text positions and output_text
@@ -535,7 +728,10 @@ input_text = input_text.replace("cxzero_sv", "cxzero")
 input_text = input_text.replace("cxmake", "cxmake<fptype>")
 input_text = input_text.replace("cxzero", "cxzero<fptype>")
 input_text = input_text.replace("fpsqrt", "fpsqrt<fptype>")
+imput_text = input_text.replace("fpmax", "fpmax<fptype>")
+imput_text = input_text.replace("fpmin", "fpmin<fptype>")
 
+input_text = add_f_to_decimals(input_text)
 
 output_text, ft_types_in = process_incoming(input_text)
 output_text, ft_types = process_propagators(output_text)
@@ -561,6 +757,10 @@ input_text = input_text.replace("cxzero_sv", "cxzero")
 input_text = input_text.replace("cxmake", "cxmake<fptype>")
 input_text = input_text.replace("cxzero", "cxzero<fptype>")
 input_text = input_text.replace("fpsqrt", "fpsqrt<fptype>")
+imput_text = input_text.replace("fpmax", "fpmax<fptype>")
+imput_text = input_text.replace("fpmin", "fpmin<fptype>")
+
+input_text = add_f_to_decimals(input_text)
 
 output_text, ft_types_cpp = process_CPPP(input_text)
 ft_types = ft_types_cpp + ft_types

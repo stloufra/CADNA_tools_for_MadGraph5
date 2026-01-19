@@ -46,15 +46,15 @@ int main(int argc, char* argv[])
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count()/1.0e9 << "s" << std::endl;
     //---
 
-#if defined (__PRO__)
-    PROMISE_CHECK_ARRAY(hstMe.data(), nevt);
-#endif
-
 #ifdef __CADNA
     printMEandPreccision(hstMomenta, hstMe, nevt, true);
     std::cout << "Number of good helicities: " << nGoodHel << std::endl;
-    auto res = convert_to_array(hstMe, nevt);
     cadna_end();
+#elif defined (__PRO__)
+    PROMISE_CHECK_ARRAY(hstMe.data(), nevt);
+#else
+    printMEandPreccision(hstMomenta, hstMe, nevt, true);
+    std::cout << "Number of good helicities: " << nGoodHel << std::endl;
 #endif
     return 0;
 }
