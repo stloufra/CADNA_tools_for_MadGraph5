@@ -306,6 +306,20 @@ operator*(const cxsmpl<float>& a, const double& b)
     return a * cxsmpl<float>(b, 0);
 }
 
+inline
+constexpr cxsmpl<double>
+operator*(const float& a, const cxsmpl<double>& b)
+{
+    return cxsmpl<double>(a, 0) * b;
+}
+
+inline
+constexpr cxsmpl<double>
+operator*(const cxsmpl<double>& a, const float& b)
+{
+    return a * cxsmpl<double>(b, 0);
+}
+
 template <typename FP>
 inline
 constexpr cxsmpl<FP>
@@ -488,13 +502,13 @@ cxmake( const FP& r, const FP2& i )
             return cxsmpl<FP2>( static_cast<FP2>(r), i ); // cxsmpl constructor
 }
 
-template <typename FP, typename FP2,
+/*template <typename FP, typename FP2,
     std::enable_if_t<is_special_fp_v<FP> and !is_special_fp_v<FP2>, int> = 0>
 inline constexpr auto
   cxmake( const cxsmpl<FP2>& c ) // cxsmpl to cxtype (double-float to double_st-float_st)
   {
         return cxsmpl<FP>( c.real(), c.imag() );
-  }
+  }*/
 #endif
 
 template <typename FP>
@@ -504,12 +518,12 @@ cxmake( const FP& r, const FP& i )
       return cxsmpl<FP>( r, i ); // cxsmpl constructor
 }
 
-template <typename FP>
+/*template <typename FP>
 inline cxsmpl<FP>
 cxmake(  cxsmpl<FP> a)
 {
       return a;
-}
+}*/
 
 template <typename FP>
 inline FP
@@ -550,6 +564,14 @@ cxmake( const cxtype c ) // std::complex to cxsmpl (double-to-float or double-to
 {
     return cxmake<fptype>( c.real(), c.imag() );
 }
+
+template <typename FP, typename  FP2>
+inline cxsmpl<FP>                  // NOT __device__
+cxmake( const cxsmpl<FP2> c ) // std::complex to cxsmpl (double-to-float or double-to-double)
+{
+    return cxmake<FP>( c.real(), c.imag() );
+}
+
 class cxtype_ref
 {
 public:

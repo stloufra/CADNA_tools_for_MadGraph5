@@ -86,7 +86,7 @@ void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int n
             {
                 // NB: 'setw' affects only the next field (of any type)
                 const int ndigits = std::numeric_limits<double>::digits10;
-                std::cout << std::scientific // fixed format: affects all floats (default precision: 6)
+                std::cout << std::scientific << std::setprecision(ndigits)  // fixed format: affects all floats (default precision: 6)
                     << std::setw(4) << ipar + 1
                     << std::setw(ndigits + 8) << MemoryAccessMomenta::ieventAccessIp4IparConst(
                         hstMomenta.data(), ievt, 0, ipar)

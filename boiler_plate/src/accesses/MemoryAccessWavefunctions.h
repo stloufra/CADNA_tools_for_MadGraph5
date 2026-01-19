@@ -142,16 +142,16 @@ namespace mg5amcCpu
 
 #else
 
-    static   inline cxtype_sv*
-    kernelAccess( fptype* buffer )
+    static inline cxsmpl<FT_w>*
+    kernelAccess( FT_w* buffer )
     {
-      return reinterpret_cast<cxtype_sv*>( buffer );
+      return reinterpret_cast<cxsmpl<FT_w>*>( buffer );
     }
 
-    static   inline const cxtype_sv*
-    kernelAccessConst( const fptype* buffer )
+    static   inline const cxsmpl<FT_w>*
+    kernelAccessConst( const FT_w* buffer )
     {
-      return reinterpret_cast<const cxtype_sv*>( buffer );
+      return reinterpret_cast<const cxsmpl<FT_w>*>( buffer );
     }
 
 #endif // #ifndef MGONGPU_TRIVIAL_WAVEFUNCTIONS
