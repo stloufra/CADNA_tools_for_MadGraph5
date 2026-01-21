@@ -20,7 +20,7 @@ def custom_split(line):
         if line[i] == " ":
             tokens.append(line[prev_i:i])
             prev_i = i+1
-        elif line[i] == "-" and line[i-1] != "E":
+        elif line[i] == "-" and line[i-1] not in "Ee":
             tokens.append(line[prev_i:i])
             prev_i = i
     if prev_i < len(line):
@@ -111,6 +111,54 @@ def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecis
     return matrixElementPrecisionZeros
 
 
+def parse_file_native(f, momentum, matrixElement):
+    skipQ = True
+    num_iter = 0
+    while True:
+        lines = []
+        line = ""
+
+        while skipQ: #skip first lines until "Momenta:"
+            line = f.readline()
+            if "Momenta:" in line:
+                skipQ = False
+                lines.append(line)
+
+        while not "---" in line:
+            line = f.readline()
+            # print(line)
+            if not line:
+                break
+            lines.append(line)
+        num_iter += 1
+        if num_iter%100000 == 0:
+            print("Number iterations:", num_iter)
+
+
+        i=0
+        for l in lines:
+            #parse momenta and momenta precision
+            if "Momenta:" in l:
+                j=1
+                momentums=[]
+                while not "---" in lines[i+j]:
+                    momentums.append(parse_momentum(lines[i+j]))
+                    j+=1
+                # Add the parsed momentums to the momentum list
+                if len(momentums) > 0:
+                    momentum.append(momentums)
+
+            if "Matrix element = " in l:
+                pos = l.find("Matrix element = ")+len("Matrix element = ")
+                endpos = l.find("GeV^", pos)
+                # matrixElement.append(int(l[endpos+4:]))
+                matrixElement.append(float(l[pos:endpos]))
+
+            i+=1
+
+        if not line:
+            break
+    return
 #return colinearity for the 3vec momenta
 def colinearity(m1, m2):
     m1 = m1[1:]
