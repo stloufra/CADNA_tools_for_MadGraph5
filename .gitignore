@@ -6,3 +6,5 @@ histograms/*
 **/__pycache__/*
 gdb_*
 read_momenta.cpp
+test_outputs/**
+boiler_plate/backup
