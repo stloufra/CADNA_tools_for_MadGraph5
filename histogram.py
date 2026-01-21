@@ -111,7 +111,8 @@ print("Number of all momenta:                       " + str(len(momentaPrecision
 print("Number of all momenta prec:                  " + str(len(momentum_fl)))
 
 # matplotlib -> default (no argument) or both
-if len(sys.argv) < 3 or (len(sys.argv) > 2 and sys.argv[2] == "both"):
+print("Lenght of system arguments" + str(len(sys.argv)))
+if len(sys.argv) < 5 or (len(sys.argv) > 4 and sys.argv[4] == "both"):
 
     if len(colinearities) > 0:
         mpl.plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matrix_element_fl,
@@ -151,7 +152,7 @@ if len(sys.argv) < 3 or (len(sys.argv) > 2 and sys.argv[2] == "both"):
 #  - histogram of momenta precision
 #  - scatter plot of momenta precision vs momentum_fl
 # plotly -> plotly or both
-if len(sys.argv) > 2 and (sys.argv[2] == "plotly" or sys.argv[2] == "both"):
+if len(sys.argv) > 4 and (sys.argv[4] == "plotly" or sys.argv[4] == "both"):
     # do the same using plotly
     import plotly.express as px
 
