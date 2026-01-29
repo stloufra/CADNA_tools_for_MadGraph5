@@ -231,6 +231,9 @@ def transform_propagators(func_text: str, func_name: str) -> Tuple[str, str, int
             new_line = new_line.replace("cxmake<fptype>", "cxmake<"+ft_type+">")
             new_line = new_line.replace("cxzero<fptype>", "cxzero<"+ft_type+">")
             new_line = new_line.replace("fpsqrt<fptype>", "fpsqrt<"+ft_type+">")
+#            new_line = new_line.replace("fpmax<fptype>", "fpmax<"+ft_type+">")
+#            new_line = new_line.replace("fpmin<fptype>", "fpmin<"+ft_type+">")
+#            new_line = new_line.replace("fpternary<fptype>", "fpternary<"+ft_type+">")
             for arg in arg_const:
                 if "all" not in arg and arg in line:
                     if line[line.find(arg)-1:line.find(arg)] != "O":
@@ -372,6 +375,9 @@ def transform_incoming(func_text: str, func_name: str) -> Tuple[str, str, int]:
             new_line = new_line.replace("cxmake<fptype>", "cxmake<"+ft_type+">")
             new_line = new_line.replace("cxzero<fptype>", "cxzero<"+ft_type+">")
             new_line = new_line.replace("fpsqrt<fptype>", "fpsqrt<"+ft_type+">")
+            #new_line = new_line.replace("fpmax<fptype>", "fpmax<"+ft_type+">")
+            #new_line = new_line.replace("fpmin<fptype>", "fpmin<"+ft_type+">")
+            #new_line = new_line.replace("fpternary<fptype>", "fpternary<"+ft_type+">")
             if argout +"[" in line and "const" not in line and argout != "":
                 if ";" in new_line:
                     new_line = new_line[:new_line.find("=")+1] + "static_cast<cxsmpl<FT_w>>(" +new_line[new_line.find("=")+1:].replace(";",");")
@@ -728,8 +734,9 @@ input_text = input_text.replace("cxzero_sv", "cxzero")
 input_text = input_text.replace("cxmake", "cxmake<fptype>")
 input_text = input_text.replace("cxzero", "cxzero<fptype>")
 input_text = input_text.replace("fpsqrt", "fpsqrt<fptype>")
-imput_text = input_text.replace("fpmax", "fpmax<fptype>")
-imput_text = input_text.replace("fpmin", "fpmin<fptype>")
+#input_text = input_text.replace("fpmax", "fpmax<fptype>")
+#input_text = input_text.replace("fpmin", "fpmin<fptype>")
+#input_text = input_text.replace("fpternary", "fpternary<fptype>")
 
 input_text = add_f_to_decimals(input_text)
 
@@ -757,8 +764,9 @@ input_text = input_text.replace("cxzero_sv", "cxzero")
 input_text = input_text.replace("cxmake", "cxmake<fptype>")
 input_text = input_text.replace("cxzero", "cxzero<fptype>")
 input_text = input_text.replace("fpsqrt", "fpsqrt<fptype>")
-imput_text = input_text.replace("fpmax", "fpmax<fptype>")
-imput_text = input_text.replace("fpmin", "fpmin<fptype>")
+#input_text = input_text.replace("fpmax", "fpmax<fptype>")
+#input_text = input_text.replace("fpmin", "fpmin<fptype>")
+#input_text = input_text.replace("fpternary", "fpternary<fptype>")
 
 input_text = add_f_to_decimals(input_text)
 
