@@ -42,6 +42,8 @@ After generating the momenta, copy the following  MG5 source files into the `./s
 - `CPPProcess.cc`
 - `CPPProcess.h`
 - `HelAmps_sm.h`
+- `Parameters_sm.h`
+- `Parameters_sm.cc`
 - `param_card.dat` into `./src/Cards`
 
 These files contain all process-specific logic required for computing matrix elements.

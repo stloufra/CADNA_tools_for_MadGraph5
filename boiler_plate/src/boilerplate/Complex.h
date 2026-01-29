@@ -7,9 +7,7 @@
 #include <complex>
 #include "typeTraits.h"
 
-#ifdef __CADNA
-#include "cadna.h"
-#endif
+
 
 // The number of floating point types in a complex type (real, imaginary)
 namespace mgOnGpu
@@ -18,7 +16,7 @@ namespace mgOnGpu
     constexpr int cppAlign = 64;
 }
 
-#if defined (__CADNA)
+#if defined (__CADNA__)
 //CADNA operator overload
 template <typename T>
 constexpr bool is_special_fp_v =
@@ -66,7 +64,7 @@ public:
     constexpr const FP& imag() const { return m_imag; }
 
     template <typename FP2>
-    constexpr explicit operator cxsmpl<FP2>() const { return cxsmpl<FP2>(m_real, m_imag); }
+    constexpr explicit operator cxsmpl<FP2>() const { return cxsmpl<FP2>(static_cast<FP2>(m_real), static_cast<FP2>(m_imag)); }
 private:
     FP m_real, m_imag; // RI
 };
@@ -79,7 +77,7 @@ struct rne
 };
 
 template< typename T, std::enable_if_t< std::is_floating_point_v< T >
-#if defined (__CADNA)
+#if defined (__CADNA__)
 || is_special_fp_v<T>
 #endif
 , int > = 0 >
@@ -93,7 +91,7 @@ quick_two_sum( const T a, const T b )
 }
 
 template< typename T, std::enable_if_t< std::is_floating_point_v< T >
-#if defined (__CADNA)
+#if defined (__CADNA__)
 || is_special_fp_v<T>
 #endif
 , int > = 0 >
@@ -202,11 +200,14 @@ class cxcomp
     //constexpr explicit operator cxcomp<FP2>() const { return cxcomp<FP2>(m_real, m_imag); }
 
     template<typename FP2>
-    constexpr cxsmpl<FP2> finalize()
+    constexpr cxsmpl<FP2> finalize() const
     {
         //return cxsmpl<FP>(m_real+m_real_err, m_imag+m_imag_err);
         return cxsmpl<FP2>(static_cast<FP2>(m_real), static_cast<FP2>(m_imag));
     }
+
+    template<typename FP2>
+    explicit operator cxsmpl<FP2>() const { return finalize<FP2>(); }
 
 };
 
@@ -305,6 +306,20 @@ operator*(const cxsmpl<float>& a, const double& b)
     return a * cxsmpl<float>(b, 0);
 }
 
+inline
+constexpr cxsmpl<double>
+operator*(const float& a, const cxsmpl<double>& b)
+{
+    return cxsmpl<double>(a, 0) * b;
+}
+
+inline
+constexpr cxsmpl<double>
+operator*(const cxsmpl<double>& a, const float& b)
+{
+    return a * cxsmpl<double>(b, 0);
+}
+
 template <typename FP>
 inline
 constexpr cxsmpl<FP>
@@ -357,7 +372,7 @@ operator/(const cxsmpl<FP>& a, const FP& b)
 
 
 
-#if defined (__CADNA)
+#if defined (__CADNA__)
 
 inline
 cxsmpl<double_st>
@@ -440,9 +455,42 @@ operator/(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
     }
 }
 
+template <typename FP, typename FP2,
+         std::enable_if_t<is_special_fp_v<FP2>, int> = 0>
+inline constexpr auto
+operator*(const FP& a, const cxsmpl<FP2>& b)
+{
+    return cxsmpl<FP2>(static_cast<FP2>(a), 0) * b;
+}
+
+template <typename FP, typename FP2,
+    std::enable_if_t<is_special_fp_v<FP>, int> = 0>
+inline constexpr auto
+operator *(const cxsmpl<FP>& a, const FP2& b)
+{
+    return a * cxsmpl<FP>(b, 0);
+}
+
+template <typename FP, typename FP2,
+         std::enable_if_t<is_special_fp_v<FP2>, int> = 0>
+inline constexpr auto
+operator/(const FP& a, const cxsmpl<FP2>& b)
+{
+    return cxsmpl<FP2>(static_cast<FP2>(a), 0) / b;
+}
+
+template <typename FP, typename FP2,
+    std::enable_if_t<is_special_fp_v<FP>, int> = 0>
+inline constexpr auto
+operator /(const cxsmpl<FP>& a, const FP2& b)
+{
+    return a / cxsmpl<FP>(b, 0);
+}
+
+
 #endif
 
-#ifdef __CADNA
+#ifdef __CADNA__
 template <typename FP, typename FP2,
           std::enable_if_t<std::is_same_v<FP, double_st> || std::is_same_v<FP2,double_st>, int> = 0>
 inline auto
@@ -453,38 +501,40 @@ cxmake( const FP& r, const FP2& i )
         else if constexpr (std::is_same_v<FP2, double_st>)
             return cxsmpl<FP2>( static_cast<FP2>(r), i ); // cxsmpl constructor
 }
+
+/*template <typename FP, typename FP2,
+    std::enable_if_t<is_special_fp_v<FP> and !is_special_fp_v<FP2>, int> = 0>
+inline constexpr auto
+  cxmake( const cxsmpl<FP2>& c ) // cxsmpl to cxtype (double-float to double_st-float_st)
+  {
+        return cxsmpl<FP>( c.real(), c.imag() );
+  }*/
 #endif
 
-inline cxtype
-cxmake( const fptype& r, const fptype& i )
+template <typename FP>
+inline cxsmpl<FP>
+cxmake( const FP& r, const FP& i )
 {
-      return cxtype( r, i ); // cxsmpl constructor
+      return cxsmpl<FP>( r, i ); // cxsmpl constructor
 }
 
-#ifdef __CADNA
+/*template <typename FP>
+inline cxsmpl<FP>
+cxmake(  cxsmpl<FP> a)
+{
+      return a;
+}*/
 
-/*inline cxsmpl<float_st>
-cxmake_fst( const double_st& r, const double_st& i )
-    {
-        return cxtype( static_cast<float_st>(r), static_cast<float_st>(i) ); // cxsmpl constructor
-    }
-
-inline cxsmpl<float_st>
-cxmake_fst( const cxsmpl<double_st> c )
-    {
-        return cxtype( static_cast<float_st>(c.real()), static_cast<float_st>(c.imag()) ); // cxsmpl constructor
-    }*/
-#endif
-
-
-inline fptype
-cxreal( const cxtype& c )
+template <typename FP>
+inline FP
+cxreal( const cxsmpl<FP>& c )
 {
     return c.real(); // cxsmpl::real()
 }
 
-inline fptype
-cximag( const cxtype& c )
+template <typename FP>
+inline FP
+cximag( const cxsmpl<FP>& c )
 {
     return c.imag(); // cxsmpl::imag()
 }
@@ -495,17 +545,33 @@ cxconj( const cxtype& c )
     return conj( c ); // conj( cxsmpl )
 }
 
+
+
 inline cxtype                 // NOT __device__
 cxmake( const std::complex<float>& c ) // std::complex to cxsmpl (float-to-float or float-to-double)
 {
-    return cxmake( c.real(), c.imag() );
+    return cxmake<fptype>( c.real(), c.imag() );
 }
 
 inline cxtype                  // NOT __device__
 cxmake( const std::complex<double>& c ) // std::complex to cxsmpl (double-to-float or double-to-double)
 {
-    return cxmake( c.real(), c.imag() );
+    return cxmake<fptype>( c.real(), c.imag() );
 }
+
+inline cxtype                  // NOT __device__
+cxmake( const cxtype c ) // std::complex to cxsmpl (double-to-float or double-to-double)
+{
+    return cxmake<fptype>( c.real(), c.imag() );
+}
+
+template <typename FP, typename  FP2>
+inline cxsmpl<FP>                  // NOT __device__
+cxmake( const cxsmpl<FP2> c ) // std::complex to cxsmpl (double-to-float or double-to-double)
+{
+    return cxmake<FP>( c.real(), c.imag() );
+}
+
 class cxtype_ref
 {
 public:
@@ -535,7 +601,8 @@ operator<<( std::ostream& out, const cxtype_ref& c )
     return out;
 }
 
-inline cxtype cxzero_sv() { return cxtype( 0, 0 ); }
+template<typename T>
+inline cxsmpl<T> cxzero() { return cxsmpl<T>( 0.f, 0.f ); }
 
 inline fptype_sv
 cxabs2( const cxtype_sv& c )

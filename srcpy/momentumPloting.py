@@ -379,7 +379,7 @@ def plotHis_MEP(process, precision, optimisation, matrixElementPrecision_fl, mat
     # plot histogram of matrix element precision
     fig, ax = plt.subplots()
     plt.title("Matrix element precision for: "+process+" "+precision+" "+optimisation)
-    plt.xlabel("Digits of precision.        Sum = "+str(len(matrixElementPrecision_fl)+matrixElementPrecisionZeros))
+    plt.xlabel("Digits of precision.        Sum = "+str(len(matrixElementPrecision_fl)))#'''+matrixElementPrecisionZeros'''))
     counts, edges, bars = ax.hist(matrixElementPrecision_fl, histtype='barstacked',bins=range(0, int(max(matrixElementPrecision_fl))+2))
     plt.bar_label(bars)
     #show the mean in neat way
@@ -401,7 +401,7 @@ def plotHis_MOP(process, precision, optimisation, momentaPrecision_fl, momentaPr
     # plot histogram of momenta precision
     fig, ax = plt.subplots()
     plt.title("Momenta precision for: "+process+" "+precision+" "+optimisation)
-    plt.xlabel("Digits of precision.        Sum = "+str(len(momentaPrecision_fl)+momentaPrecisionZeros))
+    plt.xlabel("Digits of precision.        Sum = "+str(len(momentaPrecision_fl)))#+momentaPrecisionZeros))
     counts, edges, bars = ax.hist(momentaPrecision_fl, histtype='barstacked',color='orange',bins=range(0, int(max(momentaPrecision_fl))+2))
     plt.bar_label(bars)
     #show the mean in neat way
