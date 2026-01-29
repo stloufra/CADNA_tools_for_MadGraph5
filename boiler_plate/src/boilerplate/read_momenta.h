@@ -147,6 +147,57 @@ readSim_paramsFromFile(const std::string &filename, const int precision_tresh = 
     return allEvents;
 }
 
+inline std::vector<Sim_params>
+    readSim_paramsFromFileNative(const std::string &filename)
+    {
+        std::vector<Sim_params> allEvents;
+        std::ifstream file(filename);
+        if (!file.is_open()) {
+            std::cerr << "Error: Could not open file " << filename << std::endl;
+            return allEvents;
+        }
+
+        std::string line;
+        Sim_params currentEvent;
+        bool inMomentaSection = false;
+
+        while (std::getline(file, line)) {
+            if (line.find("Momenta:") != std::string::npos) {
+                inMomentaSection = true;
+                continue;
+            }
+
+            if (line.find("Matrix element =") != std::string::npos) {
+                inMomentaSection = false;
+                continue;
+            }
+
+            if (line.find("-------------------------------------------------------------------------------") != std::string::npos) {
+                if ( !currentEvent.momenta.empty()) {
+                    allEvents.push_back(currentEvent);
+                    currentEvent = Sim_params();
+                    currentEvent.event_num = allEvents.size();
+                }
+                continue;
+            }
+
+            if (inMomentaSection && !line.empty()) {
+                std::istringstream iss(line);
+                int idx;
+                FourMomentum m;
+                if (iss >> idx >> m.p[0] >> m.p[1] >> m.p[2] >> m.p[3]) {
+                    currentEvent.momenta.push_back(m);
+                }
+            }
+        }
+
+        // Check last event if the file doesn't end with a delimiter
+        if ( !currentEvent.momenta.empty()) {
+            allEvents.push_back(currentEvent);
+        }
+
+        return allEvents;
+    }
  //int main(int arg, char** argv) {
  //    const std::string filename = argv[1];
  //    std::vector<Sim_params> simParamsList = readSim_paramsFromFile(filename);

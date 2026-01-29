@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     cadna_init(-1);
 #endif
 
-    int nevt = 142;
+    int nevt = 18893;
 
     std::cout << "nevt = " << nevt << std::endl;
 
@@ -27,10 +27,12 @@ int main(int argc, char* argv[])
 
 #if defined (__PRO__)
     process.initProc("src/Cards/param_card.dat");
-    fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
+    //fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
+    fillMomentaFromFileNative("gdb_run_output_float-O3_1.out", hstMomenta, nevt, false);
 #else
     process.initProc("../src/Cards/param_card.dat");
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
+    //fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
+    fillMomentaFromFileNative("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false);
 #endif
 
     fillGs(hstGs.data(), nevt);

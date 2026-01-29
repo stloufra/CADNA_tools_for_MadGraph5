@@ -81,6 +81,49 @@ void fillMomentaFromFile(std::string filename, auto& hstMomenta, const int nevt,
     }
 }
 
+void fillMomentaFromFileNative(std::string filename, auto& hstMomenta, const int nevt, bool verbose = false)
+{
+    using namespace mg5amcCpu;
+    auto in_params = readSim_paramsFromFileNative(filename);
+
+    for (unsigned int ievt = 0; ievt < nevt; ++ievt) // Loop over all events in this iteration
+    {
+        if (verbose)
+        {
+            std::cout << "Momenta casting for event: " << ievt << std::endl;
+        }
+
+        for (int ipar = 0; ipar < CPPProcess::npar; ipar++)
+        {
+            double mass = in_params[ievt].momenta[ipar].p[0];
+            double p1 = in_params[ievt].momenta[ipar].p[1];
+            double p2 = in_params[ievt].momenta[ipar].p[2];
+            double p3 = in_params[ievt].momenta[ipar].p[3];
+            if (verbose)
+            {
+                // NB: 'setw' affects only the next field (of any type)
+                const int ndigits = std::numeric_limits<double>::digits10;
+                std::cout << std::scientific // fixed format: affects all floats (default precision: 6)
+                    << std::setprecision(ndigits)
+                    << std::setw(4) << ipar + 1
+                    << std::setw(ndigits + 8) << mass
+                    << std::setw(ndigits + 8) << p1
+                    << std::setw(ndigits + 8) << p2
+                    << std::setw(ndigits + 8) << p3
+                    << std::endl
+                    << std::defaultfloat; // default format: affects all floats
+            }
+
+            MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 0, ipar) = static_cast<fptype>(mass);
+            MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 1, ipar) = static_cast<fptype>(p1);
+            MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 2, ipar) = static_cast<fptype>(p2);
+            MemoryAccessMomenta::ieventAccessIp4Ipar(hstMomenta.data(), ievt, 3, ipar) = static_cast<fptype>(p3);
+        }
+        if (verbose)
+        std::cout << std::string(SEP79, '-') << std::endl;
+    }
+}
+
 void printMEandPreccision(auto& hstMomenta, auto& hstMatrixElements, const int nevt, bool verbose = true)
 {
     const int meGeVexponent = -(2 * CPPProcess::npar - 8);
