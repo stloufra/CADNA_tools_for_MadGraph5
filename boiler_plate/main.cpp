@@ -7,17 +7,13 @@
 #include "src/boilerplate/fillers.h"
 #include <chrono>
 
-#ifdef __CADNA
-#include "src/boilerplate/repair_momenta.h"
-#endif
-
 int main(int argc, char* argv[])
 {
 #ifdef __CADNA
     cadna_init(-1);
 #endif
 
-     int nevt = 80'000;
+    int nevt = 18893;
 
     std::cout << "nevt = " << nevt << std::endl;
 
@@ -29,12 +25,15 @@ int main(int argc, char* argv[])
 
     CPPProcess process(true);
 
+#if defined (__PRO__)
+    process.initProc("src/Cards/param_card.dat");
+    //fillMomentaFromFile("gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
+    fillMomentaFromFileNative("gdb_run_output_float-O3_1.out", hstMomenta, nevt, false);
+#else
     process.initProc("../src/Cards/param_card.dat");
-    fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 8 );
-   //---
-    auto begin = std::chrono::high_resolution_clock::now();
-    HostBufferMatrixElements hstMe(nevt);
-    HostBufferCouplings hstCoup(nevt);
+    //fillMomentaFromFile("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false, 3);
+    fillMomentaFromFileNative("../gdb_run_output_float-O3_1.out", hstMomenta, nevt, false);
+#endif
 
     fillGs(hstGs.data(), nevt);
     fillRndHel(hstRndHel.data(), nevt);
@@ -49,10 +48,15 @@ int main(int argc, char* argv[])
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count()/1.0e9 << "s" << std::endl;
     //---
 
-    //printMEandPreccision(hstMomenta, hstMe, nevt, true);
-    std::cout << "Number of good helicities: " << nGoodHel << std::endl;
 #ifdef __CADNA
+    printMEandPreccision(hstMomenta, hstMe, nevt, true);
+    std::cout << "Number of good helicities: " << nGoodHel << std::endl;
     cadna_end();
+#elif defined (__PRO__)
+    PROMISE_CHECK_ARRAY(hstMe.data(), nevt);
+#else
+    printMEandPreccision(hstMomenta, hstMe, nevt, true);
+    std::cout << "Number of good helicities: " << nGoodHel << std::endl;
 #endif
     return 0;
 }

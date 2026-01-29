@@ -12,11 +12,12 @@ add_compile_options(
         -Wfloat-conversion
 )
 
-#add_definitions(-D__CADNA)
+add_definitions(-D__CADNA)
+#add_definitions(-D__PRO__)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4 -fsanitize=address")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-4")
 
-set(CMAKE_CXX_FLAGS_PROFILE "-O3 -g -gdwarf-4 -fno-omit-frame-pointer ")
+set(CMAKE_CXX_FLAGS_PROFILE "-O1 -g -gdwarf-4 -fno-omit-frame-pointer ")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
 
@@ -32,6 +33,7 @@ endif()
 add_executable(CPPProcess_standalone main.cpp
         src/boilerplate/typeTraits.h
         src/boilerplate/Complex.h
+        src/HelAmps_sm.h
         src/boilerplate/MemoryBuffers.h
         src/accesses/includeAcesses.h
         src/boilerplate/commonNums.h
@@ -42,6 +44,6 @@ add_executable(CPPProcess_standalone main.cpp
         src/CPPProcess.cc
         src/color_sum.h
         src/boilerplate/repair_momenta.h
-       )
-target_link_libraries(CPPProcess_standalone PRIVATE cadnaC)
+       	src/boilerplate/promiseTypes.h)
+target_link_libraries(CPPProcess_standalone PRIVATE cadnaC c++)
 

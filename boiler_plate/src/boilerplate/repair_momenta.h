@@ -24,39 +24,35 @@ namespace momenta_reparator
     using std::tanh;
 
     struct P4 {
-        fptype3 E, px, py, pz;
+        fptypemomenta E, px, py, pz;
     };
 
     struct P3
     {
 
-        union {
-            fptype3 v[3];
-            struct {
-                fptype3 px, py, pz;
-            };
-        };
+        fptypemomenta v[3];
+
         P3() = default;
 
-        P3(fptype3 x, fptype3 y, fptype3 z) : px(x), py(y), pz(z) {}
+        P3(fptypemomenta x, fptypemomenta y, fptypemomenta z) : v{x,y,z} {}
 
-        fptype3& operator[](int i) { return v[i]; }
+        fptypemomenta& operator[](int i) { return v[i]; }
 
-        const fptype3& operator[](int i) const { return v[i]; }
+        const fptypemomenta& operator[](int i) const { return v[i]; }
     };
 
- const static fptype3 EPS =
-     std::is_same_v<fptype3, float>  ? fptype3(1e-7) :
-     std::is_same_v<fptype3, double> ? fptype3(1e-15) :
-     fptype3(0);
+ const static fptypemomenta EPS =
+     std::is_same_v<fptypemomenta, float>  ? fptypemomenta(1e-7) :
+     std::is_same_v<fptypemomenta, double> ? fptypemomenta(1e-15) :
+     fptypemomenta(0);
 
     // Basic vector utilities
 
-    inline fptype3 norm3(const fptype3& x, const fptype3& y, const fptype3& z){
+    inline fptypemomenta norm3(const fptypemomenta& x, const fptypemomenta& y, const fptypemomenta& z){
         return sqrt(x*x + y*y + z*z);
     }
 
-    inline fptype3 dot3(const P3& a, const P3& b){
+    inline fptypemomenta dot3(const P3& a, const P3& b){
         return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
     }
 
@@ -70,7 +66,7 @@ namespace momenta_reparator
     }
 
     inline P3 normalize(const P3& v){
-        fptype3 n = norm3(v[0], v[1], v[2]);
+        fptypemomenta n = norm3(v[0], v[1], v[2]);
         if(n < EPS) return {0.f,0.f,1.f};
         return {v[0]/n, v[1]/n, v[2]/n};
     }
@@ -86,15 +82,15 @@ namespace momenta_reparator
 
     // Lorentz boost
     P4 lorentz_boost(const P4& p, const P3& beta){
-        fptype3 b2 = dot3(beta, beta);
+        fptypemomenta b2 = dot3(beta, beta);
         if(b2 >= 1.0f) throw std::runtime_error("Boost over speed of light requested");
 
-        fptype3 gamma = 1.0f / sqrt(1.0f - b2);
+        fptypemomenta gamma = 1.0f / sqrt(1.0f - b2);
 
         auto v = to3(p);
-        fptype3 bp = dot3(beta, v);
+        fptypemomenta bp = dot3(beta, v);
 
-        fptype3 Eprime = gamma * (p.E - bp);
+        fptypemomenta Eprime = gamma * (p.E - bp);
 
         P3 pprime = {
             v[0] + ((gamma - 1.0)/b2)*bp*beta[0] - gamma*p.E*beta[0],
@@ -102,16 +98,16 @@ namespace momenta_reparator
             v[2] + ((gamma - 1.0)/b2)*bp*beta[2] - gamma*p.E*beta[2]
         };
 
-        return {Eprime, pprime.px, pprime.py, pprime.pz};
+        return {Eprime, pprime[0], pprime[1], pprime[2]};
     }
 
     // Collinearity test
-    fptype3 collinearity(const P4& a, const P4& b){
+    fptypemomenta collinearity(const P4& a, const P4& b){
         auto va = to3(a);
         auto vb = to3(b);
 
-        fptype3 na = norm3(va[0], va[1], va[2]);
-        fptype3 nb = norm3(vb[0], vb[1], vb[2]);
+        fptypemomenta na = norm3(va[0], va[1], va[2]);
+        fptypemomenta nb = norm3(vb[0], vb[1], vb[2]);
 
         if(na < EPS || nb < EPS) return 1.0;
 
@@ -130,8 +126,8 @@ namespace momenta_reparator
     std::vector<P4> repair_event(
         std::vector<P4> particles,
         bool& rep,
-        fptype3 coll_cut = 0.995,
-        fptype3 soft_ratio = 50.0
+        fptypemomenta coll_cut = 0.995,
+        fptypemomenta soft_ratio = 50.0
     ){
         const size_t N = particles.size();
 
@@ -142,8 +138,8 @@ namespace momenta_reparator
                 const auto &pj = particles[j];
 
                 // ---- Compute metrics ----
-                fptype3 coll = collinearity(pi, pj);
-                fptype3 Eratio = std::max(pi.E, pj.E) / std::min(pi.E, pj.E);
+                fptypemomenta coll = collinearity(pi, pj);
+                fptypemomenta Eratio = std::max(pi.E, pj.E) / std::min(pi.E, pj.E);
 
                 bool is_collinear = coll > coll_cut;
                 bool is_soft = Eratio > soft_ratio;
@@ -169,7 +165,7 @@ namespace momenta_reparator
                     // Transverse boost (open angle)
                     auto perp = axis; // perpendicular_unit(axis);
                     //std::cout << dot3(axis, perp) << std::endl;
-                    fptype3 beta_mag = 0.95f; // safe fixed value (TODO:can be adaptive)
+                    fptypemomenta beta_mag = 0.95f; // safe fixed value (TODO:can be adaptive)
                     beta = { beta_mag*perp[0], beta_mag*perp[1], beta_mag*perp[2] };
 
                     //std::cout << "[COLLINEAR FIX] Pair ("<<i<<","<<j<<") C="<<coll<<"\n";
@@ -188,7 +184,7 @@ namespace momenta_reparator
                         boost_dir = {-axis[0], -axis[1], -axis[2]};
                     }
 
-                    fptype3 beta_mag = 0.2f * tanh(log(Eratio)/2.0);
+                    fptypemomenta beta_mag = 0.2f * tanh(log(Eratio)/2.0);
                     beta = {
                         beta_mag * boost_dir[0],
                         beta_mag * boost_dir[1],
@@ -211,7 +207,7 @@ namespace momenta_reparator
         return particles;
     }
 
-    void BoostMomenta(auto& hstMomenta, const int nevt, fptype3 coll_cut = 0.995, fptype3 soft_ratio = 50.0)
+    void BoostMomenta(auto& hstMomenta, const int nevt, fptypemomenta coll_cut = 0.995, fptypemomenta soft_ratio = 50.0)
     {
         for (unsigned int ievt = 0; ievt < nevt; ++ievt) // Loop over all events in this iteration
         {
