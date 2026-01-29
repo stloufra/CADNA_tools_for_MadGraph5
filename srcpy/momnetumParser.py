@@ -168,5 +168,10 @@ def colinearity(m1, m2):
     m2 = m2/np.linalg.norm(m2)
     return np.dot(m1,m2)
 
+def softness(m1, m2):
+    Emax = max(energy(m1), energy(m2))
+    Emin = min(energy(m1), energy(m2))
+    return Emax/Emin
+
 def energy(m):
     return m[0]

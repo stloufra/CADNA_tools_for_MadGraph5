@@ -12,7 +12,7 @@ SCRIPT_DIR = Path("/data/frstlouk/CADNA_tools_for_MadGraph5")
 MAX_PARALLEL_TESTS = 10
 MAKE_CMD = [
     "make", "-j12",
-    'OPTFLAGS= -O0 -g',
+    'OPTFLAGS= -O3 -g',
     "AVX=none",
     "HASCURAND=hasNoCurand",
     "USEOPENMP=1",
@@ -25,23 +25,37 @@ FAILED_DIRS_FILE = "test_fail.txt"
 # -----------------------------
 # Utilities
 # -----------------------------
-def run_cmd(cmd, cwd):
-    """Run a shell command and return True if successful."""
-    try:
-        subprocess.run(
+
+
+def run_cmd(cmd, cwd, logfile="cmd_output.txt"):
+    """Run a shell command and write output to logfile in real time."""
+    logfile = Path(logfile)
+
+    with logfile.open("a", buffering=1) as f:  # line-buffered
+        f.write(f"$ {' '.join(cmd)}\n")
+
+        process = subprocess.Popen(
             cmd,
             cwd=cwd,
-            check=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
+            bufsize=1,          # line-buffered
         )
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Command failed in {cwd}: {' '.join(cmd)}")
-        print(e.stderr)
-        return False
 
+        for line in process.stdout:
+            f.write(line)      # written immediately
+            f.flush()          # ensure it hits disk
+
+        process.wait()
+
+        f.write("\n" + "-" * 80 + "\n")
+
+        if process.returncode != 0:
+            print(f"[ERROR] Command failed in {cwd}: {' '.join(cmd)}")
+            return False
+
+        return True
 
 def symlink(src, dst):
     """Create/update symlink."""
@@ -64,6 +78,10 @@ failed_folders = []
 # -----------------------------
 # Step 2–4: Sequential preparation + Cadnize + make
 # -----------------------------
+
+print(f"\n=== Cleaning { folders[0] } ===")
+run_cmd(["make", "distclean"], cwd=folders[0])
+    
 for loc in folders:
     print(f"\n=== Processing {loc} ===")
 
@@ -86,11 +104,6 @@ for loc in folders:
 
         # Step 3: Run Cadnize.sh
         if not run_cmd(["./Cadnize.sh"], cwd=loc):
-            failed_folders.append(loc)
-            continue
-
-        # Step 4.1 make dist clean
-        if not run_cmd(["make distclean"], cwd=loc ):
             failed_folders.append(loc)
             continue
 
@@ -125,7 +138,7 @@ print(f"\nRunning runMultipleTest.sh in {len(valid_folders)} folders (max {MAX_P
 
 def run_tests(loc):
     print(f"[TEST] {loc}")
-    return run_cmd(["./runMultipleTest.sh"], cwd=loc)
+    return run_cmd(["./test.sh","float", "O3" ,"1"], cwd=loc)
 
 
 pool = ThreadPool(processes=MAX_PARALLEL_TESTS)
@@ -134,3 +147,4 @@ pool.close()
 pool.join()
 
 print("\nAll tests completed.")
+
