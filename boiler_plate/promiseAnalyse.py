@@ -7,10 +7,19 @@
 
 import os
 import shutil
-import momnetumParser as mpr
+import srcpy.momnetumParser as mpr
+
+CADNA_TOOLBOX_PATH = os.environ.get(
+    "CADNA_TOOLBOX_PATH",
+    "/path/to/cadna/toolbox"
+)
+
+PROMISE_TOOLBOX_PATH = os.environ.get(
+    "PROMISE_TOOLBOX_PATH",
+    "/path/to/cadna/toolbox"
+)
 
 def numberOfBadMomenta(subprocess_dir, precision_threshold = 3):
-
     if os.path.exists("gdb_run_output_float-O3_1.out"):
         f = open( "gdb_run_output_float-O3_1.out", 'r')
     else:
@@ -47,8 +56,8 @@ def change_nevt_main(nevt):
 
 # create dir and cd
 # TODO: make a env. var.
-CADNA_toolbox_path = "/Users/stloufra/git/CADNA_tools_for_MadGraph5/boiler_plate"
-PROMISE_env_path = '/Users/stloufra/git/promiseOld/.venv/bin/activate'
+CADNA_toolbox_path = CADNA_TOOLBOX_PATH + "/boiler_plate"
+PROMISE_env_path = PROMISE_TOOLBOX_PATH
 Current_path = os.getcwd()
 os.makedirs(Current_path + "/boiler_plate", exist_ok=True)
 os.chdir(Current_path + "/boiler_plate")
@@ -133,7 +142,7 @@ change_nevt_main(nb)
 
 #source promise enviroment
 print(" 6) Running promise")
-os.system("source " + PROMISE_env_path)
+os.system("source " + PROMISE_env_path +".venv/bin/activate")
 os.system("promise --precs=sd --nbDigits=3 --verbosity=1")
 
 

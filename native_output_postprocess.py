@@ -8,7 +8,7 @@ import srcpy.momentumPloting as mpl
 
 if len(sys.argv) < 4:
     exit(
-        "Usage: python3 native_output_postprocess.py <filename of native float> <filename of native double> <savefile name> <thresh>")
+        "Usage: python3 native_output_postprocess.py <filename of native float> <filename of native double> <savefile name> <num events> <thresh>")
 
 if "float" not in sys.argv[1]:
     print("First file does not contain keyword float. Are you sure it is right?")
@@ -29,9 +29,16 @@ else:
     print("File with name " + sys.argv[3] + " will be created.")
 
 thresh = 3
+num_of_events = 0
+
 if len(sys.argv) == 5:
     if sys.argv[4].isdigit():
-        thresh = int(sys.argv[4])
+        num_of_events = int(sys.argv[4])
+        print("Number of events set to " + str(num_of_events))
+
+if len(sys.argv) == 6:
+    if sys.argv[5].isdigit():
+        thresh = int(sys.argv[5])
         print("Threshold set to " + str(thresh))
 
 file_name = sys.argv[3]
@@ -46,15 +53,29 @@ momentum_f = []
 momentum_d = []
 
 with open(sys.argv[1], 'r') as f:
-    mpr.parse_file_native(f, momentum_f, matrix_element_f)
+    if num_of_events != 0:
+        mpr.parse_file_native_fast_prealloc(f, momentum_f, matrix_element_f, num_of_events)
+    else:
+        mpr.parse_file_native(f, momentum_f, matrix_element_f)
 
 with open(sys.argv[2], 'r') as f:
-    mpr.parse_file_native(f, momentum_d, matrix_element_d)
+    if num_of_events != 0:
+            mpr.parse_file_native_fast_prealloc(f, momentum_d, matrix_element_d, num_of_events)
+    else:
+            mpr.parse_file_native(f, momentum_d, matrix_element_d)
+    
+    if len(matrix_element_f) != len(matrix_element_d):
+        print("Lenght of matrix elements in float " + str(len(matrix_element_f)))
+        print("Lenght of matrix elements in double " + str(len(matrix_element_d)))
+        exit("Bad reading happened")
 
     for i in range(len(matrix_element_f)):
         fl = float(matrix_element_f[i])
         dbl = float(matrix_element_d[i])
-        sig_dig = floor(-np.log10(abs(dbl - fl) / (dbl + fl) * 2))
+        if fl != dbl:
+            sig_dig = floor(-np.log10(abs(dbl - fl) / (dbl + fl) * 2))
+        else:
+            sig_dig = 16
         matrixElementPrecision.append(sig_dig)
 
     print(20 * "-")

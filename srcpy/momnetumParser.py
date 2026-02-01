@@ -111,54 +111,75 @@ def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecis
     return matrixElementPrecisionZeros
 
 
-def parse_file_native(f, momentum, matrixElement):
-    skipQ = True
+def parse_file_native(f, momentum, matrixElement, num_of_events=0):
+    in_momenta = False
+    current_momenta = []
     num_iter = 0
-    while True:
-        lines = []
-        line = ""
 
-        while skipQ: #skip first lines until "Momenta:"
-            line = f.readline()
-            if "Momenta:" in line:
-                skipQ = False
-                lines.append(line)
+    for line in f:
+        # Start of momenta block
+        if "Momenta:" in line:
+            in_momenta = True
+            current_momenta = []
+            continue
 
-        while not "---" in line:
-            line = f.readline()
-            # print(line)
-            if not line:
-                break
-            lines.append(line)
-        num_iter += 1
-        if num_iter%100000 == 0:
-            print("Number iterations:", num_iter)
+        # End of momenta block
+        if in_momenta:
+            if "---" in line:
+                if current_momenta:
+                    momentum.append(current_momenta)
+                in_momenta = False
+                num_iter += 1
+                if num_iter % 100000 == 0:
+                    print("Number iterations:", num_iter)
+                continue
+            else:
+                current_momenta.append(parse_momentum(line))
+                continue
 
+        # Matrix element
+        if "Matrix element = " in line:
+            pos = line.find("Matrix element = ") + 17
+            endpos = line.find("GeV^", pos)
+            matrixElement.append(float(line[pos:endpos]))
 
-        i=0
-        for l in lines:
-            #parse momenta and momenta precision
-            if "Momenta:" in l:
-                j=1
-                momentums=[]
-                while not "---" in lines[i+j]:
-                    momentums.append(parse_momentum(lines[i+j]))
-                    j+=1
-                # Add the parsed momentums to the momentum list
-                if len(momentums) > 0:
-                    momentum.append(momentums)
-
-            if "Matrix element = " in l:
-                pos = l.find("Matrix element = ")+len("Matrix element = ")
-                endpos = l.find("GeV^", pos)
-                # matrixElement.append(int(l[endpos+4:]))
-                matrixElement.append(float(l[pos:endpos]))
-
-            i+=1
-
-        if not line:
-            break
     return
+
+def parse_file_native_fast_prealloc(f, momentum, matrixElement, num_of_events):
+    in_momenta = False
+    current_momenta = []
+    event_idx = 0
+
+    # Preallocate matrixElement
+    matrixElement[:] = [0.0] * num_of_events
+
+    for line in f:
+        if "Momenta:" in line:
+            in_momenta = True
+            current_momenta = []
+            continue
+
+        if in_momenta:
+            if "---" in line:
+                if current_momenta:
+                    momentum.append(current_momenta)
+                in_momenta = False
+                event_idx += 1
+                continue
+            else:
+                current_momenta.append(parse_momentum(line))
+                continue
+
+        if "Matrix element = " in line:
+            pos = line.find("Matrix element = ") + 17
+            endpos = line.find("GeV^", pos)
+            matrixElement[event_idx] = float(line[pos:endpos])
+
+    # Trim in case fewer events were parsed
+    del matrixElement[event_idx:]
+
+    return
+
 #return colinearity for the 3vec momenta
 def colinearity(m1, m2):
     m1 = m1[1:]

@@ -16,9 +16,12 @@ int main(int argc, char* argv[])
 
     std::cout << "nevt = " << nevt << std::endl;
 
+
     HostBufferMomenta hstMomenta(nevt);
+    HostBufferMatrixElements hstMe(nevt);
     HostBufferGs hstGs(nevt);
     HostBufferSelectedHelicity hstSelHel(nevt);
+    HostBufferCouplings hstCoup(nevt);
     HostBufferRndNumHelicity hstRndHel(nevt);
     HostBufferHelicityMask hstIsGoodHel(CPPProcess::ncomb);
 
