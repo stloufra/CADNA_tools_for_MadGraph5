@@ -10,7 +10,7 @@ CURRENT_DIR=${0%/*}
 # time of compilation and execution
 # number of errors
 # Error info in file gdb_stats.out
-iterations=10000
+iterations=100000
 config_file=../../src/mgOnGpuConfig.h
 save_run_output=gdb_run_output
 save_time=gdb_time_"$iterations"_"$1"-O3_"$random_number".out
