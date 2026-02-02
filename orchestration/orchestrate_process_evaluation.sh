@@ -34,6 +34,7 @@ MAX_PARALLEL_ANALYSIS=12
 
 # Number of ITERATIONS
 ITERATIONS=10000000
+#ITERATIONS=10000
 
 # CADNA toolbox path (set this to your actual path or pass as environment variable)
 CADNA_TOOLBOX_PATH="${CADNA_TOOLBOX_PATH:-/path/to/cadna/toolbox}"
@@ -154,7 +155,7 @@ compile_directory() {
     local dir="$1"
     local fptype="$2"
     local dir_type="$3"  # "double" or "float"
-    compile_status = 0 
+    local compile_status=0 
     
     log_info "Compiling $dir with FPTYPE=$fptype ($dir_type)"
     
@@ -186,7 +187,6 @@ compile_directory() {
     fi
     
     # Compile
-    local compile_status=0
     if make -j12 \
         OPTFLAGS="-O3" \
         -f cudacpp.mk \
@@ -693,9 +693,9 @@ main() {
         exit 1
     fi
 
-    if grep "override FPTYPE" ../Source/make_opts; then
+    if grep "override FPTYPE" ../Source/make_opts > /dev/null ; then
 	    log_warn "Removing override FPTYPE from make_opts"
-	    sed '1{/^override FPTYPE/d;}' make_opts > make_opts.tmp && mv make_opts.tmp make_opts
+	    sed '1{/^override FPTYPE/d;}' ../Source/make_opts > make_opts.tmp && mv make_opts.tmp ../Source/make_opts
     fi
     
     if ! promise > /dev/null ; then
