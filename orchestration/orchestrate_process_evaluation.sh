@@ -348,23 +348,84 @@ step3_run_all_checks() {
     # Verify processes are actually running
     log_info "Verifying processes are running..."
     local initially_running=0
+    local already_finished=0
+    
     for pid in "${CHECK_CPP_PIDS[@]}"; do
         if ps -p "$pid" > /dev/null 2>&1; then
             initially_running=$((initially_running + 1))
         else
-            log_warn "PID $pid is not running (may have finished already or failed to start)"
+            already_finished=$((already_finished + 1))
+            log_info "PID $pid has already completed"
         fi
     done
     
+    # Check if ALL processes have already finished
     if [ $initially_running -eq 0 ]; then
-        log_error "None of the check_cpp.exe processes are running!"
-        log_error "They may have all completed instantly (unlikely) or failed to start"
-        log_error "Check the output files for errors:"
-        ls -lh "$WORK_DIR"/P1_*/*.out 2>/dev/null | tail -20
-        exit 1
+        if [ $already_finished -eq ${#CHECK_CPP_PIDS[@]} ]; then
+            log_success "All check_cpp.exe processes have already completed!"
+            log_info "This is normal for fast-running processes"
+            log_info "Verifying output files exist..."
+            
+            # Verify output files were created and have content
+            local output_count=0
+            local expected_files=0
+            
+            cd "$WORK_DIR"
+            
+            # Count expected output files based on directories
+            for dir in P1_*; do
+                if [ -d "$dir" ]; then
+                    expected_files=$((expected_files + 1))
+                fi
+            done
+            
+            # Check each expected output file
+            for dir in P1_*; do
+                if [ -d "$dir" ]; then
+                    # Check for double or float output based on directory name
+                    if [[ "$dir" == *_float ]]; then
+                        outfile="$dir/float_${dir}.out"
+                    else
+                        outfile="$dir/double_${dir}.out"
+                    fi
+                    
+                    if [ -f "$outfile" ] && [ -s "$outfile" ]; then
+                        # File exists and is not empty (-s checks size > 0)
+                        output_count=$((output_count + 1))
+                    else
+                        if [ ! -f "$outfile" ]; then
+                            log_warn "Expected output file $outfile not found"
+                        else
+                            log_warn "Output file $outfile is empty - may have failed"
+                        fi
+                    fi
+                fi
+            done
+            
+            log_info "Found $output_count valid output files (expected $expected_files)"
+            
+            if [ $output_count -ge $expected_files ]; then
+                log_success "All output files present - processes completed successfully"
+                # Skip the polling loop - we're done!
+                log_success "Step 3 completed - all check_cpp.exe runs finished"
+                log_success "Total processes completed: ${#CHECK_CPP_PIDS[@]}"
+                return 0
+            else
+                log_warn "Only found $output_count output files, expected $expected_files"
+                log_warn "Some processes may have failed - continuing anyway"
+                # Don't exit - let the user decide
+            fi
+        else
+            log_error "None of the check_cpp.exe processes are running!"
+            log_error "They may have failed to start"
+            log_error "Check the output files for errors:"
+            ls -lh "$WORK_DIR"/P1_*/*.out 2>/dev/null | tail -20
+            exit 1
+        fi
+    else
+        log_info "Initially running: $initially_running/${#CHECK_CPP_PIDS[@]} processes"
+        log_info "Already finished: $already_finished/${#CHECK_CPP_PIDS[@]} processes"
     fi
-    
-    log_info "Initially running: $initially_running/${#CHECK_CPP_PIDS[@]} processes"
     
     # Poll until all processes complete
     local max_iterations=7200  # 10 hours max (at 5 second intervals)
