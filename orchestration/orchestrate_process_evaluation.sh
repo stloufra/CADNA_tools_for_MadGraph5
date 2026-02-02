@@ -341,6 +341,31 @@ step3_run_all_checks() {
     log_info "Tracking ${#CHECK_CPP_PIDS[@]} check_cpp.exe processes"
     log_info "PIDs: ${CHECK_CPP_PIDS[*]}"
     
+    # Give processes a moment to start up
+    log_info "Waiting 2 seconds for processes to initialize..."
+    sleep 2
+    
+    # Verify processes are actually running
+    log_info "Verifying processes are running..."
+    local initially_running=0
+    for pid in "${CHECK_CPP_PIDS[@]}"; do
+        if ps -p "$pid" > /dev/null 2>&1; then
+            initially_running=$((initially_running + 1))
+        else
+            log_warn "PID $pid is not running (may have finished already or failed to start)"
+        fi
+    done
+    
+    if [ $initially_running -eq 0 ]; then
+        log_error "None of the check_cpp.exe processes are running!"
+        log_error "They may have all completed instantly (unlikely) or failed to start"
+        log_error "Check the output files for errors:"
+        ls -lh "$WORK_DIR"/P1_*/*.out 2>/dev/null | tail -20
+        exit 1
+    fi
+    
+    log_info "Initially running: $initially_running/${#CHECK_CPP_PIDS[@]} processes"
+    
     # Poll until all processes complete
     local max_iterations=7200  # 10 hours max (at 5 second intervals)
     local iteration=0
@@ -351,9 +376,12 @@ step3_run_all_checks() {
         local running_pids=()
         
         for pid in "${CHECK_CPP_PIDS[@]}"; do
-            if ps -p "$pid" > /dev/null 2>&1; then
-                running_pids+=($pid)
-                ((running_count++))
+            # Check if PID is running - use || true to prevent set -e from exiting
+            if ps -p "$pid" > /dev/null 2>&1 || true; then
+                if ps -p "$pid" > /dev/null 2>&1; then
+                    running_pids+=($pid)
+                    running_count=$((running_count + 1))
+                fi
             fi
         done
         
@@ -373,14 +401,14 @@ step3_run_all_checks() {
         fi
         
         sleep 5
-        ((iteration++))
+        iteration=$((iteration + 1))
     done
     
     # Final check
     local still_running=0
     for pid in "${CHECK_CPP_PIDS[@]}"; do
         if ps -p "$pid" > /dev/null 2>&1; then
-            ((still_running++))
+            still_running=$((still_running + 1))
             log_error "PID $pid still running after timeout!"
         fi
     done
