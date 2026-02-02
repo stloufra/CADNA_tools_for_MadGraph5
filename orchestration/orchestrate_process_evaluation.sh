@@ -589,6 +589,11 @@ run_promise_analysis() {
         ln -sf "$CADNA_TOOLBOX_PATH/boiler_plate/promiseAnalyse.py" .
     fi
     
+    if [ ! -L "$CADNA_TOOLBOX_PATH/boiler_plate/srcpy" ]; then
+        log_warn "Creating symlink in $CADNA_TOOLBOX_PATH/boiler_plate for /srcpy"
+        ln -sf "$CADNA_TOOLBOX_PATH/srcpy" "$CADNA_TOOLBOX_PATH/boiler_plate"
+    fi
+    
     # Run analysis
     local analysis_status=0
     if python3 promiseAnalyse.py \
