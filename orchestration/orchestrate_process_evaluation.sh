@@ -33,7 +33,7 @@ MAX_PARALLEL_CHECKS=8
 MAX_PARALLEL_ANALYSIS=12
 
 # Number of ITERATIONS
-ITERATIONS=10000
+ITERATIONS=10000000
 
 # CADNA toolbox path (set this to your actual path or pass as environment variable)
 CADNA_TOOLBOX_PATH="${CADNA_TOOLBOX_PATH:-/path/to/cadna/toolbox}"
