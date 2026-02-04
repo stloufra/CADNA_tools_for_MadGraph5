@@ -36,6 +36,10 @@ MAX_PARALLEL_ANALYSIS=20
 ITERATIONS=10000000
 #ITERATIONS=10000
 
+# Enable mail on successful completition
+MAIL_ON_SUCCESS="true"
+USER="${USER}" #if not same as lxplus username, change accordingly
+
 # CADNA toolbox path (set this to your actual path or pass as environment variable)
 CADNA_TOOLBOX_PATH="${CADNA_TOOLBOX_PATH:-/path/to/cadna/toolbox}"
 CADNA_PATH="${CADNA_PATH:-/path/to/cadna}"
@@ -706,7 +710,7 @@ step6_copy_results() {
 #########################
 
 step0_5_copy_log(){
-    log_info "Step 0.5: Copying log fiel to $OUTPUT_PATH" 
+    log_info "Step 0.5: Copying log file to $OUTPUT_PATH" 
     
     cd "$WORK_DIR"
     tmp=${WORK_DIR#*PROC_}
@@ -725,6 +729,72 @@ step0_5_copy_log(){
     fi
 }
 
+
+#########################
+# Step: Send mail on completition 
+#########################
+
+send_email_notification() {
+    log_info "Sending mail to the $USER"
+
+    local status="$1"
+    local duration="$2"
+
+    local tmp=${WORK_DIR#*PROC_}
+    local name=${tmp%%/SubProcesses*}
+
+    local size=$(df -h | awk '/\/shared$/ {print $3}')
+
+    # Skip if email disabled
+    if [ "$MAIL_ON_SUCCESS" != "true" ]; then
+        return 0
+    fi
+
+    # Format duration
+    local hours=$((duration / 3600))
+    local minutes=$(((duration % 3600) / 60))
+    local seconds=$((duration % 60))
+    local duration_str="${hours}h ${minutes}m ${seconds}s"
+
+    # Subject
+    local subject
+    if [ "$status" = "SUCCESS" ]; then
+        subject="$name Completed Successfully"
+    else
+        subject="$name FAILED"
+    fi
+
+    # Build email body (heredoc)
+    local email_body
+read -r -d '' email_body <<EOF || true
+Process Evaluation Orchestration Report
+========================================
+
+Status: $status
+Duration: $duration_str
+Timestamp: $(date '+%Y-%m-%d %H:%M:%S')
+Hostname: $(hostname)
+Working Directory: $WORK_DIR
+Size: $size
+
+$(if [ "$status" = "SUCCESS" ]; then
+    echo "All steps completed successfully!"
+else
+    echo "The orchestration encountered an error."
+fi)
+
+- Log files are in: $OUTPUT_PATH/$name
+  or at CERNBox
+EOF
+
+    # Send mail via lxplus
+    ssh -o BatchMode=yes "$USER@lxplus.cern.ch" \
+        "mailx -s \"$subject\" \"$USER@cern.ch\"" <<EOF
+$email_body
+EOF
+}
+
+
 #########################
 # Cleanup and signal handling
 #########################
@@ -733,6 +803,13 @@ cleanup() {
     local exit_code=$?
     
     log_info "Cleanup initiated (exit code: $exit_code)"
+
+    # Send failure email if script failed
+    if [ $exit_code -ne 0 ] && [ "$MAIL_ON_SUCCESS" = "true" ]; then
+        local elapsed=$(($(date +%s) - ${START_TIME:-$(date +%s)}))
+        send_email_notification "FAILURE" "$elapsed" 
+    fi
+
     
     # Kill any remaining background jobs
     jobs -p | xargs -r kill 2>/dev/null || true
@@ -799,15 +876,19 @@ main() {
         log_error "Please set the correct path via environment variable or edit the script"
         exit 1
     fi
-
-
+    
+    if  ! ssh $USER@lxplus.cern.ch 'echo "TRY OUT"' > /dev/null 2>&1  && [ $MAIL_ON_SUCCESS == "true" ]; then
+        log_error "Can't access lxplus. Possibly expired kerberos certificate"
+        log_info  "Run - kinit -f $USER@CERN.CH or set MAIL_ON_SUCCESS variable"
+        exit 1
+    fi
 
     if grep "override FPTYPE" ../Source/make_opts > /dev/null ; then
 	    log_warn "Removing override FPTYPE from make_opts"
 	    sed '1{/^override FPTYPE/d;}' ../Source/make_opts > make_opts.tmp && mv make_opts.tmp ../Source/make_opts
     fi
     
-    if ! promise > /dev/null ; then
+    if ! promise > /dev/null 2>&1; then
 	    log_error "PROMISE was not sourced please source"
 	    exit 1
     fi
@@ -841,18 +922,18 @@ main() {
     local start_time=$(date +%s)
     
     # Execute all steps
-    step1_copy_directories
-        step0_5_copy_log
-    step2_compile_all
-        step0_5_copy_log
-    step3_run_all_checks
-        step0_5_copy_log
-    step4_compare_all
-        step0_5_copy_log
-    step5_promise_analysis
-        step0_5_copy_log
-    step6_copy_results
-        step0_5_copy_log
+#    step1_copy_directories
+#        step0_5_copy_log
+#    step2_compile_all
+#        step0_5_copy_log
+#    step3_run_all_checks
+#        step0_5_copy_log
+#    step4_compare_all
+#        step0_5_copy_log
+#    step5_promise_analysis
+#        step0_5_copy_log
+#    step6_copy_results
+#        step0_5_copy_log
     
     # Calculate duration
     local end_time=$(date +%s)
@@ -867,6 +948,9 @@ main() {
     log_success "End time: $(date)"
     log_success "Total duration: ${hours}h ${minutes}m ${seconds}s"
 
+    if [ $MAIL_ON_SUCCESS == "true" ]; then
+        send_email_notification "SUCCESS" "$duration" 
+    fi
     step0_5_copy_log
 }
 
