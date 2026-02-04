@@ -48,13 +48,16 @@ if cwd.split("/")[-1] != "SubProcesses":
 
 process = cwd.split("/")[-2]
 process = process.replace("PROC_", "")
-print("Working on process:" + process)
+print("Working on process: " + process)
 
-subdirs = os.listdir(cwd)
+base_dir =  cwd
 
-for sub in subdirs:
-    if not os.path.isdir(sub):
-        subdirs.remove(sub)
+subdirs = [
+    sub for sub in os.listdir(base_dir)
+    if os.path.isdir(os.path.join(base_dir, sub))
+    and sub.startswith("P1_")
+    and "_float" not in sub
+]
 
 print("It contains the following subdirs:")
 for subdir in subdirs:
@@ -92,15 +95,12 @@ for subdir in subdirs:
     ff = open(f, "r")
 
     # parse the file
-    d.matrixElementPrecisionZeros = mpr.parse_file(ff, d.momentum, d.momentaPrecision, d.matrix_element,
+    d.matrixElementPrecisionZeros = mpr.parse_file_woMomP(ff, d.momentum, d.matrix_element,
                                                    d.matrixElementPrecision, d.matrixElementPrecisionZeros)
 
     if (len(d.matrixElementPrecision) != len(d.matrix_element)):
         exit(
             "Number of matrix elements and number of matrix element precisions is not the same. file causing trouble: " + subdir + "/" + f)
-    if (len(d.momentaPrecision) != len(d.momentum)):
-        exit(
-            "Number of momenta and number of momenta precisions is not the same. file causing trouble: " + subdir + "/" + f)
 
     for mp in d.matrixElementPrecision:
         if mp == 0:
@@ -163,8 +163,8 @@ if data:
     ax.legend()
 
     fig.tight_layout()
-    plt.savefig(f"combined_precision_{process}.png")
-    print(f"Combined plot saved as combined_precision_{process}.png")
+    plt.savefig(f"combined_precision.png")
+    print(f"Combined plot saved as combined_precision.png")
     plt.close()
 
     # Plotting deviants
@@ -182,6 +182,6 @@ if data:
     plt.xticks(rotation=45, ha='right')
 
     fig.tight_layout()
-    plt.savefig(f"deviants_{process}.png")
-    print(f"Deviants plot saved as deviants_{process}.png")
+    plt.savefig(f"deviants.png")
+    print(f"Deviants plot saved as deviants.png")
     plt.close()

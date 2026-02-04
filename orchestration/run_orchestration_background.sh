@@ -51,6 +51,7 @@ if [ -f "$PID_FILE" ]; then
         log_error "Orchestration already running with PID $OLD_PID"
         log_info "Check status: tail -f $LOG_FILE"
         log_info "To kill: kill $OLD_PID"
+        tail -f $LOG_FILE
         exit 1
     else
         log_info "Removing stale PID file"
@@ -126,3 +127,8 @@ chmod +x "${WORK_DIR}/check_orchestration_status.sh"
 
 log_success "You can now safely disconnect from SSH"
 log_info "The orchestration will continue running in the background"
+log_info "-------------------------------------------------"
+log_info "Automatically starting the tail - exit with CTRL+C"
+log_info "-------------------------------------------------"
+
+tail -f $LOG_FILE

@@ -52,32 +52,43 @@ matrixElementPrecision = []
 momentum_f = []
 momentum_d = []
 
-with open(sys.argv[1], 'r') as f:
-    if num_of_events != 0:
-        mpr.parse_file_native_fast_prealloc(f, momentum_f, matrix_element_f, num_of_events)
-    else:
-        mpr.parse_file_native(f, momentum_f, matrix_element_f)
+with open(sys.argv[1], 'r', buffering=1024*1024) as f:
+    mpr.parse_file_native(f, matrix_element_f)
 
-with open(sys.argv[2], 'r') as f:
-    if num_of_events != 0:
-            mpr.parse_file_native_fast_prealloc(f, momentum_d, matrix_element_d, num_of_events)
-    else:
-            mpr.parse_file_native(f, momentum_d, matrix_element_d)
+with open(sys.argv[2], 'r', buffering=1024*1024) as f:
+    mpr.parse_file_native(f, matrix_element_d)
     
     if len(matrix_element_f) != len(matrix_element_d):
         print("Lenght of matrix elements in float " + str(len(matrix_element_f)))
         print("Lenght of matrix elements in double " + str(len(matrix_element_d)))
         exit("Bad reading happened")
 
+    NaNs = 0
+    IsSame = 0 
+
     for i in range(len(matrix_element_f)):
         fl = float(matrix_element_f[i])
         dbl = float(matrix_element_d[i])
-        if fl != dbl:
-            sig_dig = floor(-np.log10(abs(dbl - fl) / (dbl + fl) * 2))
+
+        num = abs(dbl - fl)
+        den = abs(dbl + fl)
+
+        if not np.isfinite(dbl) or not np.isfinite(fl):
+            sig_dig = 0
+            NaNs += 1
+        elif den == 0.0:
+            sig_dig = 0
+        elif num == 0.0:
+            sig_dig = 17
+            IsSame += 1
         else:
-            sig_dig = 16
+            sig_dig = floor(-np.log10(2 * num / den))
+
         matrixElementPrecision.append(sig_dig)
 
+    print(20 * "-")
+    print("Identical numbers = " + str(IsSame))
+    print("NaNs/Inf  numbers = " + str(NaNs))
     print(20 * "-")
     print("First element in f = " + str(matrix_element_f[0]) + "")
     print("First element in d = " + str(matrix_element_d[0]) + "")
@@ -132,5 +143,5 @@ with open(sys.argv[2], 'r') as f:
     with open(file_name, "w") as f:
         f.writelines(newlines)
 print("We saved " + str(len(saved_precisions)) + " matrix elements with precision lower than " + str(
-    thresh) + "into file" + file_name)
+    thresh) + " into file " + file_name)
 mpl.plotHis_MEP("comparison_natives_thresh" + str(thresh), "", "", saved_precisions, 0)

@@ -27,10 +27,10 @@ set -euo pipefail
 #########################
 
 # Maximum number of parallel check_cpp.exe processes
-MAX_PARALLEL_CHECKS=8
+MAX_PARALLEL_CHECKS=20
 
 # Maximum number of parallel analysis processes
-MAX_PARALLEL_ANALYSIS=12
+MAX_PARALLEL_ANALYSIS=20
 
 # Number of ITERATIONS
 ITERATIONS=10000000
@@ -38,6 +38,8 @@ ITERATIONS=10000000
 
 # CADNA toolbox path (set this to your actual path or pass as environment variable)
 CADNA_TOOLBOX_PATH="${CADNA_TOOLBOX_PATH:-/path/to/cadna/toolbox}"
+CADNA_PATH="${CADNA_PATH:-/path/to/cadna}"
+OUTPUT_PATH="${OUTPUT_PATH:-/path/to/cadna}"
 
 # CUDA_HOME setting for compilation
 CUDA_HOME_VAL="${CUDA_HOME_VAL:-}"
@@ -521,8 +523,8 @@ compare_results() {
     fi
 
     if [ -f "$comparison_output" ]; then
-	log_warn "Deleting previous comparison output in: $dir"
-	rm $comparison_output
+	    log_warn "Deleting previous comparison output in: $dir"
+	    rm $comparison_output
     fi
 
     # Run comparison
@@ -534,11 +536,10 @@ compare_results() {
         > "comparison_${dir_name}.log" 2>&1; then
         log_success "Comparison completed for $dir_name"
         comparison_status=0
-
-
     else
         log_error "Comparison failed for $dir_name"
-	echo python3 native_output_postprocess.py "$float_output" "$double_output" "$comparison_output" 
+	    echo python3 native_output_postprocess.py "$float_output" "$double_output" "$comparison_output" 
+        tail -n 5  "comparison_${dir_name}.log" >&2
         comparison_status=1
     fi
     
@@ -636,6 +637,95 @@ step5_promise_analysis() {
 }
 
 #########################
+# Step 6: Gather and copy results
+#########################
+
+step6_copy_results() {
+    log_info "Step 6: Gathering and copying results to $OUTPUT_PATH" 
+    
+    cd "$WORK_DIR"
+    tmp=${WORK_DIR#*PROC_}
+    name=${tmp%%/SubProcesses*}
+
+    log_info  " Process name separated is ${name}"
+
+    if [ ! -d "$OUTPUT_PATH/$name" ]; then
+        mkdir "$OUTPUT_PATH/$name"
+    fi
+
+    if [ ! -f "${WORK_DIR}/gatherPromiseMult.py" ]; then
+        log_info "Linking gatherPromiseMult.py in ${WORK_DIR}"
+        ln -s "$CADNA_TOOLBOX_PATH/script/gatherPromiseMult.py"
+    fi
+
+    if [ ! -f "${WORK_DIR}/histogram_mul_sub.py" ]; then
+        log_info "Linking histogram_mul_sub.py in ${WORK_DIR}"
+        ln -s "$CADNA_TOOLBOX_PATH/histogram_mul_sub.py"
+    fi
+
+
+    if python3 gatherPromiseMult.py \
+       > "gatherPromise_log.txt" 2>&1; then
+        log_success "Gathering promise result completed"
+        cp promiseResultGathered.png "$OUTPUT_PATH/$name/proRes_$name.png"
+    else 
+       log_error "Gathering promise results failed" 
+    fi
+
+ 
+    if python3 histogram_mul_sub.py \
+       > "histogram_log.txt" 2>&1; then
+        log_success "Histogram postprocess of result completed"
+        cp combined_precision.png "$OUTPUT_PATH/$name/combined_precsion_$name.png"
+        cp deviants.png "$OUTPUT_PATH/$name/deviants_$name.png"
+    else 
+       log_error "Histogram of results failed" 
+       
+    fi
+
+    local p1_dirs=($(find . -maxdepth 1 -type d -name "P1_*" ! -name "*_float" | sed 's|^\./||' | sort))
+    
+    if [ ${#p1_dirs[@]} -eq 0 ]; then
+        log_error "No P1_* directories found!"
+        exit 1
+    fi
+    
+    for dir in "${p1_dirs[@]}"; do
+        if [ ! -d "$OUTPUT_PATH/$name/$dir" ]; then
+            mkdir "$OUTPUT_PATH/$name/$dir"
+        fi
+   
+        cp "$dir/gdb_run_output_float-O3_1.out" "$OUTPUT_PATH/$name/$dir/." 
+    done
+
+    log_success "Step 6 completed - all postprocessing of  analyses finished"
+}
+
+#########################
+# Step 0.5: Copy log file to EOS
+#########################
+
+step0_5_copy_log(){
+    log_info "Step 0.5: Copying log fiel to $OUTPUT_PATH" 
+    
+    cd "$WORK_DIR"
+    tmp=${WORK_DIR#*PROC_}
+    name=${tmp%%/SubProcesses*}
+
+    log_info  " Process name separated is ${name}"
+
+    if [ ! -d "$OUTPUT_PATH/$name" ]; then
+        mkdir "$OUTPUT_PATH/$name"
+    fi
+
+    if cp orchestration_* $OUTPUT_PATH/$name; then
+        log_success "Log file copy done."
+    else
+        log_error "Log file copy fail."
+    fi
+}
+
+#########################
 # Cleanup and signal handling
 #########################
 
@@ -698,6 +788,20 @@ main() {
         exit 1
     fi
 
+    if [ ! -d "$OUTPUT_PATH" ]; then
+        log_error "OUTPUT_PATH does not exist: $OUTPUT_PATH"
+        log_error "Please set the correct path via environment variable or edit the script"
+        exit 1
+    fi
+
+    if [ ! -d "$CADNA_PATH" ]; then
+        log_error "CADNA_PATH does not exist: $CADNA_PATH"
+        log_error "Please set the correct path via environment variable or edit the script"
+        exit 1
+    fi
+
+
+
     if grep "override FPTYPE" ../Source/make_opts > /dev/null ; then
 	    log_warn "Removing override FPTYPE from make_opts"
 	    sed '1{/^override FPTYPE/d;}' ../Source/make_opts > make_opts.tmp && mv make_opts.tmp ../Source/make_opts
@@ -738,10 +842,17 @@ main() {
     
     # Execute all steps
     step1_copy_directories
+        step0_5_copy_log
     step2_compile_all
+        step0_5_copy_log
     step3_run_all_checks
+        step0_5_copy_log
     step4_compare_all
+        step0_5_copy_log
     step5_promise_analysis
+        step0_5_copy_log
+    step6_copy_results
+        step0_5_copy_log
     
     # Calculate duration
     local end_time=$(date +%s)
@@ -755,6 +866,8 @@ main() {
     log_success "========================================="
     log_success "End time: $(date)"
     log_success "Total duration: ${hours}h ${minutes}m ${seconds}s"
+
+    step0_5_copy_log
 }
 
 # Run main function

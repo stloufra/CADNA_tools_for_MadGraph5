@@ -60,7 +60,7 @@ def check_usage_of_typedef(filepath, list_of_types):
             if "V" in pattern or "F" in pattern:
                 pattern = " " + pattern
             usage[t] =  sum(pattern in line for line in lines)
-            usage[t] = 1
+#            usage[t] = 1
 
     except Exception as e:
         print(f"Error reading {filepath} to search for types: {e}")
@@ -203,7 +203,7 @@ def plot_typedef_table(data_dict):
               loc='upper left', bbox_to_anchor=(1.02, 1))
     
     plt.tight_layout()
-    plt.savefig("promiseResultGathered_diff_seed.png")
+    plt.savefig("promiseResultGathered.png")
     plt.show()
 
 # Example usage:
