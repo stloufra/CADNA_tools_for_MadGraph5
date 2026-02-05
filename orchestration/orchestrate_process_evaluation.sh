@@ -85,6 +85,9 @@ else
     }
 fi
 
+# get process name
+PROC_NAME=$(sed -E 's|.*PROC_||; s|/SubProcesses.*||' <<< "$WORK_DIR")
+
 # Return to starting directory
 cd "$SCRIPT_START_DIR"
 
@@ -103,12 +106,25 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+
+#########################
+# Step 0.5: Copy log file to EOS
+#########################
+log_to_outputpath() {
+    local msg="$1"
+    local status="$2"
+
+    printf '[%s] %s\n' "$status" "$msg" \
+        >> "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt"
+}
+
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $*"
 }
 
 log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $*"
+    log_to_outputpath "$*" "SUCCESS"
 }
 
 log_warn() {
@@ -117,6 +133,7 @@ log_warn() {
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $*"
+    log_to_outputpath "$*" "ERROR"
 }
 
 #########################
@@ -648,8 +665,7 @@ step6_copy_results() {
     log_info "Step 6: Gathering and copying results to $OUTPUT_PATH" 
     
     cd "$WORK_DIR"
-    tmp=${WORK_DIR#*PROC_}
-    name=${tmp%%/SubProcesses*}
+    name=$PROC_NAME
 
     log_info  " Process name separated is ${name}"
 
@@ -680,7 +696,7 @@ step6_copy_results() {
     if python3 histogram_mul_sub.py \
        > "histogram_log.txt" 2>&1; then
         log_success "Histogram postprocess of result completed"
-        cp combined_precision.png "$OUTPUT_PATH/$name/combined_precsion_$name.png"
+        cp combined_precision.png "$OUTPUT_PATH/$name/combined_precision_$name.png"
         cp deviants.png "$OUTPUT_PATH/$name/deviants_$name.png"
     else 
        log_error "Histogram of results failed" 
@@ -700,36 +716,11 @@ step6_copy_results() {
         fi
    
         cp "$dir/gdb_run_output_float-O3_1.out" "$OUTPUT_PATH/$name/$dir/." 
+        cp "$dir/boiler_plate/output_promise_files/src/boilerplate/promiseTypes.h" "$OUTPUT_PATH/$name/$dir/."
     done
 
     log_success "Step 6 completed - all postprocessing of  analyses finished"
 }
-
-#########################
-# Step 0.5: Copy log file to EOS
-#########################
-
-step0_5_copy_log(){
-    log_info "Step 0.5: Copying log file to $OUTPUT_PATH" 
-    
-    cd "$WORK_DIR"
-    tmp=${WORK_DIR#*PROC_}
-    name=${tmp%%/SubProcesses*}
-
-    log_info  " Process name separated is ${name}"
-
-    if [ ! -d "$OUTPUT_PATH/$name" ]; then
-        mkdir "$OUTPUT_PATH/$name"
-    fi
-
-    if cp orchestration_* $OUTPUT_PATH/$name; then
-        log_success "Log file copy done."
-    else
-        log_error "Log file copy fail."
-    fi
-}
-
-
 #########################
 # Step: Send mail on completition 
 #########################
@@ -740,8 +731,7 @@ send_email_notification() {
     local status="$1"
     local duration="$2"
 
-    local tmp=${WORK_DIR#*PROC_}
-    local name=${tmp%%/SubProcesses*}
+    local name=$PROC_NAME
 
     local size=$(df -h | awk '/\/shared$/ {print $3}')
 
@@ -922,18 +912,12 @@ main() {
     local start_time=$(date +%s)
     
     # Execute all steps
-#    step1_copy_directories
-#        step0_5_copy_log
-#    step2_compile_all
-#        step0_5_copy_log
-#    step3_run_all_checks
-#        step0_5_copy_log
-#    step4_compare_all
-#        step0_5_copy_log
-#    step5_promise_analysis
-#        step0_5_copy_log
-#    step6_copy_results
-#        step0_5_copy_log
+    step1_copy_directories
+    step2_compile_all
+    step3_run_all_checks
+    step4_compare_all
+    step5_promise_analysis
+    step6_copy_results
     
     # Calculate duration
     local end_time=$(date +%s)
@@ -951,7 +935,6 @@ main() {
     if [ $MAIL_ON_SUCCESS == "true" ]; then
         send_email_notification "SUCCESS" "$duration" 
     fi
-    step0_5_copy_log
 }
 
 # Run main function
