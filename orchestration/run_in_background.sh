@@ -8,7 +8,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_NAME="${SCRIPT_DIR}/batch_orchestration.sh"
+SCRIPT_NAME="${SCRIPT_DIR}/${1}"
 
 # Color output
 RED='\033[0;31m'
@@ -39,7 +39,7 @@ fi
 chmod +x "$SCRIPT_NAME"
 
 # Set default log file
-WORK_DIR="${1:-.}"
+WORK_DIR="$(pwd)"
 LOG_FILE="${WORK_DIR}/background_process_$(date +%Y%m%d_%H%M%S).log"
 PID_FILE="${WORK_DIR}/background_process.pid"
 STATUS_FILE="${WORK_DIR}/background_process.status"
