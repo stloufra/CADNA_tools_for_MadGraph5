@@ -20,14 +20,14 @@ set -euo pipefail
 #########################
 
 # Directories
-INS_DIR=:"__ins"
+INS_DIR="__ins"
 
 MG5_PATH="${MG5_PATH:-./bin/mg5_aMC}"
 CADNA_TOOLBOX_PATH="${CADNA_TOOLBOX_PATH:-/path/to/cadna/toolbox}"
 ORCHESTRATION_SCRIPT="$CADNA_TOOLBOX_PATH/orchestration/orchestrate_process_evaluation.sh"
 
 # Logging
-BATCH_LOG_DIR="batch_logs_$(date +%Y%m%d_%H%M%S)"
+BATCH_LOG_DIR="$(pwd)/batch_logs_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$BATCH_LOG_DIR"
 
 #########################
@@ -145,7 +145,9 @@ process_file() {
     log_step "========================================="
     
     local step_start_time=$(date +%s)
-    
+
+    local starting_dir=$(pwd)    
+
     #########################
     # Step 1: Run mg5_aMC
     #########################
@@ -256,20 +258,30 @@ process_file() {
         fi
     done
     
-    # Check exit status
-    wait "$orch_pid" 2>/dev/null
-    local orch_exit_code=$?
+    # Check exit status by looking at the orchestration log
+    local orch_exit_code=1  # Assume failure
     
-    if [ $orch_exit_code -eq 0 ]; then
-        log_success "Orchestration completed successfully for $file_name"
+    if [ -f "$orch_log" ]; then
+        # Check if orchestration completed successfully
+        if grep -q "Process evaluation orchestration complete!" "$orch_log"; then
+            orch_exit_code=0
+            log_success "Orchestration completed successfully for $file_name"
+        elif grep -q "\[ERROR\].*Cleanup complete (script failed)" "$orch_log"; then
+            log_error "Orchestration failed for $file_name"
+            log_error "Check log: $orch_log"
+            
+            # Show last 20 lines of log
+            log_error "Last 20 lines of orchestration log:"
+            tail -20 "$orch_log" | sed 's/^/  | /'
+            
+            return 1
+        else
+            log_warn "Orchestration status unclear for $file_name"
+            log_warn "Check log: $orch_log"
+            # Don't return 1 - continue processing
+        fi
     else
-        log_error "Orchestration failed for $file_name (exit code: $orch_exit_code)"
-        log_error "Check log: $orch_log"
-        
-        # Show last 20 lines of log
-        log_error "Last 20 lines of orchestration log:"
-        tail -20 "$orch_log" | sed 's/^/  | /'
-        
+        log_error "Orchestration log not found: $orch_log"
         return 1
     fi
     
@@ -277,8 +289,8 @@ process_file() {
     # Step 6: Return to base directory
     #########################
     
-    cd - > /dev/null
-    
+    cd "$starting_dir"
+
     #########################
     # Step 7: Clean up (optional - can be disabled)
     #########################
