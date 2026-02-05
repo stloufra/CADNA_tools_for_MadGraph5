@@ -185,3 +185,45 @@ if data:
     plt.savefig(f"deviants.png")
     print(f"Deviants plot saved as deviants.png")
     plt.close()
+
+    # Scatter plot: log10(Matrix element) vs precision (< 3)
+    fig, ax = plt.subplots(figsize=(10, 7))
+    
+    for subdir, d in zip(valid_subdirs, data):
+        label = subdir.replace("P1_", "")
+    
+        me = np.array(d.matrix_element)
+        prec = np.array(d.matrixElementPrecision)
+    
+        mask = prec < 3
+        if not np.any(mask):
+            continue
+    
+        # Safe log10: ignore non-positive values
+        me_sel = me[mask]
+        prec_sel = prec[mask]
+    
+        positive_mask = np.abs(me_sel) > 0
+        me_sel = me_sel[positive_mask]
+        prec_sel = prec_sel[positive_mask]
+        prec_pert = np.random.uniform(-0.4,0.4, len(prec_sel))
+    
+        ax.scatter(
+            np.log10(np.abs(me_sel)),
+            prec_sel + prec_pert,
+            s=15,
+            alpha=0.7,
+            label=label
+        )
+    
+    ax.set_xlabel(r'$\log_{10}(|\mathrm{Matrix\ Element}|)$')
+    ax.set_ylabel('Matrix Element Precision')
+    ax.set_title(f'Precision vs Matrix Element for {process}')
+    ax.legend(title='Subprocess', fontsize=9)
+    ax.grid(True, linestyle='--', alpha=0.4)
+    
+    fig.tight_layout()
+    plt.savefig("precision_vs_matrix_element.png")
+    print("Scatter plot saved as precision_vs_matrix_element.png")
+    plt.close()
+

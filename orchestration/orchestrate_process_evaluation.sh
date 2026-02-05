@@ -698,6 +698,7 @@ step6_copy_results() {
         log_success "Histogram postprocess of result completed"
         cp combined_precision.png "$OUTPUT_PATH/$name/combined_precision_$name.png"
         cp deviants.png "$OUTPUT_PATH/$name/deviants_$name.png"
+        cp precision_vs_matrix_element.png "$OUTPUT_PATH/$name/precision_vs_matrix_element_$name.png"
     else 
        log_error "Histogram of results failed" 
        
@@ -779,7 +780,7 @@ EOF
 
     # Send mail via lxplus
     ssh -o BatchMode=yes "$USER@lxplus.cern.ch" \
-        "mailx -s \"$subject\" \"$USER@cern.ch\"" <<EOF
+        "mailx -s \"$subject\" \"$USER@cern.ch\"" > /dev/null 2>&1 <<EOF
 $email_body
 EOF
 }
@@ -838,6 +839,18 @@ trap handle_interrupt SIGINT SIGTERM
 #########################
 
 main() {
+
+    if [ ! -d "$OUTPUT_PATH/$PROC_NAME" ]; then
+        mkdir "$OUTPUT_PATH/$PROC_NAME"
+    fi
+
+    if [ -f "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt" ]; then
+        cp -f "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt" "$OUTPUT_PATH/$PROC_NAME/log_of_progress_old.txt"
+        touch "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt"
+    else
+        touch "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt"
+    fi
+
     log_info "========================================="
     log_info "Process Evaluation Orchestration Started"
     log_info "========================================="

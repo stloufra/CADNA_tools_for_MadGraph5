@@ -1,4 +1,5 @@
 #!/bin/bash
+SCRIPT_START_DIR="$(pwd)"
 
 #########################
 # MadGraph Batch Processor with Orchestration
@@ -358,23 +359,29 @@ main() {
     
     log_info "Processing $total_files files sequentially"
     echo ""
-    
+
     # Process each file
     for i in "${!files[@]}"; do
         local file="${files[$i]}"
         local file_number=$((i + 1))
         
+        log_info "=== Loop iteration $file_number of $total_files ==="
+        log_info "Processing: $file"
+        
         if process_file "$file" "$file_number" "$total_files"; then
-            ((processed++))
+            processed=$((processed + 1))
+            log_info "=== File $file_number succeeded, processed count: $processed ==="
         else
-            ((failed++))
+            failed=$((failed + 1))
             failed_files+=("$(basename "$file")")
+            log_warn "=== File $file_number failed, failed count: $failed ==="
         fi
         
+        log_info "=== End of iteration $file_number, continuing loop... ==="
         echo ""
     done
-    
-    # Summary
+
+       # Summary
     local end_time=$(date +%s)
     local total_duration=$((end_time - start_time))
     local total_hours=$((total_duration / 3600))
