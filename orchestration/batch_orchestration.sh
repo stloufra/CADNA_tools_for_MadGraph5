@@ -30,6 +30,7 @@ ORCHESTRATION_SCRIPT="$CADNA_TOOLBOX_PATH/orchestration/orchestrate_process_eval
 BATCH_LOG_DIR="$(pwd)/batch_logs_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$BATCH_LOG_DIR"
 
+SCRIPT_START_DIR="$(pwd)"
 #########################
 # Color output
 #########################
@@ -289,7 +290,7 @@ process_file() {
     # Step 6: Return to base directory
     #########################
     
-    cd "$starting_dir"
+    cd "$SCRIPT_START_DIR"
 
     #########################
     # Step 7: Clean up (optional - can be disabled)
