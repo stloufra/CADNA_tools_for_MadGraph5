@@ -44,7 +44,7 @@ class Data:
 cwd = os.getcwd()
 
 if cwd.split("/")[-1] != "SubProcesses":
-    exit("Not in SubProcesses dir")
+    #exit("Not in SubProcesses dir")
 
 process = cwd.split("/")[-2]
 process = process.replace("PROC_", "")
@@ -103,7 +103,7 @@ for subdir in subdirs:
             "Number of matrix elements and number of matrix element precisions is not the same. file causing trouble: " + subdir + "/" + f)
 
     for mp in d.matrixElementPrecision:
-        if mp == 0:
+        if mp <= 0:
             d.matrixElementPrecisionZeros += 1
         elif mp == 1:
             d.matrixElementPrecisionOnes += 1
@@ -146,23 +146,46 @@ if data:
     width = 0.25
 
     fig, ax = plt.subplots(figsize=(12, 7))
-    rects1 = ax.bar(x - width, zeros, width, label='Precision 0', color='blue')
-    rects2 = ax.bar(x, ones, width, label='Precision 1', color='green')
-    rects3 = ax.bar(x + width, twos, width, label='Precision 2', color='orange')
+    rects1 = ax.bar(x - width, zeros, width, label='Sig. digits 0', color='blue')
+    rects2 = ax.bar(x, ones, width, label='Sig. digits 1', color='green')
+    rects3 = ax.bar(x + width, twos, width, label='Sig. digits 2', color='orange')
 
     # Add labels above bars
     ax.bar_label(rects1, padding=0)
     ax.bar_label(rects2, padding=6)
-    ax.bar_label(rects3, padding=12)
+    ax.bar_label(rects3, padding=3)
 
     ax.set_xlabel('Subdirectories')
     ax.set_ylabel('Number of elements')
-    ax.set_title(f'Matrix Element Precision Comparison for {process}')
+    ax.set_title(f'Matrix Element Accuracy Comparison for {process}')
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=45, ha='right')
     ax.legend()
 
+    totals = np.array(zeros) + np.array(ones) + np.array(twos)
+    ratios = totals / 1e7 * 100.0
+
+    for i, (z, o, t, r) in enumerate(zip(zeros, ones, twos, ratios)):
+            ymax = max(z, o, t)
+            ax.text(
+                x[i],
+                ymax * 0.5,          # higher than bar labels
+                f"*{r:.2f} %",
+                ha="center",
+                va="bottom",
+                fontsize=10,
+                fontweight="bold"
+                )
+
+    ax.text(
+            0.5, 0.95, f"*Ratio of ME with sig. dig.  < 3 to all events",
+            transform=ax.transAxes,
+            ha="center",
+            fontweight="bold"
+           )
+
     fig.tight_layout()
+    bbox=dict(facecolor="white", alpha=0.7, edgecolor="none", pad=1)
     plt.savefig(f"combined_precision.png")
     print(f"Combined plot saved as combined_precision.png")
     plt.close()
@@ -217,8 +240,13 @@ if data:
         )
     
     ax.set_xlabel(r'$\log_{10}(|\mathrm{Matrix\ Element}|)$')
-    ax.set_ylabel('Matrix Element Precision')
-    ax.set_title(f'Precision vs Matrix Element for {process}')
+
+    ax.set_ylabel(    r"Sig. dig. "
+    r"$= \lfloor -\log_{10}(2\varepsilon) \rfloor$, "
+    r"$\varepsilon = \frac{ |ME_{\mathrm{FP64}} - ME_{\mathrm{FP32}}| }{ "
+    r"|ME_{\mathrm{FP64}} + ME_{\mathrm{FP32}}|}$")
+
+    ax.set_title(f'Accuarcy vs Matrix Element for {process}')
     ax.legend(title='Subprocess', fontsize=9)
     ax.grid(True, linestyle='--', alpha=0.4)
     
