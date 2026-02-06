@@ -110,8 +110,8 @@ def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecis
             break
     return matrixElementPrecisionZeros
 
-
-def parse_file_native(f, momentum, matrixElement):
+#parse the file
+def parse_file_woMomP(f, momentum, matrixElement, matrixElementPrecision, matrixElementPrecisionZeros):
     skipQ = True
     num_iter = 0
     while True:
@@ -131,7 +131,7 @@ def parse_file_native(f, momentum, matrixElement):
                 break
             lines.append(line)
         num_iter += 1
-        if num_iter%100000 == 0:
+        if num_iter%10000 == 0:
             print("Number iterations:", num_iter)
 
 
@@ -148,17 +148,46 @@ def parse_file_native(f, momentum, matrixElement):
                 if len(momentums) > 0:
                     momentum.append(momentums)
 
-            if "Matrix element = " in l:
+            if "Matrix element = " in l and "Matrix element number of sig dig = " in lines[i+1]:
                 pos = l.find("Matrix element = ")+len("Matrix element = ")
                 endpos = l.find("GeV^", pos)
                 # matrixElement.append(int(l[endpos+4:]))
-                matrixElement.append(float(l[pos:endpos]))
+                if("@" in l[pos:endpos]):
+                    matrixElementPrecisionZeros+=1
+                    if len(matrixElement)>0:
+                        matrixElement.append(1) #append previous value
+                    else:
+                        matrixElement.append(1) #append 1 if no previous value
+                else:
+                    matrixElement.append(float(l[pos:endpos]))
 
+            if "Matrix element number of sig dig = " in l:
+                pos = l.find("Matrix element number of sig dig = ")+len("Matrix element number of sig dig = ")
+                matrixElementPrecision.append(int(l[pos:pos+2]))
             i+=1
 
         if not line:
             break
-    return
+    return matrixElementPrecisionZeros
+
+
+def parse_file_native(f, matrixElement):
+    append = matrixElement.append
+    key = "Matrix element = "
+    unit = "GeV"
+    key_len = len(key)
+
+    for line in f:
+        pos = line.find(key)
+        if pos != -1:
+            end  = line.find(unit)
+            if end == -1:
+                raise ValueError(f"Malformed line: {line!r}")
+            start = pos + key_len
+            # fixed suffix " GeV^-6"
+            
+            append(float(line[start:end]))
+
 #return colinearity for the 3vec momenta
 def colinearity(m1, m2):
     m1 = m1[1:]

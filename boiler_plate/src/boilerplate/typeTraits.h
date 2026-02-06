@@ -52,16 +52,16 @@ using std::max;
 using std::min;
 using std::sqrt;
 
-template <typename FP>
-inline const FP&
-fpmax(const FP& a, const FP& b)
+//template <typename fptype>
+inline const fptype&
+fpmax(const fptype& a, const fptype& b)
 {
     return max(a, b);
 }
 
-template <typename FP>
-inline const FP&
-fpmin(const FP& a, const FP& b)
+//template <typename fptype>
+inline const fptype&
+fpmin(const fptype& a, const fptype& b)
 {
     return min(a, b);
 }

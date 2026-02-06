@@ -6,11 +6,21 @@
 # -------------------------------
 
 import os
+import re
 import shutil
-import momnetumParser as mpr
+import srcpy.momnetumParser as mpr
+
+CADNA_TOOLBOX_PATH = os.environ.get(
+    "CADNA_TOOLBOX_PATH",
+    "/path/to/cadna/toolbox"
+)
+
+PROMISE_TOOLBOX_PATH = os.environ.get(
+    "PROMISE_TOOLBOX_PATH",
+    "/path/to/cadna/toolbox"
+)
 
 def numberOfBadMomenta(subprocess_dir, precision_threshold = 3):
-
     if os.path.exists("gdb_run_output_float-O3_1.out"):
         f = open( "gdb_run_output_float-O3_1.out", 'r')
     else:
@@ -23,6 +33,7 @@ def numberOfBadMomenta(subprocess_dir, precision_threshold = 3):
     momentum = []
     momentaPrecision = []
 
+    print("Got here")
     # parse the file
     matrixElementPrecisionZeros = mpr.parse_file(f, momentum, momentaPrecision, matrix_element, matrixElementPrecision,
                                                  matrixElementPrecisionZeros)
@@ -32,7 +43,44 @@ def numberOfBadMomenta(subprocess_dir, precision_threshold = 3):
             count += 1
 
 #    count += matrixElementPrecisionZeros
+    print("Count is" + str(count))
     return count
+
+def numberOfBadMomenta_native(num_lines=100):
+    if os.path.exists("gdb_run_output_float-O3_1.out"):
+       filepath="gdb_run_output_float-O3_1.out"
+    else:
+        print("No file gdb_run_output_float-O3_1.out")
+        return 0
+
+
+    pattern = re.compile(r'Momenta: for event (\d+) \(\d+\)')
+    
+    try:
+        with open(filepath, 'rb') as f:
+            # Seek to end
+            f.seek(0, 2)
+            file_size = int(f.tell())
+            
+            estimated_bytes = num_lines * 80
+            start_pos = max(0, file_size - estimated_bytes)
+            f.seek(start_pos)
+            
+            content = f.read().decode('utf-8', errors='ignore')
+            lines = content.split('\n')
+            
+            for line in reversed(lines):
+                match = pattern.search(line)
+                if match:
+                    return int(match.group(1))
+                #else:
+                    #return numberOfBadMomenta_native(1000)
+                    
+    except (FileNotFoundError, IOError) as e:
+        print(f"Error reading {filepath}: {e}")
+        return None
+    
+    return None
 
 def change_nevt_main(nevt):
     with open("main.cpp", "r") as f:
@@ -47,8 +95,8 @@ def change_nevt_main(nevt):
 
 # create dir and cd
 # TODO: make a env. var.
-CADNA_toolbox_path = "/Users/stloufra/git/CADNA_tools_for_MadGraph5/boiler_plate"
-PROMISE_env_path = '/Users/stloufra/git/promiseOld/.venv/bin/activate'
+CADNA_toolbox_path = CADNA_TOOLBOX_PATH + "/boiler_plate"
+PROMISE_env_path = PROMISE_TOOLBOX_PATH
 Current_path = os.getcwd()
 os.makedirs(Current_path + "/boiler_plate", exist_ok=True)
 os.chdir(Current_path + "/boiler_plate")
@@ -127,13 +175,14 @@ os.system("python3 promisesHelAmps.py > /dev/null 2>&1")
 os.chdir(Current_path)
 
 print(" 6) Setting number of bad momenta")
-nb = numberOfBadMomenta(Current_path)
+#nb = numberOfBadMomenta(Current_path)
+nb = numberOfBadMomenta_native()
 print("Number of bad momenta: " + str(nb))
 change_nevt_main(nb)
 
 #source promise enviroment
 print(" 6) Running promise")
-os.system("source " + PROMISE_env_path)
+os.system("source " + PROMISE_env_path +".venv/bin/activate")
 os.system("promise --precs=sd --nbDigits=3 --verbosity=1")
 
 

@@ -5,7 +5,6 @@
 #include "src/boilerplate/read_momenta.h"
 #include "src/accesses/MemoryAccessMomenta.h"
 #include "src/boilerplate/fillers.h"
-#include <chrono>
 
 int main(int argc, char* argv[])
 {
@@ -17,9 +16,12 @@ int main(int argc, char* argv[])
 
     std::cout << "nevt = " << nevt << std::endl;
 
+
     HostBufferMomenta hstMomenta(nevt);
+    HostBufferMatrixElements hstMe(nevt);
     HostBufferGs hstGs(nevt);
     HostBufferSelectedHelicity hstSelHel(nevt);
+    HostBufferCouplings hstCoup(nevt);
     HostBufferRndNumHelicity hstRndHel(nevt);
     HostBufferHelicityMask hstIsGoodHel(CPPProcess::ncomb);
 
@@ -44,9 +46,6 @@ int main(int argc, char* argv[])
     const int nGoodHel = sigmaKin_setGoodHel(hstIsGoodHel.data());
 
     sigmaKin(hstMomenta.data(), hstCoup.data(), hstRndHel.data(), hstMe.data(), hstSelHel.data(), nevt);
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count()/1.0e9 << "s" << std::endl;
-    //---
 
 #ifdef __CADNA
     printMEandPreccision(hstMomenta, hstMe, nevt, true);

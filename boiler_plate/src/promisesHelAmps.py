@@ -783,7 +783,7 @@ with open('CPPProcess.cc', 'w') as f:
 print("Generated FT types:")
 print("=" * 50)
 for ft_type in ft_types:
-    print(f"typedef __PR_{ft_type.strip().replace("_","").replace("FT","")}__  {ft_type};")
+    print(f"typedef __PR_{ft_type.strip().replace('_','').replace('FT','')}__  {ft_type};")
 print("=" * 50)
 for ft_type in ft_types:
     print(f"typedef float {ft_type};")
