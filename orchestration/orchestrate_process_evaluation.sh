@@ -734,7 +734,7 @@ send_email_notification() {
 
     local name=$PROC_NAME
 
-    local size=$(df -h | awk '/\/shared$/ {print $3}')
+    local size=$(du -sh . | cut -f1)
 
     # Skip if email disabled
     if [ "$MAIL_ON_SUCCESS" != "true" ]; then

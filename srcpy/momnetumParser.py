@@ -174,14 +174,19 @@ def parse_file_woMomP(f, momentum, matrixElement, matrixElementPrecision, matrix
 def parse_file_native(f, matrixElement):
     append = matrixElement.append
     key = "Matrix element = "
+    unit = "GeV"
     key_len = len(key)
 
     for line in f:
         pos = line.find(key)
         if pos != -1:
+            end  = line.find(unit)
+            if end == -1:
+                raise ValueError(f"Malformed line: {line!r}")
             start = pos + key_len
             # fixed suffix " GeV^-6"
-            append(float(line[start:-8]))
+            
+            append(float(line[start:end]))
 
 #return colinearity for the 3vec momenta
 def colinearity(m1, m2):
