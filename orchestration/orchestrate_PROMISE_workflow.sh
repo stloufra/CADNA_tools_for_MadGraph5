@@ -110,6 +110,7 @@ NC='\033[0m' # No Color
 #########################
 # Step 0.5: Copy log file to EOS
 #########################
+
 log_to_outputpath() {
     local msg="$1"
     local status="$2"
@@ -166,7 +167,7 @@ step1_copy_directories() {
             cp -r "$dir" "$float_dir"
         fi
     done
-    
+
     log_success "Step 1 completed"
 }
 
@@ -235,8 +236,7 @@ compile_directory() {
 
 step2_compile_all() {
     log_info "Step 2: Compiling all directories serially and launching check_cpp.exe..."
-    log_info "Note: check_cpp.exe must launch immediately after compilation"
-    log_info "      because next distclean will delete the executable"
+
     
     cd "$WORK_DIR"
     
@@ -351,8 +351,7 @@ count_running_check_cpp() {
 
 step3_run_all_checks() {
     log_info "Step 3: Waiting for all check_cpp.exe processes to complete..."
-    log_info "Note: All processes were already launched in Step 2"
-    
+
     cd "$WORK_DIR"
     
     if [ ${#CHECK_CPP_PIDS[@]} -eq 0 ]; then

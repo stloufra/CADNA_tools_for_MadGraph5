@@ -193,7 +193,7 @@ done
 
 echo
 echo "          cadnize_std_replace.py"
-files=(../../src/mgOnGpuFptypes.h ../../src/HelAmps_sm.h ../CrossSectionKernels.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
+files=(../../src/mgOnGpuFptypes.h ../../src/HelAmps_sm.h CrossSectionKernels.cc ../CrossSectionKernels.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
 for file in "${files[@]}"
 do
     python3  $CURRENT_DIR/srcpy/cadnize_std_replace.py $file
