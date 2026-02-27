@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matrix_element_fl, matrixElementPrecision_fl):
-    #plot scatter plot of colinearities vs matrix element precision to observe the colinearity limit
+    #plot scatter plot of colinearities vs Sig. digits to observe the colinearity limit
     fig, ax = plt.subplots()
-    plt.title("Colinearities vs matrix element precision for: "+process+" "+precision+" "+optimisation)
+    plt.title("Colinearities vs Sig. digits for: "+process+" "+precision+" "+optimisation)
     plt.xlabel("Colinearity")
-    plt.ylabel("Digits of precision")
+    plt.ylabel("Sig. digits")
     #keep outliers
     y_perturbation = np.random.uniform(-0.4, 0.4, matrixElementPrecision_fl.size)
     max_col = []
@@ -27,7 +27,7 @@ def plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matr
     plt.close()
     #Colinearities vs matrix element
     fig, ax = plt.subplots()
-    plt.title("Max colinearities vs matrix element precision for: "+process+" "+precision+" "+optimisation)
+    plt.title("Max colinearities vs Sig. digits for: "+process+" "+precision+" "+optimisation)
     plt.xlabel("Max. abs. colinearity")
     plt.ylabel("Log10 of matrix element")
     #keep outliers
@@ -41,9 +41,9 @@ def plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matr
 
 def plotScat_EratiossMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par):
 
-    plt.title("Max Energy ratio vs matrix element precision for: "+process+" "+precision+" "+optimisation)
+    plt.title("Max Energy ratio vs Sig. digits for: "+process+" "+precision+" "+optimisation)
     plt.xlabel("Energy ratio")
-    plt.ylabel("Digits of precision")
+    plt.ylabel("Sig. digits")
 
     max = np.max(energys, axis=1)
     min = np.min(energys, axis=1)
@@ -71,7 +71,7 @@ def plotScat_EratiossMEP(process, precision, optimisation, energys, colinearitie
 
 
 def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par, withoutFirstTwo = True):
-    #Energys vs matrix element precision
+    #Energys vs Sig. digits
     fig, ax = plt.subplots(figsize=(10, 6))
     if withoutFirstTwo:
        flag = " without first two"
@@ -80,9 +80,9 @@ def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, ma
         flag=""
         start = 0
 
-    plt.title("Energys vs matrix element precision for: "+process+" "+precision+" "+optimisation+flag)
+    plt.title("Energys vs Sig. digits for: "+process+" "+precision+" "+optimisation+flag)
     plt.xlabel("Energy")
-    plt.ylabel("Digits of precision")
+    plt.ylabel("Sig. digits")
 
     # Define colors for each particle
     colors = plt.cm.tab10(np.linspace(0, 1, nb_par))  # Use colormap for distinct colors
@@ -157,7 +157,7 @@ def plot_combined(process, precision, optimisation,
     plt.figure(figsize=(9, 6))
     plt.title(f"Precision vs Maximal absolute pairwise collinearity\n{process} {precision} {optimisation}")
     plt.xlabel("Max. abs. collinearity")
-    plt.ylabel("Digits of precision")
+    plt.ylabel("Sig. digits")
 
     plt.scatter(max_col, precision_arr + y_perturbation,
                 s=4, c=colors, alpha=0.7)
@@ -196,12 +196,12 @@ def plot_combined(process, precision, optimisation,
     plt.close()
 
 def plotScat_MEvsMEP(process, precision, optimisation, matrixElementPrecision_fl, matrixElementPrecisionZeros, matrix_element_fl):
-    # scatter plot of matrix element precision vs matrix element
+    # scatter plot of Sig. digits vs matrix element
     fig, ax = plt.subplots()
     zeros = matrixElementPrecisionZeros
-    plt.title("Matrix element precision vs matrix element for: "+process+" "+precision+" "+optimisation+"\n Plus "+str(zeros)+" zero precision.")
+    plt.title("Sig. digits vs matrix element for: "+process+" "+precision+" "+optimisation+"\n Plus "+str(zeros)+" zero precision.")
     plt.xlabel("log10(Matrix element)")
-    plt.ylabel("Digits of precision")
+    plt.ylabel("Sig. digits")
     #delete outliers. Outlier is a value that is more than 5 standard deviations away from the mean
 
     matrixElementPrecision_fl = np.array(matrixElementPrecision_fl,dtype=float)
@@ -224,7 +224,7 @@ def plotScat_MOPvsMO(process, precision, optimisation, momentaPrecision_fl, mome
         "Momenta precision vs momentum_fl for: " + process + " " + precision + " " + optimisation + "\n Plus " + str(
             zeros) + " zero precision.")
     plt.xlabel("momentum_fl")
-    plt.ylabel("Digits of precision")
+    plt.ylabel("Sig. digits")
     # delete outliers. Outlier is a value that is more than 5 standard deviations away from the mean
 
     momentaPrecision_fl = np.array(momentaPrecision_fl, dtype=float)
@@ -311,7 +311,7 @@ def plotScat_MomentumMagnitudeVsMEP(process, precision, optimisation, momentum, 
                       alpha=0.6)
 
         ax.set_xlabel(xlabel)
-        ax.set_ylabel('Digits of precision')
+        ax.set_ylabel('Sig. digits')
         ax.set_title(f'{title} vs Precision')
         ax.legend(markerscale=5, loc='best')
         ax.grid(True, alpha=0.3)
@@ -326,7 +326,7 @@ def plotScat_MomentumMagnitudeVsMEP(process, precision, optimisation, momentum, 
     plt.close()
 def plotScat_MomentumComponentsVsMEP(process, precision, optimisation, momentum, matrixElementPrecision_fl, nb_par, withoutFirstTwo = True):
     """
-    Three separate 2D plots for px, py, pz vs matrix element precision
+    Three separate 2D plots for px, py, pz vs Sig. digits
     momentum shape: [nb_me, nb_par, 4] where [E, px, py, pz]
     """
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
@@ -362,7 +362,7 @@ def plotScat_MomentumComponentsVsMEP(process, precision, optimisation, momentum,
                       alpha=0.6)
 
         ax.set_xlabel(f'{name} [GeV]')
-        ax.set_ylabel('Digits of precision')
+        ax.set_ylabel('Sig. digits')
         ax.set_title(f'{name} vs Precision')
         ax.legend(markerscale=5, loc='best')
         ax.grid(True, alpha=0.3)
@@ -376,10 +376,10 @@ def plotScat_MomentumComponentsVsMEP(process, precision, optimisation, momentum,
     plt.savefig(dir+"/scatter_momentum_components_MEP_"+process+"_"+precision+"_"+optimisation[1:]+".png", dpi=150)
     plt.close()
 def plotHis_MEP(process, precision, optimisation, matrixElementPrecision_fl, matrixElementPrecisionZeros):
-    # plot histogram of matrix element precision
+    # plot histogram of Sig. digits
     fig, ax = plt.subplots()
-    plt.title("Matrix element precision for: "+process+" "+precision+" "+optimisation)
-    plt.xlabel("Digits of precision.        Sum = "+str(len(matrixElementPrecision_fl)))#'''+matrixElementPrecisionZeros'''))
+    plt.title("Sig. digits for: "+process+" "+precision+" "+optimisation)
+    plt.xlabel("Sig. digits.        Sum = "+str(len(matrixElementPrecision_fl)))#'''+matrixElementPrecisionZeros'''))
     counts, edges, bars = ax.hist(matrixElementPrecision_fl, histtype='barstacked',bins=range(0, int(max(matrixElementPrecision_fl))+2))
     plt.bar_label(bars)
     #show the mean in neat way
@@ -401,7 +401,7 @@ def plotHis_MOP(process, precision, optimisation, momentaPrecision_fl, momentaPr
     # plot histogram of momenta precision
     fig, ax = plt.subplots()
     plt.title("Momenta precision for: "+process+" "+precision+" "+optimisation)
-    plt.xlabel("Digits of precision.        Sum = "+str(len(momentaPrecision_fl)))#+momentaPrecisionZeros))
+    plt.xlabel("Sig. digits.        Sum = "+str(len(momentaPrecision_fl)))#+momentaPrecisionZeros))
     counts, edges, bars = ax.hist(momentaPrecision_fl, histtype='barstacked',color='orange',bins=range(0, int(max(momentaPrecision_fl))+2))
     plt.bar_label(bars)
     #show the mean in neat way
