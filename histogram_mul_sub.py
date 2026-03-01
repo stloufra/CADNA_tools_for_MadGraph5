@@ -23,20 +23,20 @@ class bcolors:
 class Data:
     # "Matrix element = "
     matrix_element: List[Any] = field(default_factory=list)
-    matrixElementPrecision: List[Any] = field(default_factory=list)
+    matrixElementAccuracy: List[Any] = field(default_factory=list)
     maxCol: List[Any] = field(default_factory=list)
     maxSoft: List[Any] = field(default_factory=list)
     deviants: int = 0
-    matrixElementPrecisionZeros: int = 0
-    matrixElementPrecisionOnes: int = 0
-    matrixElementPrecisionTwos: int = 0
+    matrixElementAccuracyZeros: int = 0
+    matrixElementAccuracyOnes: int = 0
+    matrixElementAccuracyTwos: int = 0
 
     # "Momentum: "
 
     momentum: List[Any] = field(default_factory=list)
-    momentaPrecision: List[Any] = field(default_factory=list)
+    momentaAccuracy: List[Any] = field(default_factory=list)
     colinearities: List[Any] = field(default_factory=list)
-    momentaPrecisionZeros: int = 0
+    momentaAccuracyZeros: int = 0
 
 
 # begining of the postprocess
@@ -95,20 +95,20 @@ for subdir in subdirs:
     ff = open(f, "r")
 
     # parse the file
-    d.matrixElementPrecisionZeros = mpr.parse_file_woMomP(ff, d.momentum, d.matrix_element,
-                                                   d.matrixElementPrecision, d.matrixElementPrecisionZeros)
+    d.matrixElementAccuracyZeros = mpr.parse_file_woMomP(ff, d.momentum, d.matrix_element,
+                                                   d.matrixElementAccuracy, d.matrixElementAccuracyZeros)
 
-    if (len(d.matrixElementPrecision) != len(d.matrix_element)):
+    if (len(d.matrixElementAccuracy) != len(d.matrix_element)):
         exit(
-            "Number of matrix elements and number of matrix element precisions is not the same. file causing trouble: " + subdir + "/" + f)
+            "Number of matrix elements and number of matrix element accuracys is not the same. file causing trouble: " + subdir + "/" + f)
 
-    for mp in d.matrixElementPrecision:
+    for mp in d.matrixElementAccuracy:
         if mp <= 0:
-            d.matrixElementPrecisionZeros += 1
+            d.matrixElementAccuracyZeros += 1
         elif mp == 1:
-            d.matrixElementPrecisionOnes += 1
+            d.matrixElementAccuracyOnes += 1
         elif mp == 2:
-            d.matrixElementPrecisionTwos += 1
+            d.matrixElementAccuracyTwos += 1
 
     nb_events = len(d.momentum)
     nb_par = len(d.momentum[0])
@@ -125,7 +125,7 @@ for subdir in subdirs:
         d.maxSoft.append(max(soft))
 
     for ev in range(nb_events):
-        if d.matrixElementPrecision[ev] < 3:
+        if d.matrixElementAccuracy[ev] < 3:
             if d.maxCol[ev] < 0.995 and d.maxSoft[ev] < 50:
                 d.deviants += 1
         else:
@@ -138,9 +138,9 @@ for subdir in subdirs:
 # Plotting combined results
 if data:
     names = [s.replace("P1_", "") for s in valid_subdirs]
-    zeros = [d.matrixElementPrecisionZeros for d in data]
-    ones = [d.matrixElementPrecisionOnes for d in data]
-    twos = [d.matrixElementPrecisionTwos for d in data]
+    zeros = [d.matrixElementAccuracyZeros for d in data]
+    ones = [d.matrixElementAccuracyOnes for d in data]
+    twos = [d.matrixElementAccuracyTwos for d in data]
 
     x = np.arange(len(names))
     width = 0.25
@@ -186,8 +186,8 @@ if data:
 
     fig.tight_layout()
     bbox=dict(facecolor="white", alpha=0.7, edgecolor="none", pad=1)
-    plt.savefig(f"combined_precision.png")
-    print(f"Combined plot saved as combined_precision.png")
+    plt.savefig(f"combined_accuracy.png")
+    print(f"Combined plot saved as combined_accuracy.png")
     plt.close()
 
     # Plotting deviants
@@ -209,14 +209,14 @@ if data:
     print(f"Deviants plot saved as deviants.png")
     plt.close()
 
-    # Scatter plot: log10(Matrix element) vs precision (< 3)
+    # Scatter plot: log10(Matrix element) vs accuracy (< 3)
     fig, ax = plt.subplots(figsize=(10, 7))
     
     for subdir, d in zip(valid_subdirs, data):
         label = subdir.replace("P1_", "")
     
         me = np.array(d.matrix_element)
-        prec = np.array(d.matrixElementPrecision)
+        prec = np.array(d.matrixElementAccuracy)
     
         mask = prec < 3
         if not np.any(mask):
@@ -251,7 +251,7 @@ if data:
     ax.grid(True, linestyle='--', alpha=0.4)
     
     fig.tight_layout()
-    plt.savefig("precision_vs_matrix_element.png")
-    print("Scatter plot saved as precision_vs_matrix_element.png")
+    plt.savefig("accuracy_vs_matrix_element.png")
+    print("Scatter plot saved as accuracy_vs_matrix_element.png")
     plt.close()
 

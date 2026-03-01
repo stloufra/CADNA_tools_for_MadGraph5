@@ -1,6 +1,7 @@
 #!/bin/bash
-CURRENT_DIR=${0%/*}
- echo $CURRENT_DIR
+set -e
+CURRENT_DIR=$(cd "$(dirname "$0")" && pwd)
+echo $CURRENT_DIR
 # Display help message
 if [[ " $* " =~ " --help" ]] || [[ " $* " =~ " -h" ]]; then
     echo "Usage: $(basename $0) [OPTIONS]"
@@ -193,7 +194,7 @@ done
 
 echo
 echo "          cadnize_std_replace.py"
-files=(../../src/mgOnGpuFptypes.h ../../src/HelAmps_sm.h CrossSectionKernels.cc ../CrossSectionKernels.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
+files=(../../src/mgOnGpuFptypes.h ../../src/HelAmps_sm.h ../CrossSectionKernels.cc fsampler.cc MadgraphTest.h testxxx.cc runTest.cc)
 for file in "${files[@]}"
 do
     python3  $CURRENT_DIR/srcpy/cadnize_std_replace.py $file

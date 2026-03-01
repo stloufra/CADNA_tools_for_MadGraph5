@@ -40,12 +40,12 @@ def parse_momentum(string):
     #map -> lazy iter -> list(regular list) -> np.array
     return np.array(list(map(string_to_float, m[1:]))) #first one is the particle number, dont want it [1:]
 
-def parse_momentum_precision(string):
+def parse_momentum_accuracy(string):
     split = string.split() #just split by spaces
     return np.array(list(map(int, split)))
 
 #parse the file
-def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecision, matrixElementPrecisionZeros):
+def parse_file(f, momentum, momentaAccuracy, matrixElement, matrixElementAccuracy, matrixElementAccuracyZeros):
     skipQ = True
     num_iter = 0
     while True:
@@ -71,29 +71,29 @@ def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecis
 
         i=0
         for l in lines:
-            #parse momenta and momenta precision
+            #parse momenta and momenta accuracy
             if "Momenta:" in l:
                 j=1
                 momentums=[]
-                momentumsPrecision=[]
+                momentumsAccuracy=[]
                 while not "---" in lines[i+j]:
                     momentums.append(parse_momentum(lines[i+j]))
                     if len(lines)>6:
-                        momentumsPrecision.append(parse_momentum_precision(lines[i+j+1]))
+                        momentumsAccuracy.append(parse_momentum_accuracy(lines[i+j+1]))
                         j+=1
                     j+=1
                 # Add the parsed momentums to the momentum list
                 if len(momentums) > 0:
                     momentum.append(momentums)
-                if len(momentumsPrecision) > 0:
-                    momentaPrecision.append(momentumsPrecision)
+                if len(momentumsAccuracy) > 0:
+                    momentaAccuracy.append(momentumsAccuracy)
 
             if "Matrix element = " in l and "Matrix element number of sig dig = " in lines[i+1]:
                 pos = l.find("Matrix element = ")+len("Matrix element = ")
                 endpos = l.find("GeV^", pos)
                 # matrixElement.append(int(l[endpos+4:]))
                 if("@" in l[pos:endpos]):
-                    matrixElementPrecisionZeros+=1
+                    matrixElementAccuracyZeros+=1
                     if len(matrixElement)>0:
                         matrixElement.append(1) #append previous value
                     else:
@@ -103,15 +103,15 @@ def parse_file(f, momentum, momentaPrecision, matrixElement, matrixElementPrecis
 
             if "Matrix element number of sig dig = " in l:
                 pos = l.find("Matrix element number of sig dig = ")+len("Matrix element number of sig dig = ")
-                matrixElementPrecision.append(int(l[pos:pos+2]))
+                matrixElementAccuracy.append(int(l[pos:pos+2]))
             i+=1
 
         if not line:
             break
-    return matrixElementPrecisionZeros
+    return matrixElementAccuracyZeros
 
 #parse the file
-def parse_file_woMomP(f, momentum, matrixElement, matrixElementPrecision, matrixElementPrecisionZeros):
+def parse_file_woMomP(f, momentum, matrixElement, matrixElementAccuracy, matrixElementAccuracyZeros):
     skipQ = True
     num_iter = 0
     while True:
@@ -137,7 +137,7 @@ def parse_file_woMomP(f, momentum, matrixElement, matrixElementPrecision, matrix
 
         i=0
         for l in lines:
-            #parse momenta and momenta precision
+            #parse momenta and momenta accuracy
             if "Momenta:" in l:
                 j=1
                 momentums=[]
@@ -153,7 +153,7 @@ def parse_file_woMomP(f, momentum, matrixElement, matrixElementPrecision, matrix
                 endpos = l.find("GeV^", pos)
                 # matrixElement.append(int(l[endpos+4:]))
                 if("@" in l[pos:endpos]):
-                    matrixElementPrecisionZeros+=1
+                    matrixElementAccuracyZeros+=1
                     if len(matrixElement)>0:
                         matrixElement.append(1) #append previous value
                     else:
@@ -163,12 +163,12 @@ def parse_file_woMomP(f, momentum, matrixElement, matrixElementPrecision, matrix
 
             if "Matrix element number of sig dig = " in l:
                 pos = l.find("Matrix element number of sig dig = ")+len("Matrix element number of sig dig = ")
-                matrixElementPrecision.append(int(l[pos:pos+2]))
+                matrixElementAccuracy.append(int(l[pos:pos+2]))
             i+=1
 
         if not line:
             break
-    return matrixElementPrecisionZeros
+    return matrixElementAccuracyZeros
 
 
 def parse_file_native(f, matrixElement):

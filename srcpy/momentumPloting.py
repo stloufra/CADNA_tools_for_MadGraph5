@@ -2,14 +2,14 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matrix_element_fl, matrixElementPrecision_fl):
+def plotScat_COLvsMEandMEP(process, accuracy, optimisation, colinearities, matrix_element_fl, matrixElementAccuracy_fl):
     #plot scatter plot of colinearities vs Sig. digits to observe the colinearity limit
     fig, ax = plt.subplots()
-    plt.title("Colinearities vs Sig. digits for: "+process+" "+precision+" "+optimisation)
+    plt.title("Colinearities vs Sig. digits for: "+process+" "+accuracy+" "+optimisation)
     plt.xlabel("Colinearity")
     plt.ylabel("Sig. digits")
     #keep outliers
-    y_perturbation = np.random.uniform(-0.4, 0.4, matrixElementPrecision_fl.size)
+    y_perturbation = np.random.uniform(-0.4, 0.4, matrixElementAccuracy_fl.size)
     max_col = []
     for i in colinearities:
         max_col.append(np.max(np.abs(i)))
@@ -19,15 +19,15 @@ def plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matr
     for idx in top3_indices:
         print(f"  Event {idx}: colinearity = {max_col[idx]}")'''
 
-    plt.scatter(max_col, matrixElementPrecision_fl+y_perturbation,s=0.1)
+    plt.scatter(max_col, matrixElementAccuracy_fl+y_perturbation,s=0.1)
     dir = "histograms/colinearities_energys_"+process
     if not os.path.exists(dir):
         os.makedirs(dir)
-    plt.savefig(dir+"/scatter_colinearities_MEP_"+process+"_"+precision+"_"+optimisation[1:]+".png" )
+    plt.savefig(dir+"/scatter_colinearities_MEP_"+process+"_"+accuracy+"_"+optimisation[1:]+".png" )
     plt.close()
     #Colinearities vs matrix element
     fig, ax = plt.subplots()
-    plt.title("Max colinearities vs Sig. digits for: "+process+" "+precision+" "+optimisation)
+    plt.title("Max colinearities vs Sig. digits for: "+process+" "+accuracy+" "+optimisation)
     plt.xlabel("Max. abs. colinearity")
     plt.ylabel("Log10 of matrix element")
     #keep outliers
@@ -35,13 +35,13 @@ def plotScat_COLvsMEandMEP(process, precision, optimisation, colinearities, matr
     dir = "histograms/colinearities_energys_"+process
     if not os.path.exists(dir):
         os.makedirs(dir)
-    plt.savefig(dir+"/scatter_colinearities_ME_"+process+"_"+precision+"_"+optimisation[1:]+".png" )
+    plt.savefig(dir+"/scatter_colinearities_ME_"+process+"_"+accuracy+"_"+optimisation[1:]+".png" )
     plt.close()
 
 
-def plotScat_EratiossMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par):
+def plotScat_EratiossMEP(process, accuracy, optimisation, energys, colinearities, matrixElementAccuracy_fl, nb_par):
 
-    plt.title("Max Energy ratio vs Sig. digits for: "+process+" "+precision+" "+optimisation)
+    plt.title("Max Energy ratio vs Sig. digits for: "+process+" "+accuracy+" "+optimisation)
     plt.xlabel("Energy ratio")
     plt.ylabel("Sig. digits")
 
@@ -56,21 +56,21 @@ def plotScat_EratiossMEP(process, precision, optimisation, energys, colinearitie
         print(f"  Event {idx}: ratio = {ratio[idx]}")'''
 
     # Plot each particle with different color
-    y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementPrecision_fl))
+    y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementAccuracy_fl))
 
     plt.scatter(ratio,
-                matrixElementPrecision_fl + y_perturbation,
+                matrixElementAccuracy_fl + y_perturbation,
                 s=1,
                 alpha=0.6)
 
     dir = "histograms"
     if not os.path.exists(dir):
         os.makedirs(dir)
-    plt.savefig(dir+"/scatter_energys_ratios_MEP_"+process+"_"+precision+"_"+optimisation[1:]+".png", dpi=150)
+    plt.savefig(dir+"/scatter_energys_ratios_MEP_"+process+"_"+accuracy+"_"+optimisation[1:]+".png", dpi=150)
     plt.close()
 
 
-def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, matrixElementPrecision_fl, nb_par, withoutFirstTwo = True):
+def plotScat_EvsMEP(process, accuracy, optimisation, energys, colinearities, matrixElementAccuracy_fl, nb_par, withoutFirstTwo = True):
     #Energys vs Sig. digits
     fig, ax = plt.subplots(figsize=(10, 6))
     if withoutFirstTwo:
@@ -80,7 +80,7 @@ def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, ma
         flag=""
         start = 0
 
-    plt.title("Energys vs Sig. digits for: "+process+" "+precision+" "+optimisation+flag)
+    plt.title("Energys vs Sig. digits for: "+process+" "+accuracy+" "+optimisation+flag)
     plt.xlabel("Energy")
     plt.ylabel("Sig. digits")
 
@@ -93,10 +93,10 @@ def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, ma
         particle_energies = energys[:, particle_idx]
 
         # Add small perturbation to avoid overlapping points
-        y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementPrecision_fl))
+        y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementAccuracy_fl))
 
         plt.scatter(particle_energies,
-                   matrixElementPrecision_fl + y_perturbation,
+                   matrixElementAccuracy_fl + y_perturbation,
                    s=1,
                    color=colors[particle_idx],
                    label=f'Particle {particle_idx + 1}',
@@ -106,27 +106,27 @@ def plotScat_EvsMEP(process, precision, optimisation, energys, colinearities, ma
     dir = "histograms/colinearities_energys_"+process
     if not os.path.exists(dir):
         os.makedirs(dir)
-    plt.savefig(dir+"/scatter_energys_MEP_"+process+"_"+precision+"_"+optimisation[1:]+".png", dpi=150)
+    plt.savefig(dir+"/scatter_energys_MEP_"+process+"_"+accuracy+"_"+optimisation[1:]+".png", dpi=150)
     plt.close()
 
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-def plot_combined(process, precision, optimisation,
-                  energys, colinearities, matrixElementPrecision_fl):
+def plot_combined(process, accuracy, optimisation,
+                  energys, colinearities, matrixElementAccuracy_fl):
 
     max_col = np.array([np.max(np.abs(c)) for c in colinearities])
     max_E = np.max(energys, axis=1)
     min_E = np.min(energys, axis=1)
     ratio = max_E / min_E
 
-    precision_arr = np.array(matrixElementPrecision_fl)
+    accuracy_arr = np.array(matrixElementAccuracy_fl)
 
     # Categories
     cat1 = max_col > 0.995
     cat2 = ratio > 50
-    cat3 = (~cat1 & ~cat2) & (precision_arr < 3)
+    cat3 = (~cat1 & ~cat2) & (accuracy_arr < 3)
     cat4 = ~(cat1 | cat2 | cat3)
 
     colors = np.empty(len(max_col), dtype=object)
@@ -146,20 +146,20 @@ def plot_combined(process, precision, optimisation,
     labels = [
         f"Max. abs. collinearity > 0.995  — {stat(cat1)}",
         f"Max. energy ratio > 50     — {stat(cat2)}",
-        f"Precision < 3 (others) — {stat(cat3)}",
+        f"Significant digits < 3 (others) — {stat(cat3)}",
         f"Remaining points       — {stat(cat4)}"
     ]
 
-    # --- Apply jitter in precision for readability ---
+    # --- Apply jitter in accuracy for readability ---
     y_perturbation = np.random.uniform(-0.4, 0.4, N)
 
     # --- Plotting ---
     plt.figure(figsize=(9, 6))
-    plt.title(f"Precision vs Maximal absolute pairwise collinearity\n{process} {precision} {optimisation}")
+    plt.title(f"Significant digits vs Maximal absolute pairwise collinearity\n{process} {accuracy} {optimisation}")
     plt.xlabel("Max. abs. collinearity")
     plt.ylabel("Sig. digits")
 
-    plt.scatter(max_col, precision_arr + y_perturbation,
+    plt.scatter(max_col, accuracy_arr + y_perturbation,
                 s=4, c=colors, alpha=0.7)
 
     plt.grid(True, alpha=0.3)
@@ -190,58 +190,58 @@ def plot_combined(process, precision, optimisation,
         os.makedirs(outdir)
 
     plt.savefig(
-        outdir + f"/scatter_combined_{process}_{precision}_{optimisation[1:]}.png",
+        outdir + f"/scatter_combined_{process}_{accuracy}_{optimisation[1:]}.png",
         dpi=200
     )
     plt.close()
 
-def plotScat_MEvsMEP(process, precision, optimisation, matrixElementPrecision_fl, matrixElementPrecisionZeros, matrix_element_fl):
+def plotScat_MEvsMEP(process, accuracy, optimisation, matrixElementAccuracy_fl, matrixElementAccuracyZeros, matrix_element_fl):
     # scatter plot of Sig. digits vs matrix element
     fig, ax = plt.subplots()
-    zeros = matrixElementPrecisionZeros
-    plt.title("Sig. digits vs matrix element for: "+process+" "+precision+" "+optimisation+"\n Plus "+str(zeros)+" zero precision.")
+    zeros = matrixElementAccuracyZeros
+    plt.title("Sig. digits vs matrix element for: "+process+" "+accuracy+" "+optimisation+"\n Plus "+str(zeros)+" zero accuracy.")
     plt.xlabel("log10(Matrix element)")
     plt.ylabel("Sig. digits")
     #delete outliers. Outlier is a value that is more than 5 standard deviations away from the mean
 
-    matrixElementPrecision_fl = np.array(matrixElementPrecision_fl,dtype=float)
+    matrixElementAccuracy_fl = np.array(matrixElementAccuracy_fl,dtype=float)
     matrix_element_fl = np.array(matrix_element_fl)
 
-    variation = np.random.uniform(-0.4, 0.4, matrixElementPrecision_fl.size)
-    matrixElementPrecision_fl += variation
+    variation = np.random.uniform(-0.4, 0.4, matrixElementAccuracy_fl.size)
+    matrixElementAccuracy_fl += variation
 
     dir = "histograms"
-    plt.scatter(np.log10(matrix_element_fl), matrixElementPrecision_fl, s=0.1)
-    plt.savefig(dir+"/scatter_"+process+"_"+precision+"_"+optimisation[1:]+".png" )
+    plt.scatter(np.log10(matrix_element_fl), matrixElementAccuracy_fl, s=0.1)
+    plt.savefig(dir+"/scatter_"+process+"_"+accuracy+"_"+optimisation[1:]+".png" )
 
 
 
-def plotScat_MOPvsMO(process, precision, optimisation, momentaPrecision_fl, momentaPrecisionZeros, momentum_fl):
-    # scatter plot of momenta precision vs momentum
+def plotScat_MOPvsMO(process, accuracy, optimisation, momentaAccuracy_fl, momentaAccuracyZeros, momentum_fl):
+    # scatter plot of momenta accuracy vs momentum
     fig, ax = plt.subplots()
-    zeros = momentaPrecisionZeros
+    zeros = momentaAccuracyZeros
     plt.title(
-        "Momenta precision vs momentum_fl for: " + process + " " + precision + " " + optimisation + "\n Plus " + str(
-            zeros) + " zero precision.")
+        "Momenta accuracy vs momentum_fl for: " + process + " " + accuracy + " " + optimisation + "\n Plus " + str(
+            zeros) + " zero accuracy.")
     plt.xlabel("momentum_fl")
     plt.ylabel("Sig. digits")
     # delete outliers. Outlier is a value that is more than 5 standard deviations away from the mean
 
-    momentaPrecision_fl = np.array(momentaPrecision_fl, dtype=float)
+    momentaAccuracy_fl = np.array(momentaAccuracy_fl, dtype=float)
     momentum_fl = np.array(momentum_fl)
 
-    variation = np.random.uniform(-0.4, 0.4, momentaPrecision_fl.size)
-    momentaPrecision_fl += variation
+    variation = np.random.uniform(-0.4, 0.4, momentaAccuracy_fl.size)
+    momentaAccuracy_fl += variation
 
     dir = "histograms"
-    plt.scatter(momentum_fl, momentaPrecision_fl, s=0.01, color='black')
-    plt.savefig(dir + "/scatter_momentum_fl_" + process + "_" + precision + "_" + optimisation[1:] + ".png")
+    plt.scatter(momentum_fl, momentaAccuracy_fl, s=0.01, color='black')
+    plt.savefig(dir + "/scatter_momentum_fl_" + process + "_" + accuracy + "_" + optimisation[1:] + ".png")
 
 
-def plotScat_EvsME(process, precision, optimisation, energys, matrix_element_fl, nb_par):
+def plotScat_EvsME(process, accuracy, optimisation, energys, matrix_element_fl, nb_par):
     #Energys vs matrix element
     fig, ax = plt.subplots(figsize=(10, 6))
-    plt.title("Energys vs matrix element for: "+process+" "+precision+" "+optimisation)
+    plt.title("Energys vs matrix element for: "+process+" "+accuracy+" "+optimisation)
     plt.xlabel("Energy")
     plt.ylabel("Log10 of matrix element")
 
@@ -264,12 +264,12 @@ def plotScat_EvsME(process, precision, optimisation, energys, matrix_element_fl,
     dir = "histograms/colinearities_energys_"+process
     if not os.path.exists(dir):
         os.makedirs(dir)
-    plt.savefig(dir+"/scatter_energys_ME_"+process+"_"+precision+"_"+optimisation[1:]+".png" )
+    plt.savefig(dir+"/scatter_energys_ME_"+process+"_"+accuracy+"_"+optimisation[1:]+".png" )
     plt.close()
 
-def plotScat_MomentumMagnitudeVsMEP(process, precision, optimisation, momentum, matrixElementPrecision_fl, nb_par, withoutFirstTwo = True):
+def plotScat_MomentumMagnitudeVsMEP(process, accuracy, optimisation, momentum, matrixElementAccuracy_fl, nb_par, withoutFirstTwo = True):
     """
-    Plot 3-momentum magnitude and angles vs precision
+    Plot 3-momentum magnitude and angles vs accuracy
     momentum shape: [nb_me, nb_par, 4] where [E, px, py, pz]
     """
     if withoutFirstTwo:
@@ -301,10 +301,10 @@ def plotScat_MomentumMagnitudeVsMEP(process, precision, optimisation, momentum, 
     for ax, (data, xlabel, title) in zip(axes, plots_data):
         for particle_idx in range(start,nb_par):
             particle_data = data[:, particle_idx]
-            y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementPrecision_fl))
+            y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementAccuracy_fl))
 
             ax.scatter(particle_data,
-                      matrixElementPrecision_fl + y_perturbation,
+                      matrixElementAccuracy_fl + y_perturbation,
                       s=1,
                       color=colors[particle_idx],
                       label=f'Particle {particle_idx + 1}',
@@ -312,19 +312,19 @@ def plotScat_MomentumMagnitudeVsMEP(process, precision, optimisation, momentum, 
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel('Sig. digits')
-        ax.set_title(f'{title} vs Precision')
+        ax.set_title(f'{title} vs Significant digits')
         ax.legend(markerscale=5, loc='best')
         ax.grid(True, alpha=0.3)
 
-    plt.suptitle(f"3-Momentum Magnitude/Angles vs Precision: {process} {precision} {optimisation} {flag}")
+    plt.suptitle(f"3-Momentum Magnitude/Angles vsSignificant digits: {process} {accuracy} {optimisation} {flag}")
     plt.tight_layout()
 
     dir = "histograms"
     if not os.path.exists(dir):
         os.makedirs(dir)
-    plt.savefig(dir+"/scatter_3momentum_magnitudeAngle_MEP_"+process+"_"+precision+"_"+optimisation[1:]+".png", dpi=150)
+    plt.savefig(dir+"/scatter_3momentum_magnitudeAngle_MEP_"+process+"_"+accuracy+"_"+optimisation[1:]+".png", dpi=150)
     plt.close()
-def plotScat_MomentumComponentsVsMEP(process, precision, optimisation, momentum, matrixElementPrecision_fl, nb_par, withoutFirstTwo = True):
+def plotScat_MomentumComponentsVsMEP(process, accuracy, optimisation, momentum, matrixElementAccuracy_fl, nb_par, withoutFirstTwo = True):
     """
     Three separate 2D plots for px, py, pz vs Sig. digits
     momentum shape: [nb_me, nb_par, 4] where [E, px, py, pz]
@@ -352,10 +352,10 @@ def plotScat_MomentumComponentsVsMEP(process, precision, optimisation, momentum,
             component_particle = component[:, particle_idx]
 
             # Add small perturbation to avoid overlapping points
-            y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementPrecision_fl))
+            y_perturbation = np.random.uniform(-0.4, 0.4, len(matrixElementAccuracy_fl))
 
             ax.scatter(component_particle,
-                      matrixElementPrecision_fl + y_perturbation,
+                      matrixElementAccuracy_fl + y_perturbation,
                       s=1,
                       color=colors[particle_idx],
                       label=f'Particle {particle_idx + 1}',
@@ -363,29 +363,30 @@ def plotScat_MomentumComponentsVsMEP(process, precision, optimisation, momentum,
 
         ax.set_xlabel(f'{name} [GeV]')
         ax.set_ylabel('Sig. digits')
-        ax.set_title(f'{name} vs Precision')
+        ax.set_title(f'{name} vs Significant digits')
         ax.legend(markerscale=5, loc='best')
         ax.grid(True, alpha=0.3)
 
-    plt.suptitle(f"Momentum Components vs Precision: {process} {precision} {optimisation} {flag}")
+    plt.suptitle(f"Momentum Components vs Significant digits: {process} {accuracy} {optimisation} {flag}")
     plt.tight_layout()
 
     dir = "histograms"
     if not os.path.exists(dir):
         os.makedirs(dir)
-    plt.savefig(dir+"/scatter_momentum_components_MEP_"+process+"_"+precision+"_"+optimisation[1:]+".png", dpi=150)
+    plt.savefig(dir+"/scatter_momentum_components_MEP_"+process+"_"+accuracy+"_"+optimisation[1:]+".png", dpi=150)
     plt.close()
-def plotHis_MEP(process, precision, optimisation, matrixElementPrecision_fl, matrixElementPrecisionZeros):
+def plotHis_MEP(process, accuracy, optimisation, matrixElementAccuracy_fl, matrixElementAccuracyZeros):
     # plot histogram of Sig. digits
     fig, ax = plt.subplots()
-    plt.title("Sig. digits for: "+process+" "+precision+" "+optimisation)
-    plt.xlabel("Sig. digits.        Sum = "+str(len(matrixElementPrecision_fl)))#'''+matrixElementPrecisionZeros'''))
-    counts, edges, bars = ax.hist(matrixElementPrecision_fl, histtype='barstacked',bins=range(0, int(max(matrixElementPrecision_fl))+2))
+    plt.title("Sig. digits for: "+process+" "+accuracy+" "+optimisation)
+    plt.xlabel("Sig. digits. [1]     Sum = "+str(len(matrixElementAccuracy_fl)))#'''+matrixElementAccuracyZeros'''))
+    plt.ylabel("ME count [1]")
+    counts, edges, bars = ax.hist(matrixElementAccuracy_fl, histtype='barstacked',bins=range(0, int(max(matrixElementAccuracy_fl))+2))
     plt.bar_label(bars)
     #show the mean in neat way
-    plt.axvline(x=sum(matrixElementPrecision_fl)/len(matrixElementPrecision_fl), color='c', linestyle='dashed', linewidth=1)
+    plt.axvline(x=sum(matrixElementAccuracy_fl)/len(matrixElementAccuracy_fl), color='c', linestyle='dashed', linewidth=1)
     min_ylim, max_ylim = plt.ylim()
-    plt.text(sum(matrixElementPrecision_fl)/len(matrixElementPrecision_fl), +max_ylim*0.1, 'Mean: {:.2f}'.format(sum(matrixElementPrecision_fl)/len(matrixElementPrecision_fl)),color='black')
+    plt.text(sum(matrixElementAccuracy_fl)/len(matrixElementAccuracy_fl), +max_ylim*0.1, 'Mean: {:.2f}'.format(sum(matrixElementAccuracy_fl)/len(matrixElementAccuracy_fl)),color='black')
     #show the median in neat way
 
     #create a directory for the histograms if it doesn't exist
@@ -394,20 +395,20 @@ def plotHis_MEP(process, precision, optimisation, matrixElementPrecision_fl, mat
         os.makedirs(dir)
 
     #save histogram
-    plt.savefig(dir+"/histogram_"+process+"_"+precision+"_"+optimisation[1:]+".png" )
+    plt.savefig(dir+"/histogram_"+process+"_"+accuracy+"_"+optimisation[1:]+".png" )
     plt.close()
 
-def plotHis_MOP(process, precision, optimisation, momentaPrecision_fl, momentaPrecisionZeros):
-    # plot histogram of momenta precision
+def plotHis_MOP(process, accuracy, optimisation, momentaAccuracy_fl, momentaAccuracyZeros):
+    # plot histogram of momenta accuracy
     fig, ax = plt.subplots()
-    plt.title("Momenta precision for: "+process+" "+precision+" "+optimisation)
-    plt.xlabel("Sig. digits.        Sum = "+str(len(momentaPrecision_fl)))#+momentaPrecisionZeros))
-    counts, edges, bars = ax.hist(momentaPrecision_fl, histtype='barstacked',color='orange',bins=range(0, int(max(momentaPrecision_fl))+2))
+    plt.title("Momenta accuracy for: "+process+" "+accuracy+" "+optimisation)
+    plt.xlabel("Sig. digits.        Sum = "+str(len(momentaAccuracy_fl)))#+momentaAccuracyZeros))
+    counts, edges, bars = ax.hist(momentaAccuracy_fl, histtype='barstacked',color='orange',bins=range(0, int(max(momentaAccuracy_fl))+2))
     plt.bar_label(bars)
     #show the mean in neat way
-    plt.axvline(x=sum(momentaPrecision_fl)/len(momentaPrecision_fl), color='c', linestyle='dashed', linewidth=1)
+    plt.axvline(x=sum(momentaAccuracy_fl)/len(momentaAccuracy_fl), color='c', linestyle='dashed', linewidth=1)
     min_ylim, max_ylim = plt.ylim()
-    plt.text(sum(momentaPrecision_fl)/len(momentaPrecision_fl), +max_ylim*0.1, 'Mean: {:.2f}'.format(sum(momentaPrecision_fl)/len(momentaPrecision_fl)),color='black')
+    plt.text(sum(momentaAccuracy_fl)/len(momentaAccuracy_fl), +max_ylim*0.1, 'Mean: {:.2f}'.format(sum(momentaAccuracy_fl)/len(momentaAccuracy_fl)),color='black')
     #show the median in neat way
 
     #create a directory for the histograms if it doesn't exist
@@ -416,5 +417,5 @@ def plotHis_MOP(process, precision, optimisation, momentaPrecision_fl, momentaPr
         os.makedirs(dir)
 
     #save histogram
-    plt.savefig(dir+"/histogram_momenta_"+process+"_"+precision+"_"+optimisation[1:]+".png" )
+    plt.savefig(dir+"/histogram_momenta_"+process+"_"+accuracy+"_"+optimisation[1:]+".png" )
     plt.close()

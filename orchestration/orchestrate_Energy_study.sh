@@ -35,11 +35,12 @@ MAX_PARALLEL_CHECKS=20
 MAX_PARALLEL_ANALYSIS=20
 
 # Number of ITERATIONS
-ITERATIONS=100
+ITERATIONS=320
 #ITERATIONS=10000
 
 # Centre-of-mass energies in TeV to study
-ECMS_TEV=(1 2 4 6 8 10 12 14)
+#ECMS_TEV=(1 2 4 6 8 10 12 14)
+ECMS_TEV=( 2   8  14)
 
 MAIL_ON_SUCCESS="false"
 USER="${USER}" #if not same as lxplus username, change accordingly
@@ -72,6 +73,9 @@ if [ $# -ge 1 ]; then
 else
     WORK_DIR="."
 fi
+
+#Config file to change the precision   
+MGONGPU_CONFIG="$WORK_DIR/../src/mgOnGpuConfig.h"
 
 # Convert to absolute path - this must happen before any cd commands
 # Save current directory first
@@ -177,14 +181,14 @@ step1_copy_directories() {
                 log_warn "$double_dir already exists, skipping"
             else
                 log_info "Copying $dir -> $double_dir"
-                cp -r "$dir" "$double_dir"
+                cp -rP "$dir" "$double_dir"
             fi
 
             if [ -d "$float_dir" ]; then
                 log_warn "$float_dir already exists, skipping"
             else
                 log_info "Copying $dir -> $float_dir"
-                cp -r "$dir" "$float_dir"
+                cp -rP "$dir" "$float_dir"
             fi
         done
     done
@@ -195,7 +199,6 @@ step1_copy_directories() {
 #########################
 # Step 2: Compile directories serially
 #########################
-
 patch_energy() {
     local dir="$1"
     local tev="$2"
@@ -208,17 +211,13 @@ patch_energy() {
         return 1
     fi
 
-    # Verify line 331 contains the expected energy pattern
-    local line331
-    line331=$(sed -n '331p' "$sa_file")
-    if ! echo "$line331" | grep -q "fptype energy"; then
-        log_error "Line 331 of check_sa.cc in $dir does not contain 'fptype energy': $line331"
+    if ! grep -q "const fptype energy" "$sa_file"; then
+        log_error "No 'const fptype energy' line found in $sa_file"
         return 1
     fi
 
-    # Patch the energy value
-    sed -i "331s/.*/  const fptype energy = ${energy_gev}; \/\/ Ecms\/2 = ${energy_gev} GeV = ${tev} TeV total/" "$sa_file"
-    log_info "Patched check_sa.cc in $dir: energy = ${energy_gev} GeV (${tev} TeV total)"
+    sed -i "s|^\([[:space:]]*\)const fptype energy = [^;]*;.*|\1const fptype energy = ${energy_gev}; // Ecms = ${energy_gev} GeV = ${tev} TeV|" "$sa_file"
+    log_info "Patched check_sa.cc in $dir: energy = ${energy_gev} GeV (${tev} TeV)"
 }
 
 setup_symlinks() {
@@ -227,9 +226,16 @@ setup_symlinks() {
 
     ln -sf "$CADNA_TOOLBOX_PATH/Cadnize.sh"   "$LOC_P1/Cadnize.sh"
     ln -sf "$CADNA_TOOLBOX_PATH/histogram.py" "$LOC_P1/histogram.py"
-    # srcpy is a directory - use -s only (no -f for dirs to avoid nested link)
-    if [ ! -L "$LOC_P1/srcpy" ]; then
-        ln -s "$CADNA_TOOLBOX_PATH/srcpy" "$LOC_P1/srcpy"
+    ln -sf "$CADNA_TOOLBOX_PATH/srcpy" "$LOC_P1/srcpy"
+}
+
+
+patch_precision() {
+    # $1: "double" | "float"
+    if [ "$1" = "double" ]; then
+        sed -i 's/\bfloat_st\b/double_st/g' "$MGONGPU_CONFIG"
+    else
+        sed -i 's/\bdouble_st\b/float_st/g' "$MGONGPU_CONFIG"
     fi
 }
 
@@ -281,7 +287,6 @@ compile_directory() {
     
     return $compile_status
 }
-
 step2_compile_all() {
     log_info "Step 2: Compiling all directories serially and launching check_cpp.exe..."
 
@@ -290,8 +295,6 @@ step2_compile_all() {
     local p1_dirs=($(find . -maxdepth 1 -type d -name "P1_*" ! -name "*_float" ! -name "*TeV*" | sed 's|^\./||' | sort))
 
     local failed_dirs=()
-    
-    # Array to track all check_cpp.exe PIDs
     CHECK_CPP_PIDS=()
 
     for dir in "${p1_dirs[@]}"; do
@@ -302,13 +305,13 @@ step2_compile_all() {
 
             # --- Double ---
             if [ -d "$double_dir" ]; then
-                # Patch energy and setup symlinks, then run Cadnize.sh
                 if patch_energy "$double_dir" "$tev"; then
                     setup_symlinks "$double_dir"
                     log_info "Running Cadnize.sh in $double_dir"
                     (cd "$WORK_DIR/$double_dir" && bash Cadnize.sh > cadnize_double.log 2>&1) \
                         || log_warn "Cadnize.sh reported non-zero for $double_dir"
 
+                    patch_precision "double"
                     if ! compile_directory "$double_dir" "d" "double"; then
                         failed_dirs+=("$double_dir (double)")
                     else
@@ -316,6 +319,7 @@ step2_compile_all() {
                         run_check_cpp "$double_dir" "double"
                         CHECK_CPP_PIDS+=($LAST_CHECK_PID)
                     fi
+                    patch_precision "float"  # restore
                 else
                     failed_dirs+=("$double_dir (patch)")
                 fi
@@ -329,6 +333,7 @@ step2_compile_all() {
                     (cd "$WORK_DIR/$float_dir" && bash Cadnize.sh > cadnize_float.log 2>&1) \
                         || log_warn "Cadnize.sh reported non-zero for $float_dir"
 
+                    patch_precision "float"
                     if ! compile_directory "$float_dir" "f" "float"; then
                         failed_dirs+=("$float_dir (float)")
                     else
@@ -336,6 +341,7 @@ step2_compile_all() {
                         run_check_cpp "$float_dir" "float"
                         CHECK_CPP_PIDS+=($LAST_CHECK_PID)
                     fi
+                    patch_precision "double"  # restore
                 else
                     failed_dirs+=("$float_dir (patch)")
                 fi
@@ -647,11 +653,11 @@ step6_copy_results() {
                     mkdir -p "$dest"
                 fi
 
-                if [ -d "$WORK_DIR/$energy_dir/histogram" ]; then
-                    cp -r "$WORK_DIR/$energy_dir/histogram" "$dest/"
-                    log_success "Copied $energy_dir/histogram"
+                if [ -d "$WORK_DIR/$energy_dir/histograms" ]; then
+                    cp -r "$WORK_DIR/$energy_dir/histograms" "$dest/"
+                    log_success "Copied $energy_dir/histograms"
                 else
-                    log_warn "histogram/ not found in $energy_dir"
+                    log_warn "histograms/ not found in $energy_dir"
                 fi
             done
         done
@@ -863,9 +869,9 @@ main() {
     local start_time=$(date +%s)
     
     # Execute all steps
-    step1_copy_directories
-    step2_compile_all
-    step3_run_all_checks
+#    step1_copy_directories
+#    step2_compile_all
+#    step3_run_all_checks
     step4_run_histograms
     step5_histogram_mul_sub
     step6_copy_results
