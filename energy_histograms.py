@@ -170,6 +170,8 @@ def create_multi_energy_histogram(process_data, process, output_path):
     energy_values = []
     mean_double = []
     mean_float = []
+    fraction_low = []
+    total_count = 0
     
     # Plot each energy on main plot
     for idx, energy in enumerate(sorted_energies):
@@ -204,15 +206,6 @@ def create_multi_energy_histogram(process_data, process, output_path):
                             alpha=1.0,
                             label=f'{energy} double',
                             density=False)
-
-#                sns.kdeplot(data_dict['double'],
-#                            ax=ax_main,
-#                            linestyle='--',
-#                            color=color,
-#                            fill=True,
-#                            alpha=0.3,
-#                            label=f'{energy} double')
-
             # Store mean for subplot
             energy_values.append(energy_val)
             mean_double.append(np.mean(data_dict['double']))
@@ -245,26 +238,51 @@ def create_multi_energy_histogram(process_data, process, output_path):
                             alpha=1.0,
                             label=f'{energy} float',
                             density=False)
-#               sns.kdeplot(data_dict['float'],
-#                            ax=ax_main,
-#                            linestyle='-',
-#                            color=color,
-#                            fill=True,
-#                            alpha=0.3,
-#                            label=f'{energy} float')
-
-            # Store mean for subplot
+                 # Total number of float samples
+                 total_count = len(data_dict['float'])
+                 
+                 # Count how many have 0, 1, or 2 significant digits
+                 low_sig_count = np.sum(np.isin(data_dict['float'], [0, 1, 2]))
+                 
+                 # Fraction
+                 fraction_low.append( low_sig_count / total_count if total_count > 0 else 0.0)
+               
+                          # Store mean for subplot
             if len(energy_values) == len(mean_double):
                 mean_float.append(np.mean(data_dict['float']))
     
+
     # Configure main plot
-    ax_main.set_xlabel('Matrix Element sig. digits', fontsize=12)
+    ax_main.set_xlabel('Matrix Element sig. digits                      Total count: '+str(total_count), fontsize=12)
     ax_main.set_ylabel('Count', fontsize=12)
     ax_main.set_title(f'Matrix Element Accuracy Distribution: {process}', 
                       fontsize=14, fontweight='bold')
     ax_main.set_xlim(0,17)
     ax_main.legend(loc='best', fontsize=9, ncol=2)
     ax_main.grid(True, alpha=0.3)
+
+    # Build text block for all energies (float only)
+    text_lines = []
+    
+    for e, frac in zip(sorted_energies, fraction_low):
+        text_lines.append(f'{e} TeV: {frac*100:.1f}% ≤ 2 digits')
+    
+    text_string = "Float precision\n" + "\n".join(text_lines)
+    
+    # Place one single annotation box in axis coordinates
+    ax_main.text(
+        0.78, 0.98,                     # top-left corner (axes coords)
+        text_string,
+        transform=ax_main.transAxes,
+        fontsize=10,
+        verticalalignment='top',
+        bbox=dict(
+            facecolor='white',
+            alpha=0.8,
+            edgecolor='black',
+            boxstyle='round'
+        )
+    )
     
     # Use log scale if appropriate
     data_range = max(all_data) - min(all_data)

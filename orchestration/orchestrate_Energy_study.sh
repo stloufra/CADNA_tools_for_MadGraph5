@@ -35,14 +35,14 @@ MAX_PARALLEL_CHECKS=20
 MAX_PARALLEL_ANALYSIS=20
 
 # Number of ITERATIONS
-ITERATIONS=320
-#ITERATIONS=10000
+#ITERATIONS=320
+ITERATIONS=10000
 
 # Centre-of-mass energies in TeV to study
 #ECMS_TEV=(1 2 4 6 8 10 12 14)
-ECMS_TEV=( 2   8  14)
+ECMS_TEV=( 1 2 6  8 10 12 14)
 
-MAIL_ON_SUCCESS="false"
+MAIL_ON_SUCCESS="true"
 USER="${USER}" #if not same as lxplus username, change accordingly
 
 # CADNA toolbox path (set this to your actual path or pass as environment variable)
@@ -582,32 +582,25 @@ step4_run_histograms() {
 #########################
 
 step5_histogram_mul_sub() {
-    log_info "Step 5: Running histogram_mul_sub.py per base P1_ directory..."
+    log_info "Step 5: Running energy_histograms.py per base P1_ directory..."
 
     cd "$WORK_DIR"
 
     # Ensure symlink exists in SubProcesses (WORK_DIR)
-    if [ ! -L "histogram_mul_sub.py" ]; then
-        ln -sf "$CADNA_TOOLBOX_PATH/histogram_mul_sub.py" "histogram_mul_sub.py"
+    if [ ! -L "energy_histograms.py" ]; then
+        ln -sf "$CADNA_TOOLBOX_PATH/energy_histograms.py" "energy_histograms.py"
     fi
 
-    local p1_dirs=($(find . -maxdepth 1 -type d -name "P1_*" ! -name "*_float" ! -name "*TeV*" | sed 's|^\./||' | sort))
 
-    for dir in "${p1_dirs[@]}"; do
-        wait_for_running_jobs "$MAX_PARALLEL_ANALYSIS"
+    log_info "Running histogram_mul_sub.py for base $dir"
+    if python3 energy_histograms.py  \
+        > "energy_histograms.log" 2>&1; then
+        log_success "energy_histograms.py completed for $dir"
+    else
+        log_error "energy_histograms.py failed for $dir"
+    fi
 
-        (
-            log_info "Running histogram_mul_sub.py for base $dir"
-#            if python3 histogram_mul_sub.py "$dir" \
-#                > "histogram_mul_sub_${dir}.log" 2>&1; then
-#                log_success "histogram_mul_sub.py completed for $dir"
-#            else
-#                log_error "histogram_mul_sub.py failed for $dir"
-#            fi
-        ) &
-    done
-
-    log_info "Waiting for all histogram_mul_sub.py runs to complete..."
+    log_info "Waiting for all energy_histograms.py runs to complete..."
     wait
 
     log_success "Step 5 completed"
@@ -869,9 +862,9 @@ main() {
     local start_time=$(date +%s)
     
     # Execute all steps
-#    step1_copy_directories
-#    step2_compile_all
-#    step3_run_all_checks
+    step1_copy_directories
+    step2_compile_all
+    step3_run_all_checks
     step4_run_histograms
     step5_histogram_mul_sub
     step6_copy_results

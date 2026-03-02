@@ -25,7 +25,9 @@ INS_DIR="__ins"
 
 MG5_PATH="${MG5_PATH:-./bin/mg5_aMC}"
 CADNA_TOOLBOX_PATH="${CADNA_TOOLBOX_PATH:-/path/to/cadna/toolbox}"
-ORCHESTRATION_SCRIPT="$CADNA_TOOLBOX_PATH/orchestration/orchestrate_process_evaluation.sh"
+#ORCHESTRATION_SCRIPT="$CADNA_TOOLBOX_PATH/orchestration/orchestrate_process_evaluation.sh"
+ORCHESTRATION_SCRIPT="$CADNA_TOOLBOX_PATH/orchestration/orchestrate_Energy_study.sh"
+SCRIPT_NAME="orchestrate_Energy_study.sh"
 
 # Logging
 BATCH_LOG_DIR="$(pwd)/batch_logs_$(date +%Y%m%d_%H%M%S)"
@@ -120,10 +122,10 @@ validate_setup() {
     fi
 
    
-    if ! promise > /dev/null 2>&1; then
-	    log_error "PROMISE was not sourced please source"
-	    exit 1
-    fi
+#    if ! promise > /dev/null 2>&1; then
+#	    log_error "PROMISE was not sourced please source"
+#	    exit 1
+#    fi
  
     
     log_success "Validation passed"
@@ -202,15 +204,15 @@ process_file() {
     
     log_info "Step 3: Linking orchestration script"
     
-    if [ -L "orchestrate_process_evaluation.sh" ]; then
+    if [ -L $SCRIPT_NAME ]; then
         log_info "Orchestration script already linked, removing old link"
-        rm -f "orchestrate_process_evaluation.sh"
+        rm -f $SCRIPT_NAME
     fi
     
-    ln -s "$ORCHESTRATION_SCRIPT" orchestrate_process_evaluation.sh
+    ln -s "$ORCHESTRATION_SCRIPT" $SCRIPT_NAME
     
-    if [ ! -x "orchestrate_process_evaluation.sh" ]; then
-        chmod +x "orchestrate_process_evaluation.sh"
+    if [ ! -x $SCRIPT_NAME ]; then
+        chmod +x $SCRIPT_NAME
     fi
     
     log_success "Orchestration script linked"
@@ -225,7 +227,7 @@ process_file() {
     local orch_pid_file="$BATCH_LOG_DIR/${file_name}_orchestration.pid"
     
     # Run orchestration in background with nohup
-    nohup ./orchestrate_process_evaluation.sh "$(pwd)" \
+    nohup ./$SCRIPT_NAME "$(pwd)" \
         > "$orch_log" 2>&1 &
     
     local orch_pid=$!
@@ -304,7 +306,7 @@ process_file() {
         local base_dir=$(dirname "$subprocess_dir")
         
         log_warn "Removing directory: $base_dir"
-        rm -rf "$base_dir"
+        #rm -rf "$base_dir"
         
         log_success "Cleanup completed"
     else
