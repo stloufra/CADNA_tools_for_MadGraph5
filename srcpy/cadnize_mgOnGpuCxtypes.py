@@ -86,6 +86,27 @@ operatorString = """
                              (a_temp.imag() * b.real() - a_temp.real() * b.imag()) / bnorm);
       }
   }
+
+ template <typename T>
+  constexpr bool is_special_fp_v =
+      std::is_same_v<T, double_st> || std::is_same_v<T, float_st>;
+  
+  template <typename FP, typename FP2,
+            std::enable_if_t<is_special_fp_v<FP> || is_special_fp_v<FP2>, int> = 0>
+  inline constexpr auto
+  operator+(const cxsmpl<FP>& a, const cxsmpl<FP2>& b)
+  {
+      if constexpr (is_special_fp_v<FP>)
+      {
+          cxsmpl<FP> b_temp = b;
+          return cxsmpl<FP>(a.real() + b_temp.real(), a.imag() + b_temp.imag());
+      }
+      else
+      {
+          cxsmpl<FP2> a_temp = a;
+          return cxsmpl<FP2>(a_temp.real() + b.real(), a_temp.imag() + b.imag());
+      }
+  }
 """
 
 #read lines
