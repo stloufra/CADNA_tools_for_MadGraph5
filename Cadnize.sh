@@ -1,6 +1,7 @@
 #!/bin/bash
-CURRENT_DIR=${0%/*}
- echo $CURRENT_DIR
+set -e
+CURRENT_DIR=$(cd "$(dirname "$0")" && pwd)
+echo $CURRENT_DIR
 # Display help message
 if [[ " $* " =~ " --help" ]] || [[ " $* " =~ " -h" ]]; then
     echo "Usage: $(basename $0) [OPTIONS]"

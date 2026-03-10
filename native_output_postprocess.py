@@ -47,7 +47,7 @@ file_name = sys.argv[3]
 # "Matrix element = "
 matrix_element_f = []
 matrix_element_d = []
-matrixElementPrecision = []
+matrixElementAccuracy = []
 # "Momentum: "
 momentum_f = []
 momentum_d = []
@@ -84,7 +84,7 @@ with open(sys.argv[2], 'r', buffering=1024*1024) as f:
         else:
             sig_dig = floor(-np.log10(2 * num / den))
 
-        matrixElementPrecision.append(sig_dig)
+        matrixElementAccuracy.append(sig_dig)
 
     print(20 * "-")
     print("Identical numbers = " + str(IsSame))
@@ -92,8 +92,8 @@ with open(sys.argv[2], 'r', buffering=1024*1024) as f:
     print(20 * "-")
     print("First element in f = " + str(matrix_element_f[0]) + "")
     print("First element in d = " + str(matrix_element_d[0]) + "")
-    print("Precision of first matrix element in f = " + str(matrixElementPrecision[0]))
-    mpl.plotHis_MEP("comparison_natives", "", "", matrixElementPrecision, 0)
+    print("Accuracy of first matrix element in f = " + str(matrixElementAccuracy[0]))
+    mpl.plotHis_MEP("comparison_natives", "", "", matrixElementAccuracy, 0)
 
     print(20 * "-")
     print("Plot saved as comparison_natives.png")
@@ -106,7 +106,7 @@ if thresh != 3:
     if ans != "y":
         thresh = 3
 
-saved_precisions = []
+saved_accuracys = []
 with open(sys.argv[2], 'r') as f:
     newlines = []
     i = 0
@@ -126,22 +126,22 @@ with open(sys.argv[2], 'r') as f:
             if "Matrix element =" in l:
                 block.append(newline)
                 block.append(newline.split("M")[0] + "Matrix element number of sig dig = " + str(
-                    matrixElementPrecision[i]) + "\n")  # newline.split("M")[0] to get same indent
+                    matrixElementAccuracy[i]) + "\n")  # newline.split("M")[0] to get same indent
                 errase_block = True
                 i += 1
             else:
                 block.append(newline)
 
             if errase_block:
-                if matrixElementPrecision[i - 1] < thresh:
+                if matrixElementAccuracy[i - 1] < thresh:
                     newlines.extend(block)
-                    saved_precisions.append(matrixElementPrecision[i - 1])
+                    saved_accuracys.append(matrixElementAccuracy[i - 1])
                     j += 1
                 block = []
                 errase_block = False
 
     with open(file_name, "w") as f:
         f.writelines(newlines)
-print("We saved " + str(len(saved_precisions)) + " matrix elements with precision lower than " + str(
+print("We saved " + str(len(saved_accuracys)) + " matrix elements with accuracy lower than " + str(
     thresh) + " into file " + file_name)
-mpl.plotHis_MEP("comparison_natives_thresh" + str(thresh), "", "", saved_precisions, 0)
+mpl.plotHis_MEP("comparison_natives_thresh" + str(thresh), "", "", saved_accuracys, 0)

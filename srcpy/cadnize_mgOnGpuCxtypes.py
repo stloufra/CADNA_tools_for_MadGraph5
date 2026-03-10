@@ -86,6 +86,23 @@ operatorString = """
                              (a_temp.imag() * b.real() - a_temp.real() * b.imag()) / bnorm);
       }
   }
+
+template < typename FP2,
+            std::enable_if_t< is_special_fp_v<FP2>, int> = 0>
+  inline constexpr auto
+  operator*(const double& a, const cxsmpl<FP2>& b)
+  {
+      return cxsmpl<FP2>(a,0. )*b;
+  }
+
+  template < typename FP2,
+            std::enable_if_t< is_special_fp_v<FP2>, int> = 0>
+  inline constexpr auto
+  operator*( const cxsmpl<FP2>& a, const double& b)
+  {
+    return a*cxsmpl<FP2>(b,0.);
+  }
+
 """
 
 #read lines
@@ -95,9 +112,13 @@ changes = 0
 
 i=0
 operatorOverload = False
-for l in lines:
+for idx, l in enumerate(lines):
     if "CADNA operator overload" in l:
        operatorOverload = True
+    if "template<typename FP2> __host__ __device__ constexpr operator cxsmpl<FP2>() const { return cxsmpl<FP2>( m_real, m_imag ); }" in l:
+       lines[idx] = l.replace("> __host__", "> explicit __host__")
+       changes += 1
+
 
 if not operatorOverload:
     for l in lines:
@@ -107,6 +128,32 @@ if not operatorOverload:
             break
 
         i=i+1
+
+new_lines = []
+i = 0
+
+while i < len(lines):
+    l = lines[i]
+
+    if (
+    "inline __host__ __device__ constexpr cxsmpl<float>" in l
+    and i + 1 < len(lines)
+    and "operator*" in lines[i + 1]
+    and "cxsmpl<float>" in lines[i + 1]
+    and "double" in lines[i + 1]
+    ):
+        changes += 1
+        # skip until end of function
+        while i < len(lines) and "}" not in lines[i]:
+            i += 1
+        i += 1  # skip closing brace
+        continue
+
+    new_lines.append(l)
+    i += 1
+
+lines = new_lines
+
 print(f"Changes in: {fileName:<30}\t{changes}")
 
 from shutil import move, copymode
