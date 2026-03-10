@@ -29,18 +29,18 @@ set -euo pipefail
 #########################
 
 # Maximum number of parallel check_cpp.exe processes
-MAX_PARALLEL_CHECKS=20
+MAX_PARALLEL_CHECKS=120
 
 # Maximum number of parallel analysis processes
-MAX_PARALLEL_ANALYSIS=20
+MAX_PARALLEL_ANALYSIS=120
 
 # Number of ITERATIONS
 #ITERATIONS=320
-ITERATIONS=10000
+ITERATIONS=100000
 
 # Centre-of-mass energies in TeV to study
 #ECMS_TEV=(1 2 4 6 8 10 12 14)
-ECMS_TEV=( 1 2 6  8 10 12 14)
+ECMS_TEV=(1 5 10 14)
 
 MAIL_ON_SUCCESS="true"
 USER="${USER}" #if not same as lxplus username, change accordingly
@@ -592,12 +592,12 @@ step5_histogram_mul_sub() {
     fi
 
 
-    log_info "Running histogram_mul_sub.py for base $dir"
+    log_info "Running histogram_mul_sub.py for base "
     if python3 energy_histograms.py  \
         > "energy_histograms.log" 2>&1; then
-        log_success "energy_histograms.py completed for $dir"
+        log_success "energy_histograms.py completed "
     else
-        log_error "energy_histograms.py failed for $dir"
+        log_error "energy_histograms.py failed "
     fi
 
     log_info "Waiting for all energy_histograms.py runs to complete..."
@@ -626,7 +626,7 @@ step6_copy_results() {
 
     for dir in "${p1_dirs[@]}"; do
         # Copy histograms_"dir" produced by histogram_mul_sub.py
-        local mul_hist_dir="histograms_${dir}"
+        local mul_hist_dir="histograms"
         if [ -d "$mul_hist_dir" ]; then
             cp -r "$mul_hist_dir" "$OUTPUT_PATH/$name/"
             log_success "Copied $mul_hist_dir"
@@ -652,6 +652,9 @@ step6_copy_results() {
                 else
                     log_warn "histograms/ not found in $energy_dir"
                 fi
+                
+                cp "$WORK_DIR/$energy_dir/${variant}_"*.out "$dest/"
+
             done
         done
     done
@@ -861,7 +864,7 @@ main() {
     # Record start time
     local start_time=$(date +%s)
     
-    # Execute all steps
+#    # Execute all steps
     step1_copy_directories
     step2_compile_all
     step3_run_all_checks

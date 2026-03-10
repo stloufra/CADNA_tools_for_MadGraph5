@@ -35,10 +35,12 @@ if len(sys.argv) > 3:
 cwd = os.getcwd()
 process = cwd.split("/")[-1]
 if "_" in process:
-    process = process.split("_")[-2] + "_" + process.split("_")[-1]
+    process = process.replace("P1_","")
+    process = process.replace("_double","")
+    process = process.replace("_float","")
 else:
     process = "test"
-print(process)
+
 
 #get the random number seed from the file name
 #seed = sys.argv[1].split("_")[-1].split(".")[0]

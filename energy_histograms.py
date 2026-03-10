@@ -18,7 +18,6 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 import srcpy.momnetumParser as mpr
-import seaborn as sns
 import matplotlib
 
 matplotlib.use('Agg')
@@ -29,25 +28,13 @@ def parse_output_file(filepath):
     matrixElementAccuracy = []
     momentum = []
     momentaAccuracy = []
+    matrixZeros = 0 
     
     print(f"      Parsing: {os.path.basename(filepath)}")
     
     with open(filepath, 'r') as f:
-        if mpr is not None:
-            colinearities = []
-            try:
-                mpr.parse_file(f, momentum, momentaAccuracy, matrix_element, matrixElementAccuracy, colinearities)
-                print(f"        Found {len(matrixElementAccuracy)} accuracies via mpr")
-            except Exception as e:
-                print(f"        Error calling mpr.parse_file: {e}")
-                print(f"        Trying basic parser instead...")
-                f.seek(0)  # Reset file pointer
-                mpr_failed = True
-            else:
-                mpr_failed = False
-        else:
-            mpr_failed = True
-        
+        matrixZeros =  mpr.parse_file(f, momentum, momentaAccuracy, matrix_element, matrixElementAccuracy, matrixZeros)
+        print(f"        Found {len(matrixElementAccuracy)} accuracies via mpr with zeros = {matrixZeros}")
     return np.array(matrixElementAccuracy)
 
 
@@ -137,7 +124,7 @@ def create_multi_energy_histogram(process_data, process, output_path):
     ax_mean = fig.add_subplot(gs[1])
     
     # Color palette for different energies
-    colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray', 'cyan', 'magenta']
+    colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'cyan', 'magenta', 'pink', 'gray']
     
     # Sort energies for consistent ordering
     def extract_energy_value(energy_str):
@@ -188,24 +175,22 @@ def create_multi_energy_histogram(process_data, process, output_path):
             counts_normalized = counts / (np.sum(counts) * (bin_edges[1] - bin_edges[0]))
             
             # Filter out zero bins
-            nonzero_mask = counts_normalized > 0
-            if np.any(nonzero_mask):
-                ax_main.hist(data_dict['double'], bins=bins, range=bin_range,
-                            histtype='stepfilled',
-                            edgecolor=None,
-                            facecolor=color,
-                            alpha=0.2,
-                            density=False)
-                ax_main.hist(data_dict['double'],
-                            bins=bins,
-                            linestyle='--',
-                            range=bin_range,
-                            histtype='step',
-                            color=color,
-                            linewidth=2.0,
-                            alpha=1.0,
-                            label=f'{energy} double',
-                            density=False)
+            ax_main.hist(data_dict['double'], bins=bins, range=bin_range,
+                        histtype='stepfilled',
+                        edgecolor=None,
+                        facecolor=color,
+                        alpha=0.1,
+                        density=False)
+            ax_main.hist(data_dict['double'],
+                        bins=bins,
+                        linestyle='--',
+                        range=bin_range,
+                        histtype='step',
+                        color=color,
+                        linewidth=1.5,
+                        alpha=1.0,
+                        label=f'{energy} double',
+                        density=False)
             # Store mean for subplot
             energy_values.append(energy_val)
             mean_double.append(np.mean(data_dict['double']))
@@ -218,36 +203,34 @@ def create_multi_energy_histogram(process_data, process, output_path):
             counts_normalized = counts / (np.sum(counts) * (bin_edges[1] - bin_edges[0]))
             
             # Filter out zero bins
-            nonzero_mask = counts_normalized > 0
-            if np.any(nonzero_mask):
-                # Create step histogram using only non-zero bins
-                 ax_main.hist(data_dict['float'], bins=bins, range=bin_range,
-                            histtype='stepfilled',
-                            linestyle='-',
-                            edgecolor=None,
-                            facecolor=color,
-                            alpha=0.2,
-                            density=False)
-                 ax_main.hist(data_dict['float'],
-                            bins=bins,
-                            range=bin_range,
-                            histtype='step',
-                            color=color,
-                            linewidth=2.0,
-                            linestyle='-',
-                            alpha=1.0,
-                            label=f'{energy} float',
-                            density=False)
-                 # Total number of float samples
-                 total_count = len(data_dict['float'])
-                 
-                 # Count how many have 0, 1, or 2 significant digits
-                 low_sig_count = np.sum(np.isin(data_dict['float'], [0, 1, 2]))
-                 
-                 # Fraction
-                 fraction_low.append( low_sig_count / total_count if total_count > 0 else 0.0)
-               
-                          # Store mean for subplot
+            # Create step histogram using only non-zero bins
+            ax_main.hist(data_dict['float'], bins=bins, range=bin_range,
+                       histtype='stepfilled',
+                       linestyle='-',
+                       edgecolor=None,
+                       facecolor=color,
+                       alpha=0.1,
+                       density=False)
+            ax_main.hist(data_dict['float'],
+                       bins=bins,
+                       range=bin_range,
+                       histtype='step',
+                       color=color,
+                       linewidth=1.5,
+                       linestyle='-',
+                       alpha=1.0,
+                       label=f'{energy} float',
+                       density=False)
+            # Total number of float samples
+            total_count = len(data_dict['float'])
+            
+            # Count how many have 0, 1, or 2 significant digits
+            low_sig_count = np.sum(np.isin(data_dict['float'], [0, 1, 2]))
+            
+            # Fraction
+            fraction_low.append( low_sig_count / total_count if total_count > 0 else 0.0)
+            
+                     # Store mean for subplot
             if len(energy_values) == len(mean_double):
                 mean_float.append(np.mean(data_dict['float']))
     

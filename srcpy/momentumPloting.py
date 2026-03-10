@@ -2,10 +2,21 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+def getNameForPlot(process):
+    incoming = process.split("_")[0]
+    outcoming = process.split("_")[1]
+    if len(process.split("_")) > 2:
+        energy = process.split("_")[2]
+    else:
+        energy =""
+    
+    process = incoming + " -> " + outcoming + " | " + energy
+    return process
+    
 def plotScat_COLvsMEandMEP(process, accuracy, optimisation, colinearities, matrix_element_fl, matrixElementAccuracy_fl):
     #plot scatter plot of colinearities vs Sig. digits to observe the colinearity limit
     fig, ax = plt.subplots()
-    plt.title("Colinearities vs Sig. digits for: "+process+" "+accuracy+" "+optimisation)
+    plt.title("Colinearities vs Sig. digits for: "+getNameForPlot(process)+" "+accuracy+" "+optimisation)
     plt.xlabel("Colinearity")
     plt.ylabel("Sig. digits")
     #keep outliers
@@ -27,7 +38,7 @@ def plotScat_COLvsMEandMEP(process, accuracy, optimisation, colinearities, matri
     plt.close()
     #Colinearities vs matrix element
     fig, ax = plt.subplots()
-    plt.title("Max colinearities vs Sig. digits for: "+process+" "+accuracy+" "+optimisation)
+    plt.title("Max colinearities vs Sig. digits for: "+getNameForPlot(process)+" "+accuracy+" "+optimisation)
     plt.xlabel("Max. abs. colinearity")
     plt.ylabel("Log10 of matrix element")
     #keep outliers
@@ -41,7 +52,7 @@ def plotScat_COLvsMEandMEP(process, accuracy, optimisation, colinearities, matri
 
 def plotScat_EratiossMEP(process, accuracy, optimisation, energys, colinearities, matrixElementAccuracy_fl, nb_par):
 
-    plt.title("Max Energy ratio vs Sig. digits for: "+process+" "+accuracy+" "+optimisation)
+    plt.title("Max Energy ratio vs Sig. digits for: "+getNameForPlot(process)+" "+accuracy+" "+optimisation)
     plt.xlabel("Energy ratio")
     plt.ylabel("Sig. digits")
 
@@ -80,7 +91,7 @@ def plotScat_EvsMEP(process, accuracy, optimisation, energys, colinearities, mat
         flag=""
         start = 0
 
-    plt.title("Energys vs Sig. digits for: "+process+" "+accuracy+" "+optimisation+flag)
+    plt.title("Energys vs Sig. digits for: "+getNameForPlot(process)+" "+accuracy+" "+optimisation+flag)
     plt.xlabel("Energy")
     plt.ylabel("Sig. digits")
 
@@ -155,7 +166,7 @@ def plot_combined(process, accuracy, optimisation,
 
     # --- Plotting ---
     plt.figure(figsize=(9, 6))
-    plt.title(f"Significant digits vs Maximal absolute pairwise collinearity\n{process} {accuracy} {optimisation}")
+    plt.title(f"Significant digits vs Maximal absolute pairwise collinearity\n{getNameForPlot(process)} {accuracy} {optimisation}")
     plt.xlabel("Max. abs. collinearity")
     plt.ylabel("Sig. digits")
 
@@ -199,7 +210,7 @@ def plotScat_MEvsMEP(process, accuracy, optimisation, matrixElementAccuracy_fl, 
     # scatter plot of Sig. digits vs matrix element
     fig, ax = plt.subplots()
     zeros = matrixElementAccuracyZeros
-    plt.title("Sig. digits vs matrix element for: "+process+" "+accuracy+" "+optimisation+"\n Plus "+str(zeros)+" zero accuracy.")
+    plt.title("Sig. digits vs matrix element for: "+getNameForPlot(process)+" "+accuracy+" "+optimisation+"\n Plus "+str(zeros)+" zero accuracy.")
     plt.xlabel("log10(Matrix element)")
     plt.ylabel("Sig. digits")
     #delete outliers. Outlier is a value that is more than 5 standard deviations away from the mean
@@ -241,7 +252,7 @@ def plotScat_MOPvsMO(process, accuracy, optimisation, momentaAccuracy_fl, moment
 def plotScat_EvsME(process, accuracy, optimisation, energys, matrix_element_fl, nb_par):
     #Energys vs matrix element
     fig, ax = plt.subplots(figsize=(10, 6))
-    plt.title("Energys vs matrix element for: "+process+" "+accuracy+" "+optimisation)
+    plt.title("Energys vs matrix element for: "+getNameForPlot(process)+" "+accuracy+" "+optimisation)
     plt.xlabel("Energy")
     plt.ylabel("Log10 of matrix element")
 
@@ -316,7 +327,7 @@ def plotScat_MomentumMagnitudeVsMEP(process, accuracy, optimisation, momentum, m
         ax.legend(markerscale=5, loc='best')
         ax.grid(True, alpha=0.3)
 
-    plt.suptitle(f"3-Momentum Magnitude/Angles vsSignificant digits: {process} {accuracy} {optimisation} {flag}")
+    plt.suptitle(f"3-Momentum Magnitude/Angles vsSignificant digits: {getNameForPlot(process)} {accuracy} {optimisation} {flag}")
     plt.tight_layout()
 
     dir = "histograms"
@@ -367,7 +378,7 @@ def plotScat_MomentumComponentsVsMEP(process, accuracy, optimisation, momentum, 
         ax.legend(markerscale=5, loc='best')
         ax.grid(True, alpha=0.3)
 
-    plt.suptitle(f"Momentum Components vs Significant digits: {process} {accuracy} {optimisation} {flag}")
+    plt.suptitle(f"Momentum Components vs Significant digits: {getNameForPlot(process)} {accuracy} {optimisation} {flag}")
     plt.tight_layout()
 
     dir = "histograms"
@@ -377,10 +388,19 @@ def plotScat_MomentumComponentsVsMEP(process, accuracy, optimisation, momentum, 
     plt.close()
 def plotHis_MEP(process, accuracy, optimisation, matrixElementAccuracy_fl, matrixElementAccuracyZeros):
     # plot histogram of Sig. digits
+    bellow_3 = sum( f < 3 for f in matrixElementAccuracy_fl)  
+    frac = bellow_3/len(matrixElementAccuracy_fl)
     fig, ax = plt.subplots()
-    plt.title("Sig. digits for: "+process+" "+accuracy+" "+optimisation)
+    plt.title("Sig. digits for: "+getNameForPlot(process)+" "+accuracy+" "+optimisation)
     plt.xlabel("Sig. digits. [1]     Sum = "+str(len(matrixElementAccuracy_fl)))#'''+matrixElementAccuracyZeros'''))
     plt.ylabel("ME count [1]")
+    plt.text(
+        0.98, 0.98,
+        f"Below 3 sig. dig. = {frac*100:.2f}%",
+        transform=plt.gca().transAxes,
+        ha='right',
+        va='top'
+    )
     counts, edges, bars = ax.hist(matrixElementAccuracy_fl, histtype='barstacked',bins=range(0, int(max(matrixElementAccuracy_fl))+2))
     plt.bar_label(bars)
     #show the mean in neat way
@@ -401,7 +421,7 @@ def plotHis_MEP(process, accuracy, optimisation, matrixElementAccuracy_fl, matri
 def plotHis_MOP(process, accuracy, optimisation, momentaAccuracy_fl, momentaAccuracyZeros):
     # plot histogram of momenta accuracy
     fig, ax = plt.subplots()
-    plt.title("Momenta accuracy for: "+process+" "+accuracy+" "+optimisation)
+    plt.title("Momenta accuracy for: "+getNameForPlot(process)+" "+accuracy+" "+optimisation)
     plt.xlabel("Sig. digits.        Sum = "+str(len(momentaAccuracy_fl)))#+momentaAccuracyZeros))
     counts, edges, bars = ax.hist(momentaAccuracy_fl, histtype='barstacked',color='orange',bins=range(0, int(max(momentaAccuracy_fl))+2))
     plt.bar_label(bars)

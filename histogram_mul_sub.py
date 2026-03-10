@@ -44,7 +44,7 @@ class Data:
 cwd = os.getcwd()
 
 if cwd.split("/")[-1] != "SubProcesses":
-    #exit("Not in SubProcesses dir")
+    exit("Not in SubProcesses dir")
 
 process = cwd.split("/")[-2]
 process = process.replace("PROC_", "")
