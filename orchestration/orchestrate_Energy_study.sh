@@ -27,6 +27,8 @@ set -euo pipefail
 #########################
 # Configuration
 #########################
+# Expand denominators with Double word expansions
+EXPAND_DENOM="true"
 
 # Maximum number of parallel check_cpp.exe processes
 MAX_PARALLEL_CHECKS=120
@@ -287,6 +289,8 @@ compile_directory() {
     
     return $compile_status
 }
+
+
 step2_compile_all() {
     log_info "Step 2: Compiling all directories serially and launching check_cpp.exe..."
 
@@ -297,11 +301,11 @@ step2_compile_all() {
     local failed_dirs=()
     CHECK_CPP_PIDS=()
 
+    patch_precision "double"
     for dir in "${p1_dirs[@]}"; do
         for tev in "${ECMS_TEV[@]}"; do
             local tag="${tev}TeV"
             local double_dir="${dir}_${tag}_double"
-            local float_dir="${dir}_${tag}_float"
 
             # --- Double ---
             if [ -d "$double_dir" ]; then
@@ -311,7 +315,6 @@ step2_compile_all() {
                     (cd "$WORK_DIR/$double_dir" && bash Cadnize.sh > cadnize_double.log 2>&1) \
                         || log_warn "Cadnize.sh reported non-zero for $double_dir"
 
-                    patch_precision "double"
                     if ! compile_directory "$double_dir" "d" "double"; then
                         failed_dirs+=("$double_dir (double)")
                     else
@@ -319,11 +322,31 @@ step2_compile_all() {
                         run_check_cpp "$double_dir" "double"
                         CHECK_CPP_PIDS+=($LAST_CHECK_PID)
                     fi
-                    patch_precision "float"  # restore
                 else
                     failed_dirs+=("$double_dir (patch)")
                 fi
             fi
+
+                       # Throttle parallel check_cpp.exe
+            while [ $(count_running_check_cpp) -ge "$MAX_PARALLEL_CHECKS" ]; do
+                log_info "Parallel limit reached ($(count_running_check_cpp)/$MAX_PARALLEL_CHECKS), waiting..."
+                sleep 5
+            done
+        done
+    done
+
+    if [ "$EXPAND_DENOM" = "true" ]; then
+        log_info "Expanding denominator for float dirs."
+        ln -sf "$CADNA_TOOLBOX_PATH/Arithmetics" "$WORK_DIR/../src/"
+        (cd "$WORK_DIR/../src/Arithmetics" && python3 HelAmpsDenomExpand.py) \
+            || { log_error "HelAmpsDenomExpand.py failed"; exit 1; }
+    fi
+
+    patch_precision "float"  # restore
+    for dir in "${p1_dirs[@]}"; do
+        for tev in "${ECMS_TEV[@]}"; do
+            local tag="${tev}TeV"
+            local float_dir="${dir}_${tag}_float"
 
             # --- Float ---
             if [ -d "$float_dir" ]; then
@@ -341,7 +364,6 @@ step2_compile_all() {
                         run_check_cpp "$float_dir" "float"
                         CHECK_CPP_PIDS+=($LAST_CHECK_PID)
                     fi
-                    patch_precision "double"  # restore
                 else
                     failed_dirs+=("$float_dir (patch)")
                 fi

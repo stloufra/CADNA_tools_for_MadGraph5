@@ -12,7 +12,7 @@ denom_string = """
     const cxtype_sv denom = Ccoeff * COUP / denden;
 """
 
-with open("HelAmps_sm_backup" , "r") as f:
+with open("../HelAmps_sm.h" , "r") as f:
     lines = f.readlines()
     for idx, line in enumerate(lines):
         if '#include "mgOnGpuConfig.h"' in line:
@@ -32,7 +32,7 @@ with open("HelAmps_sm_backup" , "r") as f:
                     break
 
                 if re.search(r'P\d\[4', pline):
-                    m = re.search(r'-cxreal\(\s*([A-Z]\d+)\[', pline)
+                    m = re.search(r'-cxreal\(\s*([A-Z]\d)\[', pline)
                     if m:
                         wave = m.group(1)[0]
                     break
@@ -45,7 +45,7 @@ with open("HelAmps_sm_backup" , "r") as f:
 
         else:
             new_lines.append(line)
-with open("HelAmps_sm_backup" , "w") as f:
+with open("../HelAmps_sm_backup" , "w") as f:
     f.writelines(lines)
-with open("HelAmps_sm.h" , "w") as f:
+with open("../HelAmps_sm.h" , "w") as f:
     f.writelines(new_lines)
