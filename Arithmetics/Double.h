@@ -162,7 +162,6 @@ operator float_st() const;
                                           || std::is_same_v< U, float_st >
 #endif
                                           , int > >
-#ifdef __CADNA__
   __cuda_callable__
   constexpr Double< T >::Double( const U rhs )
   {
