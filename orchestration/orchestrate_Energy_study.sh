@@ -43,6 +43,8 @@ ITERATIONS=100000
 # Centre-of-mass energies in TeV to study
 #ECMS_TEV=(1 2 4 6 8 10 12 14)
 ECMS_TEV=(1 5 10 14)
+#ECMS_TEV=(1)
+
 
 MAIL_ON_SUCCESS="true"
 USER="${USER}" #if not same as lxplus username, change accordingly
@@ -337,7 +339,9 @@ step2_compile_all() {
 
     if [ "$EXPAND_DENOM" = "true" ]; then
         log_info "Expanding denominator for float dirs."
-        ln -sf "$CADNA_TOOLBOX_PATH/Arithmetics" "$WORK_DIR/../src/"
+        mkdir -p "$WORK_DIR/../src/Arithmetics"
+        ln -sf "$CADNA_TOOLBOX_PATH/Arithmetics/"* "$WORK_DIR/../src/Arithmetics"
+        log_info "Inside $(pwd)"
         (cd "$WORK_DIR/../src/Arithmetics" && python3 HelAmpsDenomExpand.py) \
             || { log_error "HelAmpsDenomExpand.py failed"; exit 1; }
     fi

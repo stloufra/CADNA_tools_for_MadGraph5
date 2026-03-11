@@ -11,7 +11,8 @@ namespace MG_ARITHM{
 template< typename T >
 class alignas( 2 * sizeof( T ) ) Double
 {
-#ifndef __CADNA__
+
+#ifdef __CADNA__
   static_assert(  std::is_same_v< T, float_st > || std::is_same_v< T, double_st >
                  ,"Double<T> can only be instantiated with float_st or double_st." );
 #else

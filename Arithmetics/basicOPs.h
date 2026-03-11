@@ -40,7 +40,7 @@ __host__
 
 #ifdef __CADNA__
 #define FLOAT_TEMPLATE_GUARD \
-template< typename T, std::enable_if_t< is_special_fp_t_v< T >, int > = 0 >
+template< typename T, std::enable_if_t< is_special_fp_v< T >, int > = 0 >
 #else
 #define FLOAT_TEMPLATE_GUARD \
 template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
