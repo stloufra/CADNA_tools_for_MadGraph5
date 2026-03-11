@@ -11,8 +11,13 @@ namespace MG_ARITHM{
 template< typename T >
 class alignas( 2 * sizeof( T ) ) Double
 {
-  static_assert( std::is_same_v< T, float > || std::is_same_v< T, double >,
-                 "Double<T> can only be instantiated with float or double." );
+  static_assert( std::is_same_v< T, float > || std::is_same_v< T, double >
+#ifdef __CADNA__
+                 || std::is_same_v< T, float_st > || std::is_same_v< T, double_st >
+                 ,"Double<T> can only be instantiated with float or double, float_st or double_st." );
+#else
+                 ,"Double<T> can only be instantiated with float or double." );
+#endif
 
   private:
   T data[ 2 ];
@@ -32,7 +37,11 @@ class alignas( 2 * sizeof( T ) ) Double
   constexpr Double( Double&& other ) noexcept = default;
 
   template<typename U,
-           std::enable_if_t<std::is_same_v<U, float>, int> = 0>
+           std::enable_if_t<std::is_same_v<U, float>
+#ifdef __CADNA__
+                            || std::is_same_v<U, float_st>
+#endif
+                             , int> = 0>
   __cuda_callable__
   constexpr Double(U rhs);
 
@@ -148,11 +157,20 @@ operator float_st() const;
   }
 
   template< typename T >
-  template< typename U, std::enable_if_t< std::is_same_v< U, float >, int > >
+  template< typename U, std::enable_if_t< std::is_same_v< U, float >
+#ifdef __CADNA__
+                                          || std::is_same_v< U, float_st >
+#endif
+                                          , int > >
+#ifdef __CADNA__
   __cuda_callable__
   constexpr Double< T >::Double( const U rhs )
   {
-    if constexpr( std::is_same_v< T, float > ) {
+    if constexpr( std::is_same_v< T, float >
+#ifdef __CADNA__
+                                || std::is_same_v< T, float_st >
+#endif
+) {
       data[ 0 ] = rhs;
       data[ 1 ] = 0.0F;
     }
