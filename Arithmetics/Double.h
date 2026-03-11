@@ -1,6 +1,11 @@
 #ifndef TEST_FD_FPEXPANSION_H
 #define TEST_FD_FPEXPANSION_H
 #include "errorFreeOPs.h"
+
+#ifdef __CADNA__
+#include <cadna.h>
+#endif
+
 namespace MG_ARITHM{
 
 template< typename T >
@@ -35,6 +40,11 @@ class alignas( 2 * sizeof( T ) ) Double
   explicit constexpr
   operator float() const;
 
+#ifdef __CADNA__
+__cuda_callable__
+explicit constexpr
+operator float_st() const;
+#endif
 
    //--------------ADDS AND SUBS-------------
    __cuda_callable__
@@ -158,6 +168,18 @@ class alignas( 2 * sizeof( T ) ) Double
   {
     return static_cast<float>(data[ 0 ]);
   }
+
+#ifdef __CADNA__
+template< typename T >
+__cuda_callable__
+constexpr Double< T >::operator float_st() const
+  {
+   if constexpr( std::is_same_v< T, float_st > )
+      return data[0];
+   else
+      return static_cast<float_st>(data[ 0 ]);
+  }
+#endif
 
  template< typename T >
 __cuda_callable__
