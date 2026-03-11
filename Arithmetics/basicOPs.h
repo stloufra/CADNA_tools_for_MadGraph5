@@ -32,8 +32,22 @@ __host__
 #define __cuda_callable__
 #endif
 
+#ifdef __CADNA__
+   template <typename T>
+     constexpr bool is_special_fp_v =
+         std::is_same_v<T, double_st> || std::is_same_v<T, float_st>;
+#endif
 
-template< typename T, typename U = T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+#ifdef __CADNA__
+#define FLOAT_TEMPLATE_GUARD \
+template< typename T, std::enable_if_t< is_special_fp_t_v< T >, int > = 0 >
+#else
+#define FLOAT_TEMPLATE_GUARD \
+template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+#endif
+
+
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 static constexpr __tnl_inline__ T
 add_rn( const T x, const T y )
@@ -50,7 +64,7 @@ add_rn( const T x, const T y )
 #endif
 }
 
-template< typename T, typename U = T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 static constexpr __tnl_inline__ T
 mul_rn( const T x, const T y )
@@ -67,7 +81,7 @@ mul_rn( const T x, const T y )
 #endif
 }
 
-template< typename T, typename U = T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 static constexpr __tnl_inline__ T
 div_rn( const T x, const T y )
@@ -84,7 +98,7 @@ div_rn( const T x, const T y )
 #endif
 }
 
-template< typename T, typename U = T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 static constexpr __tnl_inline__ T
 fma_rn( const T x, const T y, const T z )

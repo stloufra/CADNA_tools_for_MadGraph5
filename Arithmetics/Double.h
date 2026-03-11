@@ -11,11 +11,11 @@ namespace MG_ARITHM{
 template< typename T >
 class alignas( 2 * sizeof( T ) ) Double
 {
-  static_assert( std::is_same_v< T, float > || std::is_same_v< T, double >
-#ifdef __CADNA__
-                 || std::is_same_v< T, float_st > || std::is_same_v< T, double_st >
-                 ,"Double<T> can only be instantiated with float or double, float_st or double_st." );
+#ifndef __CADNA__
+  static_assert(  std::is_same_v< T, float_st > || std::is_same_v< T, double_st >
+                 ,"Double<T> can only be instantiated with float_st or double_st." );
 #else
+  static_assert( std::is_same_v< T, float > || std::is_same_v< T, double >
                  ,"Double<T> can only be instantiated with float or double." );
 #endif
 
@@ -36,23 +36,23 @@ class alignas( 2 * sizeof( T ) ) Double
   __cuda_callable__
   constexpr Double( Double&& other ) noexcept = default;
 
-  template<typename U,
-           std::enable_if_t<std::is_same_v<U, float>
 #ifdef __CADNA__
-                            || std::is_same_v<U, float_st>
-#endif
-                             , int> = 0>
+   template<typename U, std::enable_if_t<std::is_same_v<U, float_st>, int> = 0>
+#else
+   template<typename U, std::enable_if_t<std::is_same_v<U, float>, int> = 0>
+ #endif
   __cuda_callable__
   constexpr Double(U rhs);
 
-  __cuda_callable__
-  explicit constexpr
-  operator float() const;
 
 #ifdef __CADNA__
-__cuda_callable__
-explicit constexpr
-operator float_st() const;
+   __cuda_callable__
+   explicit constexpr
+   operator float_st() const;
+#else
+   __cuda_callable__
+   explicit constexpr
+   operator float() const;
 #endif
 
    //--------------ADDS AND SUBS-------------
@@ -87,7 +87,7 @@ operator float_st() const;
 
 };
   // --------------- ADDITION --------------
-
+/*
   template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > = 0 >
   __cuda_callable__
   constexpr Double< T >
@@ -97,6 +97,7 @@ operator float_st() const;
   __cuda_callable__
   constexpr Double< T >
   operator+( const U& b, const Double< T >& A );
+*/
 
   template< typename T >
   __cuda_callable__
@@ -104,7 +105,7 @@ operator float_st() const;
   operator+( const Double< T >& A, const Double< T >& B );
 
   // --------------- SUBTRACTION -------------
-
+ /*
   template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > = 0 >
   __cuda_callable__
   constexpr Double< T >
@@ -114,6 +115,7 @@ operator float_st() const;
   __cuda_callable__
   constexpr Double< T >
   operator-( const U& b, const Double< T >& A );
+*/
 
   template< typename T >
   __cuda_callable__
@@ -123,6 +125,7 @@ operator float_st() const;
   // ------------- MULTIPLICATION ------------
 
   // Double<T> * T,where T is a power of 2.
+/*
   template< typename T >
   __cuda_callable__
   constexpr Double< T >
@@ -137,6 +140,7 @@ operator float_st() const;
   __cuda_callable__
   constexpr Double< T >
   operator*( const U& b, const Double< T >& A );
+*/
 
   template< typename T >
   __cuda_callable__
@@ -151,25 +155,22 @@ operator float_st() const;
   __cuda_callable__
   constexpr Double< T >::Double( T hi, T lo )
      : data{hi, lo}
-  {
-    /*data[ 0 ] = hi;
-    data[ 1 ] = lo;*/
-  }
+  {}
 
   template< typename T >
-  template< typename U, std::enable_if_t< std::is_same_v< U, float >
 #ifdef __CADNA__
-                                          || std::is_same_v< U, float_st >
+  template< typename U, std::enable_if_t< std::is_same_v< U, float_st >, int > >
+#else
+  template< typename U, std::enable_if_t< std::is_same_v< U, float >, int > >
 #endif
-                                          , int > >
   __cuda_callable__
   constexpr Double< T >::Double( const U rhs )
   {
-    if constexpr( std::is_same_v< T, float >
 #ifdef __CADNA__
-                                || std::is_same_v< T, float_st >
+    if constexpr( std::is_same_v< T, float_st > ) {
+#else
+    if constexpr( std::is_same_v< T, float > ) {
 #endif
-) {
       data[ 0 ] = rhs;
       data[ 1 ] = 0.0F;
     }
@@ -177,13 +178,6 @@ operator float_st() const;
       data[ 0 ] = static_cast< T >( rhs );
       data[ 1 ] = 0.0;
     }
-  }
-
-  template< typename T >
-  __cuda_callable__
-  constexpr Double< T >::operator float() const
-  {
-    return static_cast<float>(data[ 0 ]);
   }
 
 #ifdef __CADNA__
@@ -196,6 +190,15 @@ constexpr Double< T >::operator float_st() const
    else
       return static_cast<float_st>(data[ 0 ]);
   }
+#else
+
+   template< typename T >
+   __cuda_callable__
+   constexpr Double< T >::operator float() const
+  {
+     return static_cast<float>(data[ 0 ]);
+  }
+
 #endif
 
  template< typename T >
@@ -229,10 +232,65 @@ Double< T >::sloppy_add( const Double< T >& a, const Double< T >& b )
    return Double< T >( qtsRes.sum, qtsRes.error );
 }
 
+   template< typename T >
+   __cuda_callable__
+   constexpr Double< T >
+   operator+( const Double< T >& A, const Double< T >& B )
+  {
+#ifdef ARITHMETICS_SLOPPY_ADD
+     return Double< T >::sloppy_add( A, B );
+#else
+     return Double< T >::ieee_add( A, B );
+#endif
+  }
 
-// end of methods begin of functions
+   template< typename T >
+   __cuda_callable__
+   constexpr Double< T >
+   Double< T >::operator+() const
+  {
+     return *this;
+  }
 
-template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
+   template< typename T >
+   __cuda_callable__
+   constexpr Double< T >
+   operator-( const Double< T >& A, const Double< T >& B )
+  {
+#ifdef ARITHMETICS_SLOPY_ADD
+     auto td = two_diff( A[ 0 ], B[ 0 ] );
+     td.error = add_rn( td.error, A[ 1 ] );
+     auto qtsRes = quick_two_sum( td.sum, add_rn( td.error, -B[ 1 ] ) );
+     return Double< T >( qtsRes.sum, qtsRes.error );
+#else
+     auto td1 = two_diff( A[ 0 ], B[ 0 ] );
+     auto td2 = two_diff( A[ 1 ], B[ 1 ] );
+     auto qtsRes = quick_two_sum( td1.sum, add_rn( td1.error, td2.sum ) );
+     auto qtsRes2 = quick_two_sum( qtsRes.sum, add_rn( qtsRes.error, td2.error ) );
+     return Double< T >( qtsRes2.sum, qtsRes2.error );
+#endif
+  }
+
+   template< typename T >
+   __cuda_callable__
+   constexpr Double< T >
+   Double< T >::operator-() const
+  {
+     return Double< T >( -this->data[ 0 ], -this->data[ 1 ] );
+  }
+
+   template< typename T >
+   __cuda_callable__
+   constexpr Double< T >
+   operator*( const Double< T >& A, const Double< T >& B )
+  {
+     auto tp = two_prod( A[ 0 ], B[ 0 ] );
+     /*volatile*/ const T temp = add_rn( mul_rn( A[ 1 ], B[ 0 ] ), mul_rn( A[ 0 ], B[ 1 ] ) );
+     auto qtsRes = quick_two_sum( tp.sum, add_rn( tp.error, temp ) );
+     return Double< T >( qtsRes.sum, qtsRes.error );
+  }
+
+/*template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
 __cuda_callable__
 constexpr Double< T >
 operator+( const Double< T >& A, const U& b )
@@ -259,30 +317,9 @@ constexpr Double< T >
 operator+( const U& b, const Double< T >& A )
 {
    return A + b;
-}
+}*/
 
-template< typename T >
-__cuda_callable__
-constexpr Double< T >
-operator+( const Double< T >& A, const Double< T >& B )
-{
-#ifdef ARITHMETICS_SLOPPY_ADD
-   return Double< T >::sloppy_add( A, B );
-#else
-   return Double< T >::ieee_add( A, B );
-#endif
-}
-
-template< typename T >
-__cuda_callable__
-constexpr Double< T >
-Double< T >::operator+() const
-{
-   return *this;
-}
-
-
-template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
+/*template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
 __cuda_callable__
 constexpr Double< T >
 operator-( const Double< T >& A, const U& b )
@@ -301,43 +338,19 @@ operator-( const Double< T >& A, const U& b )
       auto qtsRes = quick_two_sum( td.sum, add_rn( td.error, A[ 1 ] ) );
       return Double< T >( qtsRes.sum, qtsRes.error );
    }
-}
+}*/
 
-template< typename T >
-__cuda_callable__
-constexpr Double< T >
-operator-( const Double< T >& A, const Double< T >& B )
-{
-#ifdef ARITHMETICS_SLOPY_ADD
-   auto td = two_diff( A[ 0 ], B[ 0 ] );
-   td.error = add_rn( td.error, A[ 1 ] );
-   auto qtsRes = quick_two_sum( td.sum, add_rn( td.error, -B[ 1 ] ) );
-   return Double< T >( qtsRes.sum, qtsRes.error );
-#else
-   auto td1 = two_diff( A[ 0 ], B[ 0 ] );
-   auto td2 = two_diff( A[ 1 ], B[ 1 ] );
-   auto qtsRes = quick_two_sum( td1.sum, add_rn( td1.error, td2.sum ) );
-   auto qtsRes2 = quick_two_sum( qtsRes.sum, add_rn( qtsRes.error, td2.error ) );
-   return Double< T >( qtsRes2.sum, qtsRes2.error );
-#endif
-}
-
-template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
+/*template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
 __cuda_callable__
 constexpr Double< T >
 operator-( const U& b, const Double< T >& A )
 {
    return ( -A ) + b;
-}
+}*/
 
-template< typename T >
-__cuda_callable__
-constexpr Double< T >
-Double< T >::operator-() const
-{
-   return Double< T >( -this->data[ 0 ], -this->data[ 1 ] );
-}
-template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
+
+
+/*template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
 __cuda_callable__
 constexpr Double< T >
 operator*( const Double< T >& A, const U& b )
@@ -358,26 +371,15 @@ operator*( const Double< T >& A, const U& b )
       auto qtsRes = quick_two_sum( tp.sum, add_rn( tp.error, temp ) );
       return Double< T >( qtsRes.sum, qtsRes.error );
    }
-}
+}*/
 
-template< typename T >
-__cuda_callable__
-constexpr Double< T >
-operator*( const Double< T >& A, const Double< T >& B )
-{
-   auto tp = two_prod( A[ 0 ], B[ 0 ] );
-   /*volatile*/ const T temp = add_rn( mul_rn( A[ 1 ], B[ 0 ] ), mul_rn( A[ 0 ], B[ 1 ] ) );
-   auto qtsRes = quick_two_sum( tp.sum, add_rn( tp.error, temp ) );
-   return Double< T >( qtsRes.sum, qtsRes.error );
-}
-
-template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
+/*template< typename T, typename U, std::enable_if_t< std::is_arithmetic_v< U > , int > >
 __cuda_callable__
 constexpr Double< T >
 operator*( const U& b, const Double< T >& A )
 {
    return A * b;
-}
+}*/
 }
 
 #endif //TEST_FD_FPEXPANSION_H

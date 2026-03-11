@@ -16,6 +16,8 @@ struct rne
 };
 
 
+
+/*
 namespace spliting_detail {
 
 // double precision
@@ -73,9 +75,9 @@ split( T value )
       }
       return { static_cast< U >( high ), static_cast< U >( low ) };
    }
-}
+}*/
 
-template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 constexpr __tnl_inline__ rne< T >
 quick_two_sum( const T a, const T b )
@@ -86,7 +88,7 @@ quick_two_sum( const T a, const T b )
   return {s, err};
 }
 
-template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 constexpr __tnl_inline__ rne< T >
 quick_two_diff( const T a, const T b )
@@ -98,7 +100,7 @@ quick_two_diff( const T a, const T b )
 }
 
 
-template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 constexpr __tnl_inline__ rne< T >
 two_sum( const T a, const T b )
@@ -113,7 +115,7 @@ two_sum( const T a, const T b )
 }
 
 
-template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 constexpr __tnl_inline__ rne< T >
 two_diff( const T a, const T b )
@@ -127,7 +129,7 @@ two_diff( const T a, const T b )
    return {s, err};
 }
 
-template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+FLOAT_TEMPLATE_GUARD
 __cuda_callable__
 constexpr __tnl_inline__ rne< T >
 two_prod( const T a, const T b )
@@ -167,7 +169,7 @@ two_prod( const T a, const T b )
 #endif
 }
 
-template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+/*template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
 __cuda_callable__
 constexpr rne< T >
 two_sqr( const T a )
@@ -197,9 +199,9 @@ two_sqr( const T a )
    return { q, err };
    #endif
 #endif
-}
+}*/
 
-template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
+/*template< typename T, std::enable_if_t< std::is_floating_point_v< T >, int > = 0 >
 __cuda_callable__
 __tnl_inline__ constexpr T
 nint( const T d )
@@ -215,7 +217,7 @@ __tnl_inline__ constexpr T
 aint( const T d )
 {
    return ( d >= 0.0F ) ? std::floor( d ) : std::ceil( d );
-}
+}*/
 
 
 }
