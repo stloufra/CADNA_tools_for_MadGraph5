@@ -129,18 +129,17 @@ else
 fi
 
           #remove fast math from the cudacpp one folder up
-if [ -f "../cuda_cpp.mk" ]
+if [ -f "../cudacpp.mk" ]
 then
-    if grep -Fq "removed for CADNA" ../cuda_cpp.mk
+    if grep -Fq "removed for CADNA" ../cudacpp.mk
     then
         echo "fast math already comented out"
     else
         echo "comenting fast math in ../cuda_cpp.mk"
-        echo "skipping this step for now"
-       python3 $CURRENT_DIR/srcpy/cadnize_fast_math.py ../cuda_cpp.mk
+       python3 $CURRENT_DIR/srcpy/cadnize_fast_math.py ../cudacpp.mk
     fi
 else
-  echo "../../src/mgOnGpuCxtypes.h does not exist"
+  echo "../cudacpp.mk does not exist"
 fi
            #changes in mgOnGpuConfig.h - #include cadna.h, #undef SIMD, typdefs to _st
 echo
@@ -201,7 +200,7 @@ do
 done
 
                 #paste "\n" after every operator after every "=" in HelAmps_sm.h - make optional
-python3 $CURRENT_DIR/srcpy/cadnize_expand_equations.py ../../src/HelAmps_sm.h
+#python3 $CURRENT_DIR/srcpy/cadnize_expand_equations.py ../../src/HelAmps_sm.h
 
 #care for the additional options
 
