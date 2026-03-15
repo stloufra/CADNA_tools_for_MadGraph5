@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from fontTools.ttLib.woff2 import bboxFormat
+
 
 def getNameForPlot(process):
     incoming = process.split("_")[0]
@@ -225,8 +227,6 @@ def plotScat_MEvsMEP(process, accuracy, optimisation, matrixElementAccuracy_fl, 
     plt.scatter(np.log10(matrix_element_fl), matrixElementAccuracy_fl, s=0.1)
     plt.savefig(dir+"/scatter_"+process+"_"+accuracy+"_"+optimisation[1:]+".png" )
 
-
-
 def plotScat_MOPvsMO(process, accuracy, optimisation, momentaAccuracy_fl, momentaAccuracyZeros, momentum_fl):
     # scatter plot of momenta accuracy vs momentum
     fig, ax = plt.subplots()
@@ -247,7 +247,6 @@ def plotScat_MOPvsMO(process, accuracy, optimisation, momentaAccuracy_fl, moment
     dir = "histograms"
     plt.scatter(momentum_fl, momentaAccuracy_fl, s=0.01, color='black')
     plt.savefig(dir + "/scatter_momentum_fl_" + process + "_" + accuracy + "_" + optimisation[1:] + ".png")
-
 
 def plotScat_EvsME(process, accuracy, optimisation, energys, matrix_element_fl, nb_par):
     #Energys vs matrix element
@@ -335,6 +334,7 @@ def plotScat_MomentumMagnitudeVsMEP(process, accuracy, optimisation, momentum, m
         os.makedirs(dir)
     plt.savefig(dir+"/scatter_3momentum_magnitudeAngle_MEP_"+process+"_"+accuracy+"_"+optimisation[1:]+".png", dpi=150)
     plt.close()
+
 def plotScat_MomentumComponentsVsMEP(process, accuracy, optimisation, momentum, matrixElementAccuracy_fl, nb_par, withoutFirstTwo = True):
     """
     Three separate 2D plots for px, py, pz vs Sig. digits
@@ -386,6 +386,7 @@ def plotScat_MomentumComponentsVsMEP(process, accuracy, optimisation, momentum, 
         os.makedirs(dir)
     plt.savefig(dir+"/scatter_momentum_components_MEP_"+process+"_"+accuracy+"_"+optimisation[1:]+".png", dpi=150)
     plt.close()
+
 def plotHis_MEP(process, accuracy, optimisation, matrixElementAccuracy_fl, matrixElementAccuracyZeros):
     # plot histogram of Sig. digits
     bellow_3 = sum( f < 3 for f in matrixElementAccuracy_fl)  
@@ -406,7 +407,7 @@ def plotHis_MEP(process, accuracy, optimisation, matrixElementAccuracy_fl, matri
     #show the mean in neat way
     plt.axvline(x=sum(matrixElementAccuracy_fl)/len(matrixElementAccuracy_fl), color='c', linestyle='dashed', linewidth=1)
     min_ylim, max_ylim = plt.ylim()
-    plt.text(sum(matrixElementAccuracy_fl)/len(matrixElementAccuracy_fl), +max_ylim*0.1, 'Mean: {:.2f}'.format(sum(matrixElementAccuracy_fl)/len(matrixElementAccuracy_fl)),color='black')
+    plt.text(sum(matrixElementAccuracy_fl)/len(matrixElementAccuracy_fl), +max_ylim*0.1, 'Mean: {:.3f}'.format(sum(matrixElementAccuracy_fl)/len(matrixElementAccuracy_fl)),color='black')
     #show the median in neat way
 
     #create a directory for the histograms if it doesn't exist
@@ -416,6 +417,133 @@ def plotHis_MEP(process, accuracy, optimisation, matrixElementAccuracy_fl, matri
 
     #save histogram
     plt.savefig(dir+"/histogram_"+process+"_"+accuracy+"_"+optimisation[1:]+".png" )
+    plt.close()
+
+def plotConvergence_MEP_cuts(process, accuracy, optimisation, matrixElementAccuracy_fl, cuts, cuts_config):
+
+    passing = [v for v, c in zip(matrixElementAccuracy_fl, cuts) if c == 'none']
+    all_    = matrixElementAccuracy_fl
+
+    if not passing:
+        return
+
+    step = 100
+
+    def compute(vals):
+        indices     = range(step, len(vals) + 1, step)
+        frac_below3 = [sum(v < 3 for v in vals[:n]) / n * 100 for n in indices]
+        mean_acc    = [sum(vals[:n]) / n                        for n in indices]
+        return list(indices), frac_below3, mean_acc
+
+    idx_all,  frac_all,  mean_all  = compute(all_)
+    idx_pass, frac_pass, mean_pass = compute(passing)
+
+    fig, ax1 = plt.subplots()
+
+
+
+    ax1.set_xlabel("Events [1]")
+    ax1.set_ylabel("Below 3 sig. dig. [%]", color='tomato')
+    ax1.plot(idx_all,  frac_all,  color='tomato',  linewidth=1, linestyle='dashed', label='below 3 - all')
+    ax1.plot(idx_pass, frac_pass, color='tomato',  linewidth=1, linestyle='solid',  label='below 3 - passing')
+    ax1.axhline(y=0.1, color='tomato', linestyle='dotted', linewidth=3, label='0.1%')
+    ax1.tick_params(axis='y', labelcolor='tomato')
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel("Mean sig. digits [1]", color='steelblue')
+    ax2.plot(idx_all,  mean_all,  color='steelblue', linewidth=1, linestyle='dashed', label='mean - all')
+    ax2.plot(idx_pass, mean_pass, color='steelblue', linewidth=1, linestyle='solid',  label='mean - passing')
+    ax2.tick_params(axis='y', labelcolor='steelblue')
+
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=8, loc='best')
+
+    ax1.set_title("Convergence for: " + getNameForPlot(process) + " " + accuracy + " " + optimisation)
+    info = (
+        f"Jets idx: {cuts_config.jets}\n"
+        f"$p_T$ > {cuts_config.pt} GeV\n"
+        f"$|\\eta|$ < {cuts_config.eta}\n"
+        f"$m_{{jj}}$ > {cuts_config.mjj} GeV"
+    )
+    fig.text(0.02, 0.98, info, transform=ax1.transAxes, ha='left', va='top',
+             fontsize=8, family='sans-serif',
+             bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.7)
+             )
+    fig.tight_layout()
+
+    dir = "histograms"
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    plt.savefig(dir + "/convergence_" + process + "_" + accuracy + "_" + optimisation[1:] + "_cuts.png")
+    plt.close()
+
+def plotHis_MEP_cuts(process, accuracy, optimisation, matrixElementAccuracy_fl, matrixElementAccuracyZeros, cuts, cuts_config):
+
+    CATEGORIES = ['none', 'pt', 'eta', 'mjj']
+    COLORS     = {'none': 'steelblue', 'pt': 'tomato', 'eta': 'darkorange', 'mjj': 'mediumpurple'}
+    LABELS     = {'none': 'pass', 'pt': 'cut $p_T$', 'eta': r'cut $|\eta|$', 'mjj': 'cut $m_{jj}$'}
+
+    passing = [v for v, c in zip(matrixElementAccuracy_fl, cuts) if c == 'none']
+    bins    = range(0, int(max(matrixElementAccuracy_fl)) + 2)
+
+    fig, ax = plt.subplots()
+
+    bottoms = np.zeros(len(bins) - 1)
+    for cat in CATEGORIES:
+        vals = [v for v, c in zip(matrixElementAccuracy_fl, cuts) if c == cat]
+        if not vals:
+            continue
+        counts, _ = np.histogram(vals, bins=bins)
+        bars = ax.bar(bins[:-1], counts, bottom=bottoms, width=0.8,
+                      color=COLORS[cat], label=LABELS[cat], align='center')
+        if cat == 'none':
+            ax.bar_label(bars, labels=[str(c) if c > 0 else '' for c in counts],
+                         label_type='edge', fontsize=7, color='black', padding=3)
+        bottoms += counts
+
+    if passing:
+        mean = sum(passing) / len(passing)
+        ax.axvline(x=mean, color='c', linestyle='dashed', linewidth=1)
+        ax.text(mean, ax.get_ylim()[1] * 0.2, f'Mean: {mean:.2f}', color='black',
+                fontsize=8, family='sans-serif',
+                 )
+
+    bellow_3 = sum(f < 3 for f in passing) if passing else 0
+    frac     = bellow_3 / len(passing) if passing else 0.0
+
+    bellow_3_native = sum( f < 3 for f in matrixElementAccuracy_fl)
+    frac_native = bellow_3_native/len(matrixElementAccuracy_fl)
+
+    ax.text(0.02, 0.78,
+            f"Below 3 sig. dig. = {frac*100:.3f}({frac_native*100:.3f})%\nPassing events = {len(passing)}",
+            transform=ax.transAxes, ha='left', va='top',
+            fontsize=8, family='sans-serif',
+            )
+
+
+    info = (
+        f"Jets idx: {cuts_config.jets}\n"
+        f"$p_T$ > {cuts_config.pt} GeV\n"
+        f"$|\\eta|$ < {cuts_config.eta}\n"
+        f"$m_{{jj}}$ > {cuts_config.mjj} GeV"
+    )
+    ax.text(0.02, 0.98, info, transform=ax.transAxes, ha='left', va='top',
+                fontsize = 8, family = 'sans-serif',
+            )
+
+    ax.set_title("Sig. digits for: " + getNameForPlot(process) + " " + accuracy + " " + optimisation)
+    ax.set_xlabel("Sig. digits. [1]     Sum = " + str(len(matrixElementAccuracy_fl)))
+    ax.set_ylabel("ME count [1]")
+    ax.legend(loc='upper left', bbox_to_anchor=(0.02, 0.70), fontsize=8)
+    ax.set_ylim(0, ax.get_ylim()[1] * 1.1)
+
+    dir = "histograms"
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    plt.savefig(dir + "/histogram_" + process + "_" + accuracy + "_" + optimisation[1:] + "_cuts.png")
     plt.close()
 
 def plotHis_MOP(process, accuracy, optimisation, momentaAccuracy_fl, momentaAccuracyZeros):

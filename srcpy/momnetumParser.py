@@ -1,4 +1,6 @@
 import numpy as np
+import os.path
+import tomllib
 
 def string_to_float(str):
     #return Nan if string is @
@@ -188,6 +190,86 @@ def parse_file_native(f, matrixElement):
             
             append(float(line[start:end]))
 
+#-----------------------------------------------------------------------------------
+#------------------------------ ADDITIONAL FUNC ------------------------------------
+#-----------------------------------------------------------------------------------
+
+def parse_particles(particle_str):
+    PARTICLES = {
+        'g', 'u', 'c', 'd', 's', 'ux', 'cx', 'dx', 'sx',
+        'a', 've', 'vm', 'vt', 'em', 'mum', 'vex', 'vmx', 'vtx', 'ep', 'mup',
+        't', 'b', 'tx', 'bx', 'z', 'wp', 'h', 'wm', 'tam', 'tap'
+    }
+    PARTICLES_SORTED = sorted(PARTICLES, key=len, reverse=True)
+
+    tokens = []
+    i = 0
+    while i < len(particle_str):
+        matched = False
+        for p in PARTICLES_SORTED:
+            if particle_str[i:i + len(p)] == p:
+                tokens.append(p)
+                i += len(p)
+                matched = True
+                break
+        if not matched:
+            raise ValueError(f"Unknown particle token at position {i}: '{particle_str[i:]}'")
+    return tokens
+
+def get_jet_indices(folder_name, jet_particles=None):
+    JET_PARTICLES = {'j', 'g', 'u', 'c', 'd', 's', 'ux', 'cx', 'dx', 'sx'}
+    if jet_particles is None:
+        jet_particles = JET_PARTICLES
+    outgoing_str = folder_name.split('_')[2]
+    outgoing = parse_particles(outgoing_str)
+    return [i + 2 for i, p in enumerate(outgoing) if p in jet_particles]
+
+class CutConfig:
+    def __init__(self, process, jets, cuts):
+        self.process = process
+        self.jets    = jets
+        self.pt      = cuts['pt']
+        self.eta     = cuts['eta']
+        self.mjj     = cuts['mjj']
+
+    def __repr__(self):
+        return (f"CutConfig(process={self.process}, jets={self.jets}, "
+                f"pt={self.pt}, eta={self.eta}, mjj={self.mjj})")
+
+def read_cuts(folder_name, cuts_file=None):
+    DEFAULTS = {
+        'process': 'non_vbf',
+        'cuts': {
+            'pt': 20.0,  # for VBF 30
+            'eta': 4.5,
+            'mjj': 20.0,  # for VBF 500
+        }
+    }
+
+    config = {
+        'process': DEFAULTS['process'],
+        'jets':    None,
+        'cuts':    DEFAULTS['cuts'].copy(),
+    }
+
+    if cuts_file is None:
+        cuts_file = '../cuts.toml'
+
+    if os.path.exists(cuts_file):
+        with open(cuts_file, 'rb') as f:
+            toml = tomllib.load(f)
+        if 'process' in toml:
+            config['process'] = toml['process']
+        if 'cuts' in toml:
+            config['cuts'].update(toml['cuts'])
+        if 'jets' in toml:
+            config['jets'] = toml['jets']
+
+    if config['jets'] is None:
+        config['jets'] = get_jet_indices(folder_name)
+
+    return CutConfig(config['process'], config['jets'], config['cuts'])
+
 #return colinearity for the 3vec momenta
 def colinearity(m1, m2):
     m1 = m1[1:]
@@ -204,3 +286,19 @@ def softness(m1, m2):
 
 def energy(m):
     return m[0]
+
+def eta(m):
+    #1/2*ln((|p|+z)/(|p|-z))
+    px, py, pz = m[1], m[2], m[3] # E, px, py, pz
+    p = np.sqrt(px**2 + py**2 + pz**2)
+    return 0.5 * np.log((p + pz) / (p - pz))
+
+def pt(m):
+    # sqrt(px^2 + py^2)
+    return np.sqrt(m[1]**2 + m[2]**2) # E, px, py, pz
+
+def mjj(m1, m2):
+    # sqrt((E1+E2)^2 - (px1+px2)^2 - (py1+py2)^2 - (pz1+pz2)^2)
+    s = m1 + m2
+    m2 = s[0]**2 - s[1]**2 - s[2]**2 - s[3]**2
+    return np.sqrt(np.maximum(m2, 0.0))
