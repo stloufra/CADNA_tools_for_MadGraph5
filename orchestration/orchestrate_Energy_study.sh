@@ -303,7 +303,6 @@ step2_compile_all() {
     local failed_dirs=()
     CHECK_CPP_PIDS=()
 
-    patch_precision "double"
     for dir in "${p1_dirs[@]}"; do
         for tev in "${ECMS_TEV[@]}"; do
             local tag="${tev}TeV"
@@ -317,6 +316,7 @@ step2_compile_all() {
                     (cd "$WORK_DIR/$double_dir" && bash Cadnize.sh > cadnize_double.log 2>&1) \
                         || log_warn "Cadnize.sh reported non-zero for $double_dir"
 
+                    patch_precision "double"
                     if ! compile_directory "$double_dir" "d" "double"; then
                         failed_dirs+=("$double_dir (double)")
                     else
@@ -810,7 +810,7 @@ main() {
     fi
 
     if [ -f "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt" ]; then
-        cp -f "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt" \
+        mv -f "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt" \
               "$OUTPUT_PATH/$PROC_NAME/log_of_progress_old.txt"
         touch "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt"
     else

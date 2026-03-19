@@ -248,7 +248,7 @@ def create_multi_energy_histogram(process_data, process, output_path):
     text_lines = []
     
     for e, frac in zip(sorted_energies, fraction_low):
-        text_lines.append(f'{e} TeV: {frac*100:.1f}% ≤ 2 digits')
+        text_lines.append(f'{e} TeV: {frac*100:.3f}% ≤ 2 digits')
     
     text_string = "Float precision\n" + "\n".join(text_lines)
     
