@@ -29,6 +29,8 @@ set -euo pipefail
 #########################
 # Expand denominators with Double word expansions
 EXPAND_DENOM="true"
+DENOM_TYPE="double_st" #can be ither double, double_st, DW
+
 
 # Maximum number of parallel check_cpp.exe processes
 MAX_PARALLEL_CHECKS=120
@@ -342,7 +344,7 @@ step2_compile_all() {
         mkdir -p "$WORK_DIR/../src/Arithmetics"
         ln -sf "$CADNA_TOOLBOX_PATH/Arithmetics/"* "$WORK_DIR/../src/Arithmetics"
         log_info "Inside $(pwd)"
-        (cd "$WORK_DIR/../src/Arithmetics" && python3 HelAmpsDenomExpand.py) \
+        (cd "$WORK_DIR/../src/Arithmetics" && python3 HelAmpsDenomExpand.py ${EXPAND_DENOM}) \
             || { log_error "HelAmpsDenomExpand.py failed"; exit 1; }
     fi
 
