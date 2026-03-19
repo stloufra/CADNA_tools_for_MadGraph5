@@ -1,6 +1,10 @@
 import numpy as np
 import os.path
-import tomllib
+
+try:
+ import tomllib
+except ImportError:
+    import tomli as tomllib
 
 def string_to_float(str):
     #return Nan if string is @

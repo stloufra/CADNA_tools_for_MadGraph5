@@ -844,7 +844,7 @@ main() {
     fi
 
     if [ -f "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt" ]; then
-        cp -f "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt" "$OUTPUT_PATH/$PROC_NAME/log_of_progress_old.txt"
+        mv -f "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt" "$OUTPUT_PATH/$PROC_NAME/log_of_progress_old.txt"
         touch "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt"
     else
         touch "$OUTPUT_PATH/$PROC_NAME/log_of_progress.txt"

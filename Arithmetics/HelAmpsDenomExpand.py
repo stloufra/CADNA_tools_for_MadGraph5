@@ -21,7 +21,7 @@ denom_string = f"""
     const fptype_sv PmM2 = static_cast<fptype_sv>(( P{0}d[0] * P{0}d[0] ) - ( P{0}d[1] * P{0}d[1] ) - ( P{0}d[2] * P{0}d[2] ) - ( P{0}d[3] * P{0}d[3] ) - (Md{0} * Md{0}));
     const fptype_sv iMW = M{0} * W{0};
     const cxtype_sv denden = cxmake( PmM2, iMW );
-    const cxtype_sv denom = Ccoeff * COUP / denden;
+    const cxtype_sv denom = {2}/ denden;
 """
 if os.path.isfile("../HelAmps_sm_backup"):
     file = "../HelAmps_sm_backup"
@@ -58,9 +58,18 @@ with open(file, "r") as f:
 
                 idxx -= 1
 
-            m = re.search(r'P(\d+)\[0\]', line)
+            mR = re.search(r'P(\d+)\[0\]', line)
+            if mR:
+                m = mR.group(1)
+            else:
+                exit("Have not find the variable number")
+            coefR = re.search(r'=\s*(.*?)\s*/', line)
+            if coefR:
+                coef = coefR.group(1)
+            else:
+                exit("Have not find the nominator")
             new_lines.append("//" + line)
-            new_lines.append(denom_string.format(m.group(1),wave))
+            new_lines.append(denom_string.format(m,wave,coef))
 
         else:
             new_lines.append(line)

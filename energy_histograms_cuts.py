@@ -565,14 +565,14 @@ def main():
 
         if args.separate:
             for energy, data_dict in process_data.items():
-                out = os.path.join(hist_dir, f"{process}_{energy}_accuracy_hist.png")
+                out = os.path.join(hist_dir, f"{process}_{energy}_accuracy_hist_cuts.png")
                 create_multi_energy_histogram({energy: data_dict}, process, out)
-                out = os.path.join(hist_dir, f"{process}_{energy}_convergence.png")
+                out = os.path.join(hist_dir, f"{process}_{energy}_convergence_cuts.png")
                 create_convergence_plot({energy: data_dict}, process, out)
         else:
-            out = os.path.join(hist_dir, f"{process}_accuracy_hist.png")
+            out = os.path.join(hist_dir, f"{process}_accuracy_hist_cuts.png")
             create_multi_energy_histogram(process_data, process, out)
-            out = os.path.join(hist_dir, f"{process}_convergence.png")
+            out = os.path.join(hist_dir, f"{process}_convergence_cuts.png")
             create_convergence_plot(process_data, process, out)
 
     create_grand_summary(all_process_data, hist_dir)

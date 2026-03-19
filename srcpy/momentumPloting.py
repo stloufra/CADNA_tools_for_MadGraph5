@@ -441,7 +441,6 @@ def plotConvergence_MEP_cuts(process, accuracy, optimisation, matrixElementAccur
     fig, ax1 = plt.subplots()
 
 
-
     ax1.set_xlabel("Events [1]")
     ax1.set_ylabel("Below 3 sig. dig. [%]", color='tomato')
     ax1.plot(idx_all,  frac_all,  color='tomato',  linewidth=1, linestyle='dashed', label='below 3 - all')
@@ -515,6 +514,12 @@ def plotHis_MEP_cuts(process, accuracy, optimisation, matrixElementAccuracy_fl, 
 
     bellow_3_native = sum( f < 3 for f in matrixElementAccuracy_fl)
     frac_native = bellow_3_native/len(matrixElementAccuracy_fl)
+
+    x_lim = 17
+    if accuracy == "FP32":
+        x_lim = 7.5
+
+    ax.set_xlim(right = x_lim)
 
     ax.text(0.02, 0.78,
             f"Below 3 sig. dig. = {frac*100:.3f}({frac_native*100:.3f})%\nPassing events = {len(passing)}",
