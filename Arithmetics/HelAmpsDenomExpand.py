@@ -1,12 +1,23 @@
 import os.path
+import sys
 import re
 
 new_lines = []
+cpptype = None
 
+if len(sys.argv) > 1:
+    if sys.argv is "DW":
+        cpptype = "MG_ARITHM::Double<fptype>"
+    elif sys.argv is "double_st":
+        cpptype = "double_st" 
+    elif sys.argv is "double":
+        cpptype = "double" 
+    else:
+        exit("Use as - python3 HelAmpsDenomExpand double/double_st/MG_ARITHM::Double<fptype>")
 
-denom_string = """
-    const MG_ARITHM::Double<fptype> P{0}d[4] = {{ -cxreal( {1}{0}[0] ), -cxreal( {1}{0}[1] ), -cximag( {1}{0}[1] ), -cximag( {1}{0}[0] ) }};
-    const MG_ARITHM::Double<fptype> Md{0} = M{0};
+denom_string = f"""
+    const {cpptype} P{0}d[4] = {{ -cxreal( {1}{0}[0] ), -cxreal( {1}{0}[1] ), -cximag( {1}{0}[1] ), -cximag( {1}{0}[0] ) }};
+    const {cpptype} Md{0} = M{0};
     const fptype_sv PmM2 = static_cast<fptype_sv>(( P{0}d[0] * P{0}d[0] ) - ( P{0}d[1] * P{0}d[1] ) - ( P{0}d[2] * P{0}d[2] ) - ( P{0}d[3] * P{0}d[3] ) - (Md{0} * Md{0}));
     const fptype_sv iMW = M{0} * W{0};
     const cxtype_sv denden = cxmake( PmM2, iMW );
@@ -19,10 +30,12 @@ else:
 
 with open(file, "r") as f:
     lines = f.readlines()
+
     for idx, line in enumerate(lines):
-        if '#include "mgOnGpuConfig.h"' in line:
-            new_lines.append(line)
-            new_lines.append('    #include "Arithmetics/Double.h"\n')
+        if cpptype is "MG_ARITHM::Double<fptype>":
+            if '#include "mgOnGpuConfig.h"' in line:
+                new_lines.append(line)
+                new_lines.append('    #include "Arithmetics/Double.h"\n')
 
         if "cxtype_sv denom" in line and "//" not in line:
             if  "P" not in line:
