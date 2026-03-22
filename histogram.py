@@ -26,6 +26,8 @@ if len(sys.argv) > 3:
         optimisation = "-O0"
     elif "O3" in sys.argv[3]:
         optimisation = "-O3"
+    elif "O1" in sys.argv[3]:
+        optimisation = "-O1"
     elif "fgdb" in sys.argv[3]:
         optimisation += "_fortran"
     elif "load" in sys.argv[3]:
@@ -55,6 +57,7 @@ matrixElementAccuracyZeros = 0
 momentum = []
 momentaAccuracy = []
 colinearities = []
+cuts = []
 momentaAccuracyZeros = 0  # just a counter
 
 # parse the file
@@ -65,6 +68,9 @@ matrix_element = np.array(matrix_element)
 matrixElementAccuracy = np.array(matrixElementAccuracy)
 momentum = np.array(momentum)
 momentaAccuracy = np.array(momentaAccuracy)
+
+cuts_conf = mpr.read_cuts(os.getcwd())
+print("Jet configuration: " + str(cuts_conf.jets))
 
 nb_events = len(momentum)
 nb_par = len(momentum[0])
@@ -83,6 +89,7 @@ if len(momentum) > 0:
 else:
     exit("No momenta found")
 
+print("Processing collinearities.")
 for ev in range(nb_events):
     col=[]
     for i in range(nb_par):
@@ -92,8 +99,31 @@ for ev in range(nb_events):
             col.append(mpr.colinearity(momentum[ev][i], momentum[ev][j]))
     colinearities.append(col)
 
-colinearities = np.array(colinearities)
+print("Processing cuts.")
+for ev in range(nb_events):
+    cut_result = "none"
 
+    for i in range(len(cuts_conf.jets)):
+        if mpr.pt(momentum[ev][cuts_conf.jets[i]]) <= cuts_conf.pt:
+            cut_result = "pt"
+            break
+        if abs(mpr.eta(momentum[ev][cuts_conf.jets[i]])) >= cuts_conf.eta:
+            cut_result = "eta"
+            break
+
+    if cut_result == "none":
+        for i in range(len(cuts_conf.jets)):
+            for j in range(i + 1, len(cuts_conf.jets)):
+                m = mpr.mjj(momentum[ev][cuts_conf.jets[i]], momentum[ev][cuts_conf.jets[j]])
+                if m <= cuts_conf.mjj:
+                    cut_result = "mjj"
+                    break
+            if cut_result == "mjj":
+                break
+
+    cuts.append(cut_result)
+
+colinearities = np.array(colinearities)
 energys = momentum[:, :, 0]
 
 # flatten the arrays
@@ -113,7 +143,7 @@ print("Number of all momenta:                       " + str(len(momentaAccuracy_
 print("Number of all momenta prec:                  " + str(len(momentum_fl)))
 
 # matplotlib -> default (no argument) or both
-print("Lenght of system arguments" + str(len(sys.argv)))
+print("Lenght of system arguments: " + str(len(sys.argv)))
 if len(sys.argv) < 5 or (len(sys.argv) > 4 and sys.argv[4] == "both"):
 
     if len(colinearities) > 0:
@@ -131,6 +161,9 @@ if len(sys.argv) < 5 or (len(sys.argv) > 4 and sys.argv[4] == "both"):
 
     if len(matrixElementAccuracy_fl) > 0:
         mpl.plotHis_MEP(process, accuracy, optimisation, matrixElementAccuracy_fl, matrixElementAccuracyZeros)
+        mpl.plotConvergence_MEP_cuts(process, accuracy, optimisation, matrixElementAccuracy_fl, cuts, cuts_conf)
+        if len(cuts) > 0:
+            mpl.plotHis_MEP_cuts(process, accuracy, optimisation, matrixElementAccuracy_fl, matrixElementAccuracyZeros, cuts, cuts_conf)
 
     if len(momentaAccuracy_fl) > 0:
         mpl.plotHis_MOP(process, accuracy, optimisation, momentaAccuracy_fl, momentaAccuracyZeros)
